@@ -13,4 +13,5 @@ Made a Expr dir
 2. Ran ```antlr4 Expr.g4```
 3. Ran ```javac -cp ".:../antlr-4.13.2-complete.jar" *.java```
 4. Ran ```alias grun='java -cp ".:../antlr-4.13.2-complete.jar" org.antlr.v4.gui.TestRig'```
-5. Ran the parser ```grun Expr prog -tree``` enter and then ```CMD + D``` or ```Ctrl + Z```
+5. Ran the parser ```grun Expr prog -tree``` enter wrote ```1+2*3``` and then ```CMD + D``` or ```Ctrl + Z```
+Got the result ```(prog (expr (expr 1) + (expr (expr 2) * (expr 3))) <EOF>)```
