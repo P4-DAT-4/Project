@@ -1,4 +1,5 @@
 # Project
+Assumes Java is installed. If not [Java installation](https://www.java.com/en/download/manual.jsp)
 
 ## How to use
 1. Write grammar in a .g4 file
