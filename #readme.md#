@@ -3,7 +3,7 @@
 ## How to use
 1. Write grammar in a .g4 file
 2. Run ```antlr4 example.g4```
-3. run ```javac -cp ".:path/to/antlr-4.13.2-complete.jar" *.java``` with the right path. The colon should be semicolon on Windows.
+3. run ```javac -cp ".:path/to/antlr-4.13.2-complete.jar" *.java``` with the right path
 4. Setup grun by ```alias grun='java -cp ".:path/to/antlr-4.13.2-complete.jar" org.antlr.v4.gui.TestRig'``` again with the right path
 5. Run the parser by ```grun example prog -tree``` hit enter and write the program. Hit ```CMD + D``` on mac or ```Ctrl + Z``` on Windows
 
@@ -13,5 +13,5 @@ Made a Expr dir
 2. Ran ```antlr4 Expr.g4```
 3. Ran ```javac -cp ".:../antlr-4.13.2-complete.jar" *.java```
 4. Ran ```alias grun='java -cp ".:../antlr-4.13.2-complete.jar" org.antlr.v4.gui.TestRig'```
-5. Ran the parser ```grun Expr prog -tree``` enter wrote ```1+2*3``` and then ```CMD + D``` or ```Ctrl + Z```
-Got the result ```(prog (expr (expr 1) + (expr (expr 2) * (expr 3))) <EOF>)```.
+5. Ran the parser ```grun Expr prog -tree``` enter wrote ```1+2*3``` and then ```CMD + D``` or ```Ctrl + Z```Got the result ```(prog
+ (expr (expr 1) + (expr (expr 2) * (expr 3))) <EOF>)```.
