@@ -6,7 +6,7 @@
 3. run ```javac -cp ".:path/to/antlr-4.13.2-complete.jar" *.java``` with the right path. The colon should be semicolon on Windows.
 4. Setup grun by ```alias grun='java -cp ".:path/to/antlr-4.13.2-complete.jar" org.antlr.v4.gui.TestRig'``` again with the right path
 5. Run the parser by ```grun example prog -tree``` hit enter and write the program. Hit ```Ctrl + D``` on mac or ```Ctrl + Z``` on Windows
-  - a -gui flag can be added to show to parse tree more visually
+   - The -gui flag can be added to show to parse tree more visually
 
 ### Example Expr
 Made a Expr dir
