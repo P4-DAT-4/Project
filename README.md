@@ -1,10 +1,16 @@
 # Project
 
-## How to use?
-1. Write grammer in a .g4 file. In this example the Expr.g4 file
-2. Run ```antlr4``` with the .g4 file. In this example ```antlr4 Expr.g4```
-3. Run ```javac *.java```
-4. Setup grun ```alias grun='java -cp ".:antlr-4.12.2-complete.jar" org.antlr.v4.gui.TestRig'
-5. Run the parser with grun: ```grun Expr prog -tree``` hit enter write the program and hit ```CMD + D``` on Mac or ```Ctrl + Z``` on Windows
+## How to use
+1. Write grammar in a .g4 file
+2. Run ```antlr4 example.g4```
+3. run ```javac -cp ".:path/to/antlr-4.13.2-complete.jar" *.java``` with the right path
+4. Setup grun by ```alias grun='java -cp ".:path/to/antlr-4.13.2-complete.jar" org.antlr.v4.gui.TestRig'``` again with the right path
+5. Run the parser by ```grun example prog -tree``` hit enter and write the program. Hit ```CMD + D``` on mac or ```Ctrl + Z``` on Windows
 
-
+### Example Expr
+Made a Expr dir
+1. Wrote the Expr.g4 file
+2. Ran ```antlr4 Expr.g4```
+3. Ran ```javac -cp ".:../antlr-4.13.2-complete.jar" *.java```
+4. Ran ```alias grun='java -cp ".:../antlr-4.13.2-complete.jar" org.antlr.v4.gui.TestRig'```
+5. Ran the parser ```grun Expr prog -tree``` enter and then ```CMD + D``` or ```Ctrl + Z```
