@@ -6,8 +6,8 @@ Assumes Java is installed. If not [Java installation](https://www.java.com/en/do
 2. Run ```antlr4 example.g4```
 3. run ```javac -cp ".:path/to/antlr-4.13.2-complete.jar" *.java``` with the right path. The colon should be semicolon on Windows.
 4. Setup grun by ```alias grun='java -cp ".:path/to/antlr-4.13.2-complete.jar" org.antlr.v4.gui.TestRig'``` again with the right path
-5. Run the parser by ```grun example prog -tree``` hit enter and write the program. Hit ```Ctrl + D``` on mac or ```Ctrl + Z``` on Windows
-   - The -gui flag can be added to show to parse tree more visually
+5. Run the parser by ```grun example name -tree```, where ```name``` is the grammar name, given in the .g4 file. hit enter and write the program. Hit ```Ctrl + D``` on mac or ```Ctrl + Z``` on Windows
+   - The -gui flag can be added to show the parse tree more visually
 
 ### Example Expr
 Made a Expr dir
