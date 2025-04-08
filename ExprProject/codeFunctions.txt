@@ -1,0 +1,21 @@
+fn [int] h([int] a) {
+    while a[0] < 10 do
+        a[0] = a[0] + 1
+    return a
+}
+
+fn int f(int x, int y) {
+    int z = 10
+    return x + y + z
+}
+
+fn int g(bool b, int a) {
+    if b then
+        a = 10
+        return a
+    else skip
+}
+
+fn int zero() {
+    return 0
+}
