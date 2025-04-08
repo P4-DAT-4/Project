@@ -17,3 +17,8 @@ Made a Expr dir
 4. Ran ```alias grun='java -cp ".:../antlr-4.13.2-complete.jar" org.antlr.v4.gui.TestRig'```
 5. Ran the parser ```grun Expr prog -tree``` enter wrote ```1+2*3``` and then ```Ctrl + D``` or ```Ctrl + Z```
 Got the result ```(prog (expr (expr 1) + (expr (expr 2) * (expr 3))) <EOF>)```.
+
+### Windows
+1. Run ```java -jar pathTo/antlr-4.13.2-complete.jar fileName.g4``` with the correct path and .g4 file (fileName) to generate the parser and lexer
+2. Run ```javac -cp ".;pathTo/antlr-4.13.2-complete.jar" *.java``` with the correct path to compile the generated .java files
+3. Run ```java -cp ".;pathTo/antlr-4.13.2-complete.jar" org.antlr.v4.gui.TestRig grammarName prog -tree -gui``` with the correct path, and grammar (grammarName) to run the ANTLR GIU and parser
