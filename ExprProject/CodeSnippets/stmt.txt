@@ -1,0 +1,39 @@
+if x < 5 then
+    y = x + 5
+else
+    skip
+
+while a == 5 do
+    if b < 10 then
+        b = b + 1
+    else
+        a = a + 1
+        return a
+
+fn int add(int x, int y) {
+    return x + y
+}
+
+int x = 5
+int y = 0
+int z = 5
+z = 42
+y = x + 5
+double pi = 3.14
+bool b = true
+int Five = 5
+double Five2 = 5.0
+string Five3 = "Five"
+[int] Five4 = [5,5,5,5]
+bool Five5 = true
+
+fn [int] f([int] a) {
+    int i = 0
+    while i < 10 do
+        a[i] = a[i] + 1
+        i = i + 1
+    return a
+}
+
+x[5] = x[4] = 1
+y[5] = 1 + y[4,2,6]
