@@ -19,6 +19,7 @@ stmt
     : stmt  stmt                                                    #Seq
     | ID '=' expr                                                   #VarAssign
     | type ID '=' expr                                              #VarDefStmt
+    | expr '[' expr ']' '=' expr                                             #IndexAccessStmt
     | 'skip'                                                        #Skip
     | 'if' expr 'then' stmt 'else' stmt                             #IfElse
     | 'while' expr 'do' stmt                                        #While
@@ -52,7 +53,6 @@ expr
     | INT                                                           #Int
     | DOUBLE                                                        #Double
     | STRING                                                        #String
-    | expr '[' expr ']'                                             #ListAccess
     ;
 
 params
