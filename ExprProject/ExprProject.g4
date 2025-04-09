@@ -1,63 +1,106 @@
 grammar ExprProject;
 
 prog
-    : 'import' stringList 'from' ID                                 #ImportStmt
-    | defStmt*                                                      #FromDef
-    | stmt*                                                         #FromDef
-    | expr*                                                         #ExprStmt
+    : importStmt* (defStmt | stmt)* EOF                             #Main
     ;
 
 defStmt
-    : type ID '=' expr                                              #VarDef
-    | 'fn' type ID '('params')'* '{'stmt'}'                         #FuncDef
-    | 'line' ID ':' '('expr','expr')' 'to' '('expr','expr')'        #LineDef
-    | 'curve' ID ':' '[''('expr','expr')'',''('expr','expr')'','
-      '('expr','expr')'',''('expr','expr')'']'                      #CurveDef
+    : 'fn' type ID '('params')'* '{'funcBody'}'                     #FuncDef
+    | defShape                                                      #ShapeDef
+    ;
+
+defShape
+    : 'line' ID ':' '('aexpr','aexpr')' 'to' '('aexpr','aexpr')'    #LineDef
+    | 'curve' ID ':' '[''('aexpr','aexpr')'',''('aexpr','aexpr')'','
+      '('aexpr','aexpr')'',''('aexpr','aexpr')'']'                  #CurveDef
     ;
 
 stmt
-    : stmt  stmt                                                    #Seq
-    | ID '=' expr                                                   #VarAssign
-    | type ID '=' expr                                              #VarDefStmt
-    | expr '[' expr ']' '=' expr                                             #IndexAccessStmt
+    : stmt stmt                                                     #Seq
+    | ID '=' aexpr                                                  #VarAssign
+    | type ID '=' expr                                              #VarDef
     | 'skip'                                                        #Skip
-    | 'if' expr 'then' stmt 'else' stmt                             #IfElse
-    | 'while' expr 'do' stmt                                        #While
+    | 'if' bexpr 'then' stmt 'else' stmt                            #IfElse
+    | 'while' bexpr 'do' stmt                                       #While
     | 'return' expr                                                 #Return
+    | lexpr                                                         #LexprStmt
+    ;
+
+aexpr
+    : '-' aexpr                                                     #Negate
+    | aexpr '+' aexpr                                               #Add
+    | aexpr '-' aexpr                                               #Sub
+    | aexpr '*' aexpr                                               #Mul
+    | aexpr '/' aexpr                                               #Div
+    | aexpr '%' aexpr                                               #Mod
+    | '(' aexpr ')'                                                 #ParenAexpr
+    | lexpr                                                         #ListExprAexpr
+    | INT                                                           #Int
+    | DOUBLE                                                        #Double
+    | ID                                                            #Var
+    ;
+
+bexpr
+    : '!' bexpr                                                     #Not
+    | bexpr '||' bexpr                                              #Or
+    | bexpr '&&' bexpr                                              #And
+    | (aexpr | lexpr | accessexpr | vexpr) '=='
+      (aexpr | lexpr | accessexpr | vexpr)                          #Equal
+    | (aexpr | lexpr | accessexpr | vexpr) '<'
+      (aexpr | lexpr | accessexpr | vexpr)                          #Less
+    | '(' bexpr ')'                                                 #ParenBexpr
+    | BOOL                                                          #Bool
+    | ID                                                            #BoolVar
+    ;
+
+lexpr
+    : '[' exprList ']'                                              #ListExpr
+    | ID '[' aexpr ']'                                              #IndexAccess
+    | ID '[' aexpr ']' '=' aexpr                                    #IndexAssign
+    ;
+
+texpr
+    : 'place' '('aexpr','aexpr')'                                   #PlaceExpr
+    | 'rotate' aexpr 'around' aexpr 'by' aexpr                      #RotateExpr
+    | 'scale' aexpr 'by' aexpr                                      #ScaleExpr
+    | 'visualize' ID 'with' ID                                      #VisualizeExpr
+    ;
+
+accessexpr
+    : ID '.' ID                                                     #FieldAccess
+    | ID '(' exprList ')'                                           #FuncCall
+    | ID '(' ')'                                                    #FuncCallNoArgs
+    | ID '.' ID '(' exprList ')'                                    #MethodCall
+    | ID '.' ID '(' ')'                                             #MethodCallNoArgs
+    | ID '.' ID '=' aexpr                                           #FieldAssign
+    | ID '.' ID '=' ID '(' ')'                                      #FieldAssignNoArgs
+    ;
+
+vexpr
+    : ID                                                            #VarExpr
+    | STRING                                                        #String
     ;
 
 expr
-    : '-' expr                                                      #Negate
-    | '!' expr                                                      #Not
-    | expr '.' ID                                                   #FieldAccess
-    | expr '[' expr ']'                                             #IndexAccess
-    | '[' exprList ']'                                              #ListExpr
-    | 'rotate' expr 'around' expr 'by' expr                         #RotateExpr
-    | 'move' expr 'to' expr                                         #MoveExpr
-    | 'offset' expr 'by' expr                                       #OffsetExpr
-    | 'scale' expr 'by' expr                                        #ScaleExpr
-    | expr '*' expr                                                 #Mul
-    | expr '/' expr                                                 #Div
-    | expr '%' expr                                                 #Mod
-    | expr '+' expr                                                 #Add
-    | expr '-' expr                                                 #Sub
-    | expr '<' expr                                                 #Less
-    | expr '==' expr                                                #Equal
-    | expr '||' expr                                                #Or
-    | expr '&&' expr                                                #And
-    | expr '|' expr                                                 #BitOr
-    | expr '&' expr                                                 #BitAnd
-    | '(' expr ')'                                                  #ParenExpr
-    | ID                                                            #Var
-    | BOOL                                                          #Bool
-    | INT                                                           #Int
-    | DOUBLE                                                        #Double
-    | STRING                                                        #String
+    : aexpr
+    | bexpr
+    | lexpr
+    | texpr
+    | accessexpr
+    | vexpr
+    ;
+
+importStmt
+    : 'import' stringList 'from' ID
     ;
 
 params
     : type ID (',' type ID)*                                        #ParamList
-    |                                                               #Empty
+    |                                                               #EmptyParams
+    ;
+
+funcBody
+    : (stmt | defShape)*
     ;
 
 stringList
@@ -65,7 +108,7 @@ stringList
     ;
 
 exprList
-    : expr (',' expr)*
+    : aexpr (',' aexpr)*
     ;
 
 type
@@ -73,7 +116,7 @@ type
     | 'int'                                                         #IntType
     | 'string'                                                      #StringType
     | 'double'                                                      #DoubleType
-    | ID '->' type                                                  #FunctionType
+    //| ID '->' type                                                  #FunctionType
     | '[' type ']'                                                  #ListType
     | ID                                                            #CustomType
     ;
