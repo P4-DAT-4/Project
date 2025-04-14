@@ -6,6 +6,7 @@ prog
 
 defStmt
     : 'fn' type ID '('params')'* '{'funcBody'}'                     #FuncDef
+    | 'visualize' ID'('ID')' 'with' ID'('ID')'                           #VisualizeDef
     | defShape                                                      #ShapeDef
     ;
 
@@ -13,17 +14,19 @@ defShape
     : 'line' ID ':' '('aexpr','aexpr')' 'to' '('aexpr','aexpr')'    #LineDef
     | 'curve' ID ':' '[''('aexpr','aexpr')'',''('aexpr','aexpr')'','
       '('aexpr','aexpr')'',''('aexpr','aexpr')'']'                  #CurveDef
+    | 'text''('aexpr')' rexpr                                       #TextDef
     ;
 
 stmt
     : stmt stmt                                                     #Seq
     | ID '=' aexpr                                                  #VarAssign
     | type ID '=' expr                                              #VarDef
+    | ID '[' aexpr ']' '=' aexpr                                    #ListIndexAssign
     | 'skip'                                                        #Skip
-    | 'if' bexpr 'then' stmt 'else' stmt                            #IfElse
-    | 'while' bexpr 'do' stmt                                       #While
+    | 'if' bexpr 'then' '{'stmt'}' 'else' '{'stmt'}'                #IfElse
+    | 'while' bexpr 'do' '{'stmt'}'                                 #While
     | 'return' expr                                                 #Return
-    | lexpr                                                         #LexprStmt
+    | 'event' STRING                                                #Event
     ;
 
 aexpr
@@ -34,7 +37,7 @@ aexpr
     | aexpr '/' aexpr                                               #Div
     | aexpr '%' aexpr                                               #Mod
     | '(' aexpr ')'                                                 #ParenAexpr
-    | lexpr                                                         #ListExprAexpr
+    | ID '[' aexpr ']'                                              #IndexAccessA
     | INT                                                           #Int
     | DOUBLE                                                        #Double
     | ID                                                            #Var
@@ -55,8 +58,8 @@ bexpr
 
 lexpr
     : '[' exprList ']'                                              #ListExpr
-    | ID '[' aexpr ']'                                              #IndexAccess
-    | ID '[' aexpr ']' '=' aexpr                                    #IndexAssign
+    | ID '[' aexpr ']'                                              #IndexAccessL
+    | ID '[' aexpr ']' '=' aexpr                                    #IndexAssignL
     ;
 
 texpr
@@ -81,6 +84,14 @@ vexpr
     | STRING                                                        #String
     ;
 
+rexpr
+    : 'pInside' (ID | ID('('exprList')'))?                          #Inside
+    | 'pAbove' (ID | ID('('exprList')'))?                           #Above
+    | 'pBelow' (ID | ID('('exprList')'))?                           #Below
+    | 'pRight' (ID | ID('('exprList')'))?                           #Right
+    | 'pLeft' (ID | ID('('exprList')'))?                            #Left
+    ;
+
 expr
     : aexpr
     | bexpr
@@ -88,6 +99,7 @@ expr
     | texpr
     | accessexpr
     | vexpr
+    | rexpr
     ;
 
 importStmt
@@ -116,15 +128,8 @@ type
     | 'int'                                                         #IntType
     | 'string'                                                      #StringType
     | 'double'                                                      #DoubleType
-    //| ID '->' type                                                  #FunctionType
     | '[' type ']'                                                  #ListType
     | ID                                                            #CustomType
-    ;
-
-prop
-    : 'given' type ID
-    | 'default' type ID
-    | 'optional' type ID
     ;
 
 BOOL: 'true' | 'false' ;
