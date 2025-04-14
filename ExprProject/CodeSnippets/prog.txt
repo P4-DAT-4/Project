@@ -1,0 +1,40 @@
+[int] inputList = [5, 7, 2, 0, 9]
+int rectHeight = 1
+int rectWidth = 1
+
+fn [int] insertionSort([int] arr) {
+    int i = 1
+    while i < arr.length do {
+        int key = arr[i]
+        int j = i - 1
+
+        event "selected i"
+        while !(j < 0) && !(arr[j] < key) && !(arr[j] == key) do {
+            event "moving j"
+            arr[j + 1] = arr[j]
+            j = j - 1
+        }
+        arr[j + 1] = key
+        i = i + 1
+    }
+    event "insertionSorted"
+    return arr
+}
+
+fn img rect(int x, int y, int width, int height) {
+    line top    : (x, y) to (x + width, y)
+    line right  : (x + width, y) to (x + width, y + height)
+    line bottom : (x + width, y + height) to (x, y + height)
+    line left   : (x, y + height) to (x, y)
+}
+
+fn img rectWithText(int x, int y, int width, int height, int n) {
+    text(n) pInside rect(x, y, width, height * n)
+}
+
+fn img barChart([int] arr) {
+    img rects = map(rectWithText, arr)
+    img barChart = pRight rects
+}
+
+visualize insertionSort(inputList) with barChart(inputList)

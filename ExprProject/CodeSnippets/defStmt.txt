@@ -7,14 +7,15 @@ fn int add(int x, int y) {
 }
 
 fn int g(bool b, int a) {
-    if b then
+    if b then {
         a = 10
         return a
-    else skip
+    } else {skip}
 }
 
 fn [int] h([int] a) {
-    while a[0] < 10 do
+    while a[0] < 10 do {
         a[0] = a[0] + 1
+    }
     return a
 }
