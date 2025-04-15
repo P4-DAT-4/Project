@@ -6,7 +6,7 @@ prog
 
 defStmt
     : 'fn' type ID '('params')'* '{'funcBody'}'                     #FuncDef
-    | 'visualize' ID'('ID')' 'with' ID'('ID')'                           #VisualizeDef
+    | 'visualize' ID'('ID')' 'with' ID'('ID')'                      #VisualizeDef
     | defShape                                                      #ShapeDef
     ;
 
