@@ -35,32 +35,36 @@ stmt
     ;
 
 expr
-    : '('expr')'
-    | expr '+' expr
-    | expr '-' expr
-    | expr '*' expr
-    | expr '/' expr
-    | '-'expr
-    | expr '<=' expr
-    | expr '>=' expr
-    | expr '==' expr
-    | expr '<' expr
-    | expr '>' expr
-    | '!'expr
-    | expr '||' expr
-    | expr '&&' expr
-    | expr'['expr']'
-    | '['expr (',' expr)*']'
-    | funcCall
-    | '('type')'expr
-    | expr '++' expr
-    | 'text' expr
-    | 'line' '['expr*']'
-    | 'curve' '['expr*']'
-    | 'rotate' expr 'around' expr 'by' expr
-    | 'scale' expr 'by' expr
-    | 'place' expr 'at' expr
-    | ID | INT | BOOL | DOUBLE | STRING
+    : '('expr')'                                                    #ParenExpr
+    | expr '+' expr                                                 #AddExpr
+    | expr '-' expr                                                 #SubExpr
+    | expr '*' expr                                                 #MulExpr
+    | expr '/' expr                                                 #DivExpr
+    | '-'expr                                                       #NegExpr
+    | expr '<=' expr                                                #LEqExpr
+    | expr '>=' expr                                                #GEqExpr
+    | expr '==' expr                                                #EqExpr
+    | expr '<' expr                                                 #LsExpr
+    | expr '>' expr                                                 #GtExpr
+    | '!'expr                                                       #NotExpr
+    | expr '||' expr                                                #OrExpr
+    | expr '&&' expr                                                #AndExpr
+    | expr'['expr']'                                                #ListIndexExpr
+    | '['expr (',' expr)*']'                                        #ListExpr
+    | funcCall                                                      #FuncCallExpr
+    | '('type')'expr                                                #TypeCastExpr
+    | expr '++' expr                                                #ConcatExpr
+    | 'text' expr                                                   #TextExpr
+    | 'line' '['expr*']'                                            #LineExpr
+    | 'curve' '['expr*']'                                           #CurveExpr
+    | 'rotate' expr 'around' expr 'by' expr                         #RotateExpr
+    | 'scale' expr 'by' expr                                        #ScaleExpr
+    | 'place' expr 'at' expr                                        #PlaceExpr
+    | ID                                                            #ID
+    | INT                                                           #Int
+    | BOOL                                                          #Bool
+    | DOUBLE                                                        #Double
+    | STRING                                                        #String
     ;
 
 funcCall
