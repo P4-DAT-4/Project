@@ -1,4 +1,7 @@
 package astbuilder.builder;
 
-public interface ProgVisitor {
+import astbuilder.nodes.prog.ProgNode;
+
+public interface ProgVisitor extends ASTVisitor {
+    void visitProgNode(ProgNode node);
 }
