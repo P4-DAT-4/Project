@@ -1,4 +1,4 @@
-package astbuilder.builder;
+package astbuilder.visitor;
 
 import astbuilder.nodes.AbstractSyntaxNode;
 

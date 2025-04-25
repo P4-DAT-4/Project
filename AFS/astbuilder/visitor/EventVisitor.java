@@ -1,4 +1,4 @@
-package astbuilder.builder;
+package astbuilder.visitor;
 
 import astbuilder.nodes.event.EventCompositionNode;
 import astbuilder.nodes.event.EventDeclarationNode;

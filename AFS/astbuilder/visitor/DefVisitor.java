@@ -1,4 +1,4 @@
-package astbuilder.builder;
+package astbuilder.visitor;
 
 import astbuilder.nodes.def.DefDeclarationNode;
 import astbuilder.nodes.def.DefFunctionNode;
