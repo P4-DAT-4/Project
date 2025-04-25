@@ -1,7 +1,6 @@
 package astbuilder.nodes.stmt;
 
-import astbuilder.builder.ASTVisitor;
-import astbuilder.builder.StmtVisitor;
+import astbuilder.visitor.StmtVisitor;
 
 public class StmtCompositionNode extends StmtNode {
     @Override

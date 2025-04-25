@@ -1,6 +1,6 @@
 package astbuilder.nodes;
 
-import astbuilder.builder.ASTVisitor;
+import astbuilder.visitor.ASTVisitor;
 
 public abstract class AbstractSyntaxNode<T extends ASTVisitor> {
 

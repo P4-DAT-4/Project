@@ -1,7 +1,6 @@
 package astbuilder.nodes.prog;
 
-import astbuilder.builder.ASTVisitor;
-import astbuilder.builder.ProgVisitor;
+import astbuilder.visitor.ProgVisitor;
 import astbuilder.nodes.AbstractSyntaxNode;
 import astbuilder.nodes.def.DefNode;
 

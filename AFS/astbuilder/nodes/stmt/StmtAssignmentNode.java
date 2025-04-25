@@ -1,8 +1,6 @@
 package astbuilder.nodes.stmt;
 
-import astbuilder.builder.ASTVisitor;
-import astbuilder.builder.StmtVisitor;
-import astbuilder.nodes.AbstractSyntaxNode;
+import astbuilder.visitor.StmtVisitor;
 
 public class StmtAssignmentNode extends StmtNode {
     @Override
