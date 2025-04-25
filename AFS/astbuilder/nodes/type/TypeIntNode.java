@@ -1,4 +1,4 @@
 package astbuilder.nodes.type;
 
-public class TypeIntNode {
+public class TypeIntNode extends TypeNode {
 }

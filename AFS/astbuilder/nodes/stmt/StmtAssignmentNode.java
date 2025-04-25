@@ -1,4 +1,11 @@
 package astbuilder.nodes.stmt;
 
-public class StmtAssignmentNode {
+import astbuilder.builder.ASTVisitor;
+import astbuilder.builder.StmtVisitor;
+import astbuilder.nodes.AbstractSyntaxNode;
+
+public class StmtAssignmentNode extends StmtNode {
+    @Override
+    public void acceptVisit(StmtVisitor visitor) {
+    }
 }

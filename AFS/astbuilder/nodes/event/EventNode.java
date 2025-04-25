@@ -1,4 +1,6 @@
 package astbuilder.nodes.event;
 
-public class EventNode {
+import astbuilder.nodes.AbstractSyntaxNode;
+
+public abstract class EventNode extends AbstractSyntaxNode {
 }

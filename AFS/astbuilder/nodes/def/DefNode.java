@@ -1,4 +1,6 @@
 package astbuilder.nodes.def;
 
-public class DefNode {
+import astbuilder.nodes.AbstractSyntaxNode;
+
+public abstract class DefNode extends AbstractSyntaxNode {
 }

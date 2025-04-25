@@ -1,4 +1,4 @@
 package astbuilder.nodes.def;
 
-public class DefDeclNode {
+public class DefDeclarationNode extends DefNode{
 }

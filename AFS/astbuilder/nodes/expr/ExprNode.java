@@ -1,4 +1,6 @@
 package astbuilder.nodes.expr;
 
-public class ExprNode {
+import astbuilder.nodes.AbstractSyntaxNode;
+
+public abstract class ExprNode extends AbstractSyntaxNode {
 }

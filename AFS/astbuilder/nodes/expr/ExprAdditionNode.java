@@ -1,4 +1,4 @@
 package astbuilder.nodes.expr;
 
-public class ExprAdditionNode {
+public class ExprAdditionNode extends ExprNode{
 }

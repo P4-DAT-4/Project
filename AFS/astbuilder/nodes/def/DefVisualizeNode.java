@@ -1,4 +1,4 @@
 package astbuilder.nodes.def;
 
-public class VisualizeNode extends DefNode{
+public class DefVisualizeNode extends DefNode{
 }

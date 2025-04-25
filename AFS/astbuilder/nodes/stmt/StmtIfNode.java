@@ -1,4 +1,10 @@
 package astbuilder.nodes.stmt;
 
-public class StmtIfNode {
+import astbuilder.builder.StmtVisitor;
+
+public class StmtIfNode extends StmtNode {
+    @Override
+    public void acceptVisit(StmtVisitor visitor) {
+        visitor.visitStmtIfNode(this);
+    }
 }

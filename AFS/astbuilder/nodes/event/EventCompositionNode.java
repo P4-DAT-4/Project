@@ -1,4 +1,4 @@
 package astbuilder.nodes.event;
 
-public class EventCompositionNode {
+public class EventCompositionNode extends EventNode {
 }

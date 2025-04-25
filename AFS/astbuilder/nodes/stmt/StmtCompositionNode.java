@@ -1,4 +1,11 @@
 package astbuilder.nodes.stmt;
 
-public class StmtCompositionNode {
+import astbuilder.builder.ASTVisitor;
+import astbuilder.builder.StmtVisitor;
+
+public class StmtCompositionNode extends StmtNode {
+    @Override
+    public void acceptVisit(StmtVisitor visitor) {
+
+    }
 }

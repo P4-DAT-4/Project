@@ -1,4 +1,7 @@
 package astbuilder.nodes.stmt;
 
-public class StmtNode {
+import astbuilder.builder.StmtVisitor;
+import astbuilder.nodes.AbstractSyntaxNode;
+
+public abstract class StmtNode extends AbstractSyntaxNode<StmtVisitor> {
 }

@@ -1,4 +1,6 @@
 package astbuilder.nodes.type;
 
-public class TypeNode {
+import astbuilder.nodes.AbstractSyntaxNode;
+
+public abstract class TypeNode extends AbstractSyntaxNode {
 }
