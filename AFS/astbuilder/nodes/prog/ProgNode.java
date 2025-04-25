@@ -7,7 +7,15 @@ import astbuilder.nodes.def.DefNode;
 import java.util.List;
 
 public class ProgNode extends AbstractSyntaxNode<ProgVisitor> {
-    List<DefNode> definitions;
+    private final List<DefNode> definitions;
+
+    public ProgNode(List<DefNode> definitions) {
+        this.definitions = definitions;
+    }
+
+    public List<DefNode> getDefinitions() {
+        return definitions;
+    }
 
     @Override
     public void acceptVisit(ProgVisitor visitor) {
