@@ -15,6 +15,7 @@ public interface ExprVisitor extends ASTVisitor {
     void visitExprIdentifierNode(ExprIdentifierNode node);
     void visitExprIntNode(ExprIntNode node);
     void visitExprLessThanNode(ExprLessThanNode node);
+    void visitExprLineNode(ExprLineNode node);
     void visitExprListAccessNode(ExprListAccessNode node);
     void visitExprListNode(ExprListNode node);
     void visitExprMultiplicationNode(ExprMultiplicationNode node);

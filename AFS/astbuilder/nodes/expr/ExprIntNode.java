@@ -1,4 +1,10 @@
 package astbuilder.nodes.expr;
 
-public class ExprIntNode {
+import astbuilder.visitor.ExprVisitor;
+
+public class ExprIntNode extends ExprNode{
+    @Override
+    public void acceptVisit(ExprVisitor visitor) {
+        visitor.visitExprIntNode(this);
+    }
 }
