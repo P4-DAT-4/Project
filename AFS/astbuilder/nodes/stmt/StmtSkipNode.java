@@ -1,4 +1,10 @@
 package astbuilder.nodes.stmt;
 
-public class StmtSkipNode {
+import astbuilder.visitor.StmtVisitor;
+
+public class StmtSkipNode extends StmtNode {
+    @Override
+    public void acceptVisit(StmtVisitor visitor) {
+        visitor.visitStmtSkipNode(this);
+    }
 }

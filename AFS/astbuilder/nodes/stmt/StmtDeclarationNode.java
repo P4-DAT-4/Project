@@ -5,6 +5,6 @@ import astbuilder.visitor.StmtVisitor;
 public class StmtDeclarationNode extends StmtNode {
     @Override
     public void acceptVisit(StmtVisitor visitor) {
-
+        visitor.visitStmtDeclarationNode(this);
     }
 }
