@@ -2,11 +2,7 @@ package astbuilder.nodes.def;
 
 import astbuilder.nodes.event.EventNode;
 import astbuilder.nodes.expr.ExprFunctionCallNode;
-import astbuilder.nodes.expr.ExprNode;
 import astbuilder.visitor.DefVisitor;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class DefVisualizeNode extends DefNode {
     private final ExprFunctionCallNode functionCall;
