@@ -3,8 +3,23 @@ package astbuilder.nodes.expr;
 import astbuilder.visitor.ExprVisitor;
 
 public class ExprBoolNode extends ExprNode {
+    private final boolean value;
+
+    public ExprBoolNode(boolean value) {
+        this.value = value;
+    }
+
+    public boolean getValue() {
+        return value;
+    }
+
     @Override
     public void acceptVisit(ExprVisitor visitor) {
         visitor.visitExprBoolNode(this);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("ExprBool (%s)", value);
     }
 }
