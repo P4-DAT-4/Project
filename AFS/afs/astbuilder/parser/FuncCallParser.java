@@ -8,9 +8,9 @@ import afs.astbuilder.nodes.expr.ExprNode;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FuncCallParser extends AFSBaseVisitor<ExprNode> {
+public class FuncCallParser extends AFSBaseVisitor<ExprFunctionCallNode> {
     @Override
-    public ExprNode visitFuncCall(AFSParser.FuncCallContext ctx) {
+    public ExprFunctionCallNode visitFuncCall(AFSParser.FuncCallContext ctx) {
         String identifier = ctx.ID().getText();
 
         ExprParser exprParser = new ExprParser();
