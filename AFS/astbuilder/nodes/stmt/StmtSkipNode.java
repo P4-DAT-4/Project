@@ -7,4 +7,9 @@ public class StmtSkipNode extends StmtNode {
     public void acceptVisit(StmtVisitor visitor) {
         visitor.visitStmtSkipNode(this);
     }
+
+    @Override
+    public String toString() {
+        return "StmtSkip";
+    }
 }
