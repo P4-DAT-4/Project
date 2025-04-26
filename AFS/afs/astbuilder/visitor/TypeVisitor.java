@@ -9,4 +9,5 @@ public interface TypeVisitor extends ASTVisitor {
     void visitTypeListNode(TypeListNode node);
     void visitTypeShapeNode(TypeShapeNode node);
     void visitTypeStringNode(TypeStringNode node);
+    void visitTypeVoidNode(TypeVoidNode node);
 }
