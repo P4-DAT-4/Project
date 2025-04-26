@@ -7,4 +7,9 @@ public class TypeIntNode extends TypeNode {
     public void acceptVisit(TypeVisitor visitor) {
         visitor.visitTypeIntNode(this);
     }
+
+    @Override
+    public String toString() {
+        return "TypeInt";
+    }
 }

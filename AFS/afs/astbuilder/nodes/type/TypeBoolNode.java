@@ -8,4 +8,9 @@ public class TypeBoolNode extends TypeNode {
     public void acceptVisit(TypeVisitor visitor) {
         visitor.visitTypeBoolNode(this);
     }
+
+    @Override
+    public String toString() {
+        return "TypeBool";
+    }
 }
