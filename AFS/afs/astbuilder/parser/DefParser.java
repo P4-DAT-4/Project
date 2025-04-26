@@ -1,4 +1,4 @@
-package afs.astbuilder.builder;
+package afs.astbuilder.parser;
 
 import afs.AFSBaseVisitor;
 import afs.astbuilder.nodes.def.DefNode;
