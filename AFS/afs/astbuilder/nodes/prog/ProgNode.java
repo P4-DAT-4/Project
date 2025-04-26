@@ -1,0 +1,24 @@
+package afs.astbuilder.nodes.prog;
+
+import afs.astbuilder.visitor.ProgVisitor;
+import afs.astbuilder.nodes.AbstractSyntaxNode;
+import afs.astbuilder.nodes.def.DefNode;
+
+import java.util.List;
+
+public class ProgNode extends AbstractSyntaxNode<ProgVisitor> {
+    private final List<DefNode> definitions;
+
+    public ProgNode(List<DefNode> definitions) {
+        this.definitions = definitions;
+    }
+
+    public List<DefNode> getDefinitions() {
+        return definitions;
+    }
+
+    @Override
+    public void acceptVisit(ProgVisitor visitor) {
+        visitor.visitProgNode(this);
+    }
+}
