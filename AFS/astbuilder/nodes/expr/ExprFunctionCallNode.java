@@ -3,6 +3,7 @@ package astbuilder.nodes.expr;
 import astbuilder.visitor.ExprVisitor;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ExprFunctionCallNode extends ExprNode {
     private final String identifier;
@@ -24,5 +25,10 @@ public class ExprFunctionCallNode extends ExprNode {
     @Override
     public void acceptVisit(ExprVisitor visitor) {
         visitor.visitExprFunctionCallNode(this);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("ExprFunctionCall (%s(%s))", identifier, expressions.stream().map(ExprNode::toString).collect(Collectors.joining(",")));
     }
 }
