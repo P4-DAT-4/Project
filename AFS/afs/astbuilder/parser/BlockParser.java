@@ -8,17 +8,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BlockParser extends AFSBaseVisitor<StmtNode> {
-    private final ImpStmtParser impStmtParser = new ImpStmtParser();
-
     @Override
     public StmtNode visitDeclBlock(AFSParser.DeclBlockContext ctx) {
+        DeclStmtParser declStmtParser = new DeclStmtParser();
+
         List<AFSParser.DeclStmtContext> stmtContexts = ctx.declStmt();
-        List<StmtNode> statements = stmtContexts.stream().map(stmt -> stmt.accept(impStmtParser)).toList();
+        List<StmtNode> statements = stmtContexts.stream().map(stmt -> stmt.accept(declStmtParser)).toList();
         return createBlockAndTree(statements);
     }
 
     @Override
     public StmtNode visitImpBlock(AFSParser.ImpBlockContext ctx) {
+        ImpStmtParser impStmtParser = new ImpStmtParser();
+
         List<AFSParser.ImpStmtContext> stmtContexts = ctx.impStmt();
         List<StmtNode> statements = stmtContexts.stream().map(stmt -> stmt.accept(impStmtParser)).toList();
         return createBlockAndTree(statements);
