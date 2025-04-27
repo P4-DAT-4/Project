@@ -2,7 +2,6 @@ package afs.astbuilder.parser;
 
 import afs.AFSBaseVisitor;
 import afs.AFSParser;
-import afs.astbuilder.nodes.def.DefDeclarationNode;
 import afs.astbuilder.nodes.expr.ExprFunctionCallNode;
 import afs.astbuilder.nodes.expr.ExprIdentifierNode;
 import afs.astbuilder.nodes.expr.ExprListAccessNode;
@@ -10,14 +9,12 @@ import afs.astbuilder.nodes.expr.ExprNode;
 import afs.astbuilder.nodes.stmt.*;
 import afs.astbuilder.nodes.type.TypeNode;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-public class StmtParser extends AFSBaseVisitor<StmtNode> {
+public class ImpStmtParser extends AFSBaseVisitor<StmtNode> {
 
     @Override
-    public StmtNode visitStmtDef(AFSParser.StmtDefContext ctx) {
+    public StmtNode visitImpStmtDef(AFSParser.ImpStmtDefContext ctx) {
         TypeParser typeParser = new TypeParser();
         TypeNode type = ctx.type().accept(typeParser);
 
@@ -30,7 +27,7 @@ public class StmtParser extends AFSBaseVisitor<StmtNode> {
     }
 
     @Override
-    public StmtNode visitStmtAss(AFSParser.StmtAssContext ctx) {
+    public StmtNode visitImpStmtAss(AFSParser.ImpStmtAssContext ctx) {
         String identifier = ctx.ID().getText();
         ExprNode leftExpression = new ExprIdentifierNode(identifier);
 
@@ -41,7 +38,7 @@ public class StmtParser extends AFSBaseVisitor<StmtNode> {
     }
 
     @Override
-    public StmtNode visitStmtListAss(AFSParser.StmtListAssContext ctx) {
+    public StmtNode visitImpStmtListAss(AFSParser.ImpStmtListAssContext ctx) {
         String identifier = ctx.ID().getText();
         ExprNode identifierNode = new ExprIdentifierNode(identifier);
 
@@ -57,11 +54,11 @@ public class StmtParser extends AFSBaseVisitor<StmtNode> {
     }
 
     @Override
-    public StmtNode visitStmtIf(AFSParser.StmtIfContext ctx) {
+    public StmtNode visitImpStmtIf(AFSParser.ImpStmtIfContext ctx) {
         ExprParser exprParser = new ExprParser();
         ExprNode expression = ctx.expr().accept(exprParser);
 
-        List<AFSParser.BlockContext> blockContexts = ctx.block();
+        List<AFSParser.ImpBlockContext> blockContexts = ctx.impBlock();
 
         BlockParser blockParser = new BlockParser();
         StmtNode leftStatement = blockContexts.getFirst().accept(blockParser);
@@ -78,18 +75,18 @@ public class StmtParser extends AFSBaseVisitor<StmtNode> {
     }
 
     @Override
-    public StmtNode visitStmtWhl(AFSParser.StmtWhlContext ctx) {
+    public StmtNode visitImpStmtWhl(AFSParser.ImpStmtWhlContext ctx) {
         ExprParser exprParser = new ExprParser();
         ExprNode expression = ctx.expr().accept(exprParser);
 
         BlockParser blockParser = new BlockParser();
-        StmtNode statement = ctx.block().accept(blockParser);
+        StmtNode statement = ctx.impBlock().accept(blockParser);
 
         return new StmtWhileNode(expression, statement);
     }
 
     @Override
-    public StmtNode visitStmtRtn(AFSParser.StmtRtnContext ctx) {
+    public StmtNode visitImpStmtRtn(AFSParser.ImpStmtRtnContext ctx) {
         ExprParser exprParser = new ExprParser();
         ExprNode expression = ctx.expr().accept(exprParser);
 
@@ -97,7 +94,7 @@ public class StmtParser extends AFSBaseVisitor<StmtNode> {
     }
 
     @Override
-    public StmtNode visitStmtFuncCall(AFSParser.StmtFuncCallContext ctx) {
+    public StmtNode visitImpStmtFuncCall(AFSParser.ImpStmtFuncCallContext ctx) {
         FuncCallParser funcCallParser = new FuncCallParser();
         ExprFunctionCallNode functionCall = ctx.funcCall().accept(funcCallParser);
 
