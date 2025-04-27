@@ -1,8 +1,8 @@
 package afs.astbuilder.nodes.prog;
 
-import afs.astbuilder.visitor.ProgVisitor;
 import afs.astbuilder.nodes.AbstractSyntaxNode;
 import afs.astbuilder.nodes.def.DefNode;
+import afs.astbuilder.visitor.ProgVisitor;
 
 import java.util.List;
 

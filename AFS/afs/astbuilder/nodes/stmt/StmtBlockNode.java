@@ -1,6 +1,5 @@
 package afs.astbuilder.nodes.stmt;
 
-import afs.astbuilder.nodes.def.DefDeclarationNode;
 import afs.astbuilder.visitor.StmtVisitor;
 
 import java.util.List;
