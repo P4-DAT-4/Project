@@ -4,21 +4,21 @@ import afs.astbuilder.nodes.expr.ExprNode;
 import afs.astbuilder.visitor.StmtVisitor;
 
 public class StmtAssignmentNode extends StmtNode {
-    private final String identifier;
-    private final ExprNode expression;
+    private final ExprNode leftExpression;
+    private final ExprNode rightExpression;
 
-    public StmtAssignmentNode(String identifier, ExprNode expression)
+    public StmtAssignmentNode(ExprNode leftExpression, ExprNode rightExpression)
     {
-        this.identifier = identifier;
-        this.expression = expression;
+        this.leftExpression = leftExpression;
+        this.rightExpression = rightExpression;
     }
 
-    public String getIdentifier() {
-        return identifier;
+    public ExprNode getLeftExpression() {
+        return leftExpression;
     }
 
-    public ExprNode getExpression() {
-        return expression;
+    public ExprNode getRightExpression() {
+        return rightExpression;
     }
 
     @Override
@@ -28,6 +28,6 @@ public class StmtAssignmentNode extends StmtNode {
 
     @Override
     public String toString() {
-        return String.format("StmtAssignment (%s = %s)", identifier, expression);
+        return String.format("StmtAssignment (%s = %s)", leftExpression, rightExpression);
     }
 }
