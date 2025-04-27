@@ -8,24 +8,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BlockParser extends AFSBaseVisitor<StmtNode> {
-    private final StmtParser stmtParser = new StmtParser();
+    private final ImpStmtParser impStmtParser = new ImpStmtParser();
 
     @Override
-    public StmtNode visitBlockScope(AFSParser.BlockScopeContext ctx) {
-        List<AFSParser.StmtContext> stmtContexts = ctx.stmt();
-        return createBlockAndTree(stmtContexts);
+    public StmtNode visitDeclBlock(AFSParser.DeclBlockContext ctx) {
+        List<AFSParser.DeclStmtContext> stmtContexts = ctx.declStmt();
+        List<StmtNode> statements = stmtContexts.stream().map(stmt -> stmt.accept(impStmtParser)).toList();
+        return createBlockAndTree(statements);
     }
 
-    private StmtNode createBlockAndTree(List<AFSParser.StmtContext> stmtContexts) {
-        List<StmtDeclarationNode> declarations = new ArrayList<>();
-        List<AFSParser.StmtContext> otherStatementContexts = new ArrayList<>();
+    @Override
+    public StmtNode visitImpBlock(AFSParser.ImpBlockContext ctx) {
+        List<AFSParser.ImpStmtContext> stmtContexts = ctx.impStmt();
+        List<StmtNode> statements = stmtContexts.stream().map(stmt -> stmt.accept(impStmtParser)).toList();
+        return createBlockAndTree(statements);
+    }
 
-        for (AFSParser.StmtContext stmtCtx : stmtContexts) {
-            if (stmtCtx instanceof AFSParser.StmtDefContext) {
-                StmtDeclarationNode declaration = (StmtDeclarationNode)stmtCtx.accept(stmtParser);
-                declarations.add(declaration);
+    private StmtNode createBlockAndTree(List<StmtNode> statements) {
+        List<StmtDeclarationNode> declarations = new ArrayList<>();
+        List<StmtNode> otherStatementContexts = new ArrayList<>();
+
+        for (StmtNode statement : statements) {
+            if (statement instanceof StmtDeclarationNode) {
+                declarations.add((StmtDeclarationNode) statement);
             } else {
-                otherStatementContexts.add(stmtCtx);
+                otherStatementContexts.add(statement);
             }
         }
 
@@ -38,15 +45,15 @@ public class BlockParser extends AFSBaseVisitor<StmtNode> {
         }
     }
 
-    private StmtNode buildStmtTree(List<AFSParser.StmtContext> stmtContexts) {
+    private StmtNode buildStmtTree(List<StmtNode> stmtContexts) {
         if (stmtContexts.isEmpty()) {
             return new StmtSkipNode(); // If there are no statements, return a skip statement
         }
 
-        StmtNode leftStatement = stmtContexts.getFirst().accept(stmtParser);
+        StmtNode leftStatement = stmtContexts.getFirst();
 
         if (stmtContexts.size() > 1) {
-            List<AFSParser.StmtContext> rest = stmtContexts.subList(1, stmtContexts.size());
+            List<StmtNode> rest = stmtContexts.subList(1, stmtContexts.size());
             StmtNode rightStatement = buildStmtTree(rest);
             return new StmtCompositionNode(leftStatement, rightStatement);
         }
