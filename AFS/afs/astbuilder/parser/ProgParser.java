@@ -18,6 +18,10 @@ public class ProgParser extends AFSBaseVisitor<ProgNode> {
             defs.add(def);
         }
 
+        VisStmtParser visStmtParser = new VisStmtParser();
+        DefNode visualizeDef = ctx.visStmt().accept(visStmtParser);
+        defs.add(visualizeDef);
+
         return new ProgNode(defs);
     }
 }
