@@ -1,5 +1,6 @@
 package afs.astbuilder.nodes.def;
 
+import afs.astbuilder.nodes.expr.ExprIdentifierNode;
 import afs.astbuilder.nodes.stmt.StmtNode;
 import afs.astbuilder.nodes.type.TypeNode;
 import afs.astbuilder.visitor.DefVisitor;
@@ -9,11 +10,11 @@ import java.util.stream.Collectors;
 
 public class DefFunctionNode extends DefNode {
     private final TypeNode type;
-    private final String identifier;
+    private final ExprIdentifierNode identifier;
     private final List<Param> parameters;
     private final StmtNode statement;
 
-    public DefFunctionNode(TypeNode type, String identifier, List<Param> parameters, StmtNode statement) {
+    public DefFunctionNode(TypeNode type, ExprIdentifierNode identifier, List<Param> parameters, StmtNode statement) {
         this.type = type;
         this.identifier = identifier;
         this.parameters = parameters;
@@ -24,7 +25,7 @@ public class DefFunctionNode extends DefNode {
         return type;
     }
 
-    public String getIdentifier() {
+    public ExprIdentifierNode getIdentifier() {
         return identifier;
     }
 

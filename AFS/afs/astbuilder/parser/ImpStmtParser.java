@@ -19,11 +19,16 @@ public class ImpStmtParser extends AFSBaseVisitor<StmtNode> {
         TypeNode type = ctx.type().accept(typeParser);
 
         String id = ctx.ID().getText();
+        ExprIdentifierNode identifier = new ExprIdentifierNode(id);
 
         ExprParser exprParser = new ExprParser();
         ExprNode expression = ctx.expr().accept(exprParser);
 
-        return new StmtDeclarationNode(type, id, expression);
+        if (expression == null) {
+            System.out.println(String.format("Expression is null: %s", id));
+        }
+
+        return new StmtDeclarationNode(type, identifier, expression);
     }
 
     @Override

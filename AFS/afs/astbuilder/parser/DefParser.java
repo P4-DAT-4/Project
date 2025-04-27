@@ -6,6 +6,7 @@ import afs.astbuilder.nodes.def.DefDeclarationNode;
 import afs.astbuilder.nodes.def.DefFunctionNode;
 import afs.astbuilder.nodes.def.DefNode;
 import afs.astbuilder.nodes.def.Param;
+import afs.astbuilder.nodes.expr.ExprIdentifierNode;
 import afs.astbuilder.nodes.expr.ExprNode;
 import afs.astbuilder.nodes.stmt.StmtNode;
 import afs.astbuilder.nodes.type.TypeNode;
@@ -21,7 +22,8 @@ public class DefParser extends AFSBaseVisitor<DefNode> {
         TypeParser typeParser = new TypeParser();
         TypeNode type = ctx.type().accept(typeParser);
 
-        String identifier = ctx.ID().getText();
+        String id = ctx.ID().getText();
+        ExprIdentifierNode identifier = new ExprIdentifierNode(id);
 
         List<Param> params = new ArrayList<>();
         if (ctx.params() != null) {
@@ -39,7 +41,8 @@ public class DefParser extends AFSBaseVisitor<DefNode> {
     public DefNode visitVisDef(AFSParser.VisDefContext ctx) {
         TypeNode type = new TypeShapeNode();
 
-        String identifier = ctx.ID().getText();
+        String id = ctx.ID().getText();
+        ExprIdentifierNode identifier = new ExprIdentifierNode(id);
 
         List<Param> params = new ArrayList<>();
         if (ctx.params() != null) {
@@ -59,10 +62,11 @@ public class DefParser extends AFSBaseVisitor<DefNode> {
         TypeNode type = ctx.type().accept(typeParser);
 
         String id = ctx.ID().getText();
+        ExprIdentifierNode identifier = new ExprIdentifierNode(id);
 
         ExprParser exprParser = new ExprParser();
         ExprNode expression = ctx.expr().accept(exprParser);
 
-        return new DefDeclarationNode(type, id, expression);
+        return new DefDeclarationNode(type, identifier, expression);
     }
 }

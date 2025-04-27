@@ -3,6 +3,7 @@ package afs.astbuilder.parser;
 import afs.AFSBaseVisitor;
 import afs.AFSParser;
 import afs.astbuilder.nodes.def.Param;
+import afs.astbuilder.nodes.expr.ExprIdentifierNode;
 import afs.astbuilder.nodes.type.TypeNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
@@ -20,7 +21,8 @@ public class ParamsParser extends AFSBaseVisitor<List<Param>> {
 
         for (int i = 0; i < typeContexts.size(); i++) {
             TypeNode type = typeContexts.get(i).accept(typeParser);
-            String identifier = idContexts.get(i).toString();
+            String id = idContexts.get(i).toString();
+            ExprIdentifierNode identifier = new ExprIdentifierNode(id);
             Param param = new Param(type, identifier);
             params.add(param);
         }

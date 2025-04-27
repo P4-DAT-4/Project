@@ -6,15 +6,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ExprFunctionCallNode extends ExprNode {
-    private final String identifier;
+    private final ExprIdentifierNode identifier;
     private final List<ExprNode> expressions;
 
-    public ExprFunctionCallNode(String identifier, List<ExprNode> expressions) {
+    public ExprFunctionCallNode(ExprIdentifierNode identifier, List<ExprNode> expressions) {
         this.identifier = identifier;
         this.expressions = expressions;
     }
 
-    public String getIdentifier() {
+    public ExprIdentifierNode getIdentifier() {
         return identifier;
     }
 

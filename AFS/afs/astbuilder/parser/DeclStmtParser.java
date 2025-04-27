@@ -3,6 +3,7 @@ package afs.astbuilder.parser;
 import afs.AFSBaseVisitor;
 import afs.AFSParser;
 import afs.astbuilder.nodes.expr.ExprFunctionCallNode;
+import afs.astbuilder.nodes.expr.ExprIdentifierNode;
 import afs.astbuilder.nodes.expr.ExprNode;
 import afs.astbuilder.nodes.stmt.*;
 import afs.astbuilder.nodes.type.TypeNode;
@@ -18,9 +19,14 @@ public class DeclStmtParser extends AFSBaseVisitor<StmtNode> {
         TypeNode type = ctx.type().accept(typeParser);
 
         String id = ctx.ID().getText();
+        ExprIdentifierNode identifier = new ExprIdentifierNode(id);
         ExprNode expression = ctx.declExpr().accept(declExprParser);
 
-        return new StmtDeclarationNode(type, id, expression);
+        if (expression == null) {
+            System.out.println(String.format("Expression is null: %s", id));
+        }
+
+        return new StmtDeclarationNode(type, identifier, expression);
     }
 
     @Override

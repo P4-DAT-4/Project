@@ -38,7 +38,8 @@ public class ExprParser extends AFSBaseVisitor<ExprNode> {
 
     @Override
     public ExprNode visitFuncCallExpr(AFSParser.FuncCallExprContext ctx) {
-        return visit(ctx.funcCall());
+        FuncCallParser funcCallParser = new FuncCallParser();
+        return ctx.accept(funcCallParser);
     }
 
     @Override

@@ -1,12 +1,15 @@
 package afs.astbuilder.nodes.def;
 
+import afs.astbuilder.nodes.AbstractSyntaxNode;
+import afs.astbuilder.nodes.expr.ExprIdentifierNode;
 import afs.astbuilder.nodes.type.TypeNode;
+import afs.astbuilder.visitor.ParamVisitor;
 
-public class Param {
+public class Param extends AbstractSyntaxNode<ParamVisitor> {
     private final TypeNode type;
-    private final String identifier;
+    private final ExprIdentifierNode identifier;
 
-    public Param(TypeNode type, String identifier) {
+    public Param(TypeNode type, ExprIdentifierNode identifier) {
         this.type = type;
         this.identifier = identifier;
     }
@@ -15,12 +18,17 @@ public class Param {
         return type;
     }
 
-    public String getIdentifier() {
+    public ExprIdentifierNode getIdentifier() {
         return identifier;
     }
 
     @Override
+    public void acceptVisit(ParamVisitor visitor) {
+        visitor.visitParam(this);
+    }
+
+    @Override
     public String toString() {
-        return String.format("(%s %s)", type, identifier);
+        return "T x";
     }
 }

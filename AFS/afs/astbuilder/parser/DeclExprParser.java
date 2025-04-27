@@ -87,4 +87,124 @@ public class DeclExprParser extends AFSBaseVisitor<ExprNode> {
 
         return new ExprCurveNode(expressions);
     }
+
+    @Override
+    public ExprNode visitParenExpr(AFSParser.ParenExprContext ctx) {
+        return ctx.accept(exprParser);
+    }
+
+    @Override
+    public ExprNode visitListIndexExpr(AFSParser.ListIndexExprContext ctx) {
+        return ctx.accept(exprParser);
+    }
+
+    @Override
+    public ExprNode visitListExpr(AFSParser.ListExprContext ctx) {
+        return ctx.accept(exprParser);
+    }
+
+    @Override
+    public ExprNode visitFuncCallExpr(AFSParser.FuncCallExprContext ctx) {
+        return ctx.accept(exprParser);
+    }
+
+    @Override
+    public ExprNode visitNegExpr(AFSParser.NegExprContext ctx) {
+        return ctx.accept(exprParser);
+    }
+
+    @Override
+    public ExprNode visitNotExpr(AFSParser.NotExprContext ctx) {
+        return ctx.accept(exprParser);
+    }
+
+    @Override
+    public ExprNode visitMulExpr(AFSParser.MulExprContext ctx) {
+        return ctx.accept(exprParser);
+    }
+
+    @Override
+    public ExprNode visitDivExpr(AFSParser.DivExprContext ctx) {
+        return ctx.accept(exprParser);
+    }
+
+    @Override
+    public ExprNode visitAddExpr(AFSParser.AddExprContext ctx) {
+        return ctx.accept(exprParser);
+    }
+
+    @Override
+    public ExprNode visitSubExpr(AFSParser.SubExprContext ctx) {
+        return ctx.accept(exprParser);
+    }
+
+    @Override
+    public ExprNode visitConcatExpr(AFSParser.ConcatExprContext ctx) {
+        return ctx.accept(exprParser);
+    }
+
+    @Override
+    public ExprNode visitLEqExpr(AFSParser.LEqExprContext ctx) {
+        return ctx.accept(exprParser);
+    }
+
+    @Override
+    public ExprNode visitGEqExpr(AFSParser.GEqExprContext ctx) {
+        return ctx.accept(exprParser);
+    }
+
+    @Override
+    public ExprNode visitEqExpr(AFSParser.EqExprContext ctx) {
+        return ctx.accept(exprParser);
+    }
+
+    @Override
+    public ExprNode visitNEgExpr(AFSParser.NEgExprContext ctx) {
+        return ctx.accept(exprParser);
+    }
+
+    @Override
+    public ExprNode visitLsExpr(AFSParser.LsExprContext ctx) {
+        return ctx.accept(exprParser);
+    }
+
+    @Override
+    public ExprNode visitGtExpr(AFSParser.GtExprContext ctx) {
+        return ctx.accept(exprParser);
+    }
+
+    @Override
+    public ExprNode visitOrExpr(AFSParser.OrExprContext ctx) {
+        return ctx.accept(exprParser);
+    }
+
+    @Override
+    public ExprNode visitAndExpr(AFSParser.AndExprContext ctx) {
+        return ctx.accept(exprParser);
+    }
+
+    @Override
+    public ExprNode visitID(AFSParser.IDContext ctx) {
+        return ctx.accept(exprParser);
+    }
+
+    @Override
+    public ExprNode visitInt(AFSParser.IntContext ctx) {
+        return ctx.accept(exprParser);
+    }
+
+    @Override
+    public ExprNode visitBool(AFSParser.BoolContext ctx) {
+        return ctx.accept(exprParser);
+    }
+
+    @Override
+    public ExprNode visitDouble(AFSParser.DoubleContext ctx) {
+        return ctx.accept(exprParser);
+    }
+
+    @Override
+    public ExprNode visitString(AFSParser.StringContext ctx) {
+        return ctx.accept(exprParser);
+    }
 }
