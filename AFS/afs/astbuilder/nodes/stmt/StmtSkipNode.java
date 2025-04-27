@@ -10,6 +10,6 @@ public class StmtSkipNode extends StmtNode {
 
     @Override
     public String toString() {
-        return "StmtSkip";
+        return "Skip";
     }
 }

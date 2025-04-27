@@ -10,6 +10,6 @@ public class TypeShapeNode extends TypeNode {
 
     @Override
     public String toString() {
-        return "TypeShape";
+        return "Shape";
     }
 }

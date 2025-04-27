@@ -20,6 +20,6 @@ public class ExprIntNode extends ExprNode{
 
     @Override
     public String toString() {
-        return String.format("ExprInt (%s)", value);
+        return String.valueOf(value);
     }
 }

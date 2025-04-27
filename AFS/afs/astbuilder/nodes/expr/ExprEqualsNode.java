@@ -26,6 +26,6 @@ public class ExprEqualsNode extends ExprNode {
 
     @Override
     public String toString() {
-        return String.format("ExprEquals (%s == %s)", leftExpression, rightExpression);
+        return "e1 == e2";
     }
 }

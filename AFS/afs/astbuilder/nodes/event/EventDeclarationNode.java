@@ -28,6 +28,6 @@ public class EventDeclarationNode extends EventNode {
 
     @Override
     public String toString() {
-        return String.format("EventDeclaration (%s -> %s)", expression, functionCall);
+        return "e do x(arrow(e))";
     }
 }

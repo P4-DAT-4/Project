@@ -20,6 +20,6 @@ public class ExprBoolNode extends ExprNode {
 
     @Override
     public String toString() {
-        return String.format("ExprBool (%s)", value);
+        return String.valueOf(value);
     }
 }

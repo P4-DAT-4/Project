@@ -26,6 +26,6 @@ public class EventCompositionNode extends EventNode {
 
     @Override
     public String toString() {
-        return String.format("EventComposition (%s %s)", leftEvent, rightEvent);
+        return "E1;E2";
     }
 }

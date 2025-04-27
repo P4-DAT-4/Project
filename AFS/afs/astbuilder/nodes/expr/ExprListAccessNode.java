@@ -26,6 +26,6 @@ public class ExprListAccessNode extends ExprNode{
 
     @Override
     public String toString() {
-        return String.format("ExprListAccess (%s[%s])", leftExpression, rightExpression);
+        return "e1[e2]";
     }
 }

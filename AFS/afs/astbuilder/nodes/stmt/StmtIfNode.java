@@ -33,6 +33,6 @@ public class StmtIfNode extends StmtNode {
 
     @Override
     public String toString() {
-        return String.format("StmtIf (if %s then %s else %s)", expression, leftStatement, rightStatement);
+        return "If e then S1 else S2";
     }
 }

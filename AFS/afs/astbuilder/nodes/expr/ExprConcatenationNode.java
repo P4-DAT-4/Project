@@ -26,6 +26,6 @@ public class ExprConcatenationNode extends ExprNode {
 
     @Override
     public String toString() {
-        return String.format("ExprConcatenation (%s ++ %s)", leftExpression, rightExpression);
+        return "e1 ++ e2";
     }
 }

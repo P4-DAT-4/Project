@@ -26,6 +26,6 @@ public class ExprMultiplicationNode extends ExprNode{
 
     @Override
     public String toString() {
-        return String.format("ExprMultiplication (%s * %s)", leftExpression, rightExpression);
+        return "e1 * e2";
     }
 }

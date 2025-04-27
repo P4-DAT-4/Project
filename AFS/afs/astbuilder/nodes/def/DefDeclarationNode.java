@@ -34,6 +34,6 @@ public class DefDeclarationNode extends DefNode {
 
     @Override
     public String toString() {
-        return String.format("DefDeclaration (%s %s = %s)", type, identifier, expression);
+        return "T x";
     }
 }

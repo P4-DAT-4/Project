@@ -21,6 +21,6 @@ public class StmtReturnNode extends StmtNode {
 
     @Override
     public String toString() {
-        return String.format("StmtReturn (%s)", expression);
+        return "Return e";
     }
 }

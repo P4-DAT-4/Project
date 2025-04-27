@@ -17,4 +17,9 @@ public class TypeListNode extends TypeNode {
     public void acceptVisit(TypeVisitor visitor) {
         visitor.visitTypeListNode(this);
     }
+
+    @Override
+    public String toString() {
+        return "List";
+    }
 }

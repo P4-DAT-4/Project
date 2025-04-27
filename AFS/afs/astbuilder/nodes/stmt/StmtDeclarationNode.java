@@ -34,6 +34,6 @@ public class StmtDeclarationNode extends StmtNode {
 
     @Override
     public String toString() {
-        return String.format("StmtDeclaration (%s %s = %s)", type, identifier, expression);
+        return "T x = e";
     }
 }

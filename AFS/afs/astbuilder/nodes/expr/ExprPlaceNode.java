@@ -26,6 +26,6 @@ public class ExprPlaceNode extends ExprNode {
 
     @Override
     public String toString() {
-        return String.format("ExprPlace (%s at %s)", leftExpression, rightExpression);
+        return "Place e1 at e2";
     }
 }

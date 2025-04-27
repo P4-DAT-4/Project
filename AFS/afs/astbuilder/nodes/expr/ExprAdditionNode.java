@@ -26,6 +26,6 @@ public class ExprAdditionNode extends ExprNode{
 
     @Override
     public String toString() {
-        return String.format("ExprAddition (%s + %s)", leftExpression, rightExpression);
+        return "e1 + e2";
     }
 }

@@ -23,6 +23,6 @@ public class ExprCurveNode extends ExprNode {
 
     @Override
     public String toString() {
-        return String.format("ExprCurve (%s)", expressions.stream().map(ExprNode::toString).collect(Collectors.joining(",")));
+        return "curve [arrow(e)]";
     }
 }

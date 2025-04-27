@@ -26,6 +26,6 @@ public class ExprScaleNode extends ExprNode {
 
     @Override
     public String toString() {
-        return String.format("ExprScale (%s by %s)", leftExpression, rightExpression);
+        return "Scale e1 by e2";
     }
 }

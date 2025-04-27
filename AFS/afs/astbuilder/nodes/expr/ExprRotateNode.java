@@ -32,6 +32,6 @@ public class ExprRotateNode extends ExprNode {
 
     @Override
     public String toString() {
-        return String.format("ExprRotate (%s around %s by %s)", leftExpression, middleExpression, rightExpression);
+        return "Rotate e1 by e2 around e3";
     }
 }

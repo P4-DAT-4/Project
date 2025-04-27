@@ -20,6 +20,6 @@ public class ExprIdentifierNode extends ExprNode {
 
     @Override
     public String toString() {
-        return String.format("ExprIdentifier (%s)", identifier);
+        return identifier;
     }
 }

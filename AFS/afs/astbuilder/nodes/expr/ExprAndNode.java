@@ -26,6 +26,6 @@ public class ExprAndNode extends ExprNode {
 
     @Override
     public String toString() {
-        return String.format("ExprAnd (%s AND %s)", leftExpression, rightExpression);
+        return "e1 AND e2";
     }
 }

@@ -11,6 +11,6 @@ public class TypeVoidNode extends TypeNode {
 
     @Override
     public String toString() {
-        return "TypeVoid";
+        return "Void";
     }
 }

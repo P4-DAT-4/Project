@@ -10,6 +10,6 @@ public class TypeIntNode extends TypeNode {
 
     @Override
     public String toString() {
-        return "TypeInt";
+        return "Int";
     }
 }

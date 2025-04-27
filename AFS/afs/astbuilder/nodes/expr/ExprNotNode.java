@@ -20,6 +20,6 @@ public class ExprNotNode extends ExprNode {
 
     @Override
     public String toString() {
-        return String.format("ExprNot (!%s)", expression);
+        return "!e";
     }
 }

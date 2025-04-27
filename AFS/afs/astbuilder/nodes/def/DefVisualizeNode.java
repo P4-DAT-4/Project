@@ -28,9 +28,6 @@ public class DefVisualizeNode extends DefNode {
 
     @Override
     public String toString() {
-        return String.format("DefVisualize (%s : %s)",
-                functionCall,
-                event
-        );
+        return "visualize x(arrow(e))E";
     }
 }

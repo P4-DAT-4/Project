@@ -26,6 +26,6 @@ public class StmtCompositionNode extends StmtNode {
 
     @Override
     public String toString() {
-        return String.format("StmtComposition (%s %s)", leftStatement, rightStatement);
+        return "S1;S2";
     }
 }

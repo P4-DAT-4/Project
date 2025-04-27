@@ -27,6 +27,6 @@ public class StmtWhileNode extends StmtNode {
 
     @Override
     public String toString() {
-        return String.format("StmtWhile (%s do %s)", expression, statement);
+        return "While e do S";
     }
 }

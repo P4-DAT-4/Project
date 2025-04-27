@@ -10,6 +10,6 @@ public class TypeDoubleNode extends TypeNode {
 
     @Override
     public String toString() {
-        return "TypeDouble";
+        return "Double";
     }
 }

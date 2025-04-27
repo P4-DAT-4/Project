@@ -29,6 +29,6 @@ public class ExprFunctionCallNode extends ExprNode {
 
     @Override
     public String toString() {
-        return String.format("ExprFunctionCall (%s(%s))", identifier, expressions.stream().map(ExprNode::toString).collect(Collectors.joining(",")));
+        return "x(arrow(e))";
     }
 }

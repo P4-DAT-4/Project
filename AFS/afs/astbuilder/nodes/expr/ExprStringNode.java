@@ -20,6 +20,6 @@ public class ExprStringNode extends ExprNode {
 
     @Override
     public String toString() {
-        return String.format("ExprString (%s)", value);
+        return value;
     }
 }

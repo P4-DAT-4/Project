@@ -28,6 +28,6 @@ public class StmtAssignmentNode extends StmtNode {
 
     @Override
     public String toString() {
-        return String.format("StmtAssignment (%s = %s)", leftExpression, rightExpression);
+        return "x = e";
     }
 }

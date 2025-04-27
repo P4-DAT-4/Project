@@ -23,6 +23,6 @@ public class ExprLineNode extends ExprNode {
 
     @Override
     public String toString() {
-        return String.format("ExprLine (%s)", expressions.stream().map(ExprNode::toString).collect(Collectors.joining(",")));
+        return "line [arrow(e)]";
     }
 }

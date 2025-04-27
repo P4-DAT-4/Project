@@ -26,6 +26,6 @@ public class ExprSubtractionNode extends ExprNode {
 
     @Override
     public String toString() {
-        return String.format("ExprSubtraction (%s - %s)", leftExpression, rightExpression);
+        return "e1 - e2";
     }
 }

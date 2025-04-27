@@ -26,6 +26,6 @@ public class ExprDivisionNode extends ExprNode{
 
     @Override
     public String toString() {
-        return String.format("ExprDivision (%s / %s)", leftExpression, rightExpression);
+        return "e1 / e2";
     }
 }

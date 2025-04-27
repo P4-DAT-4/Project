@@ -20,6 +20,6 @@ public class ExprNegationNode extends ExprNode {
 
     @Override
     public String toString() {
-        return String.format("ExprNegation (-%s)", expression);
+        return "-e";
     }
 }

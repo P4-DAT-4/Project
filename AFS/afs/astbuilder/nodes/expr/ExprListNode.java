@@ -23,6 +23,6 @@ public class ExprListNode extends ExprNode {
 
     @Override
     public String toString() {
-        return String.format("ExprList (%s)", expressions.stream().map(ExprNode::toString).collect(Collectors.joining(",")));
+        return "[arrow(e)]";
     }
 }

@@ -11,6 +11,6 @@ public class TypeBoolNode extends TypeNode {
 
     @Override
     public String toString() {
-        return "TypeBool";
+        return "Bool";
     }
 }

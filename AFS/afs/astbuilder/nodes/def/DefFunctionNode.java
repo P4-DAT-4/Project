@@ -43,11 +43,6 @@ public class DefFunctionNode extends DefNode {
 
     @Override
     public String toString() {
-        return String.format("DefFunction (%s %s(%s) %s)",
-                type,
-                identifier,
-                parameters.stream().map(Param::toString).collect(Collectors.joining(", ")),
-                statement
-        );
+        return "fn T x(arrow(T x))S";
     }
 }

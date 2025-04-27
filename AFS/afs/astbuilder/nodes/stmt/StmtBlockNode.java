@@ -29,6 +29,6 @@ public class StmtBlockNode extends StmtNode {
 
     @Override
     public String toString() {
-        return String.format("StmtDeclaration (%s %s)", declarations.stream().map(StmtDeclarationNode::toString).collect(Collectors.joining(",")), statement);
+        return "{arrow(T x = e); S}";
     }
 }
