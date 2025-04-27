@@ -10,4 +10,5 @@ public interface StmtVisitor extends ASTVisitor {
     void visitStmtReturnNode(StmtReturnNode node);
     void visitStmtSkipNode(StmtSkipNode node);
     void visitStmtWhileNode(StmtWhileNode node);
+    void visitStmtFunctionCallNode(StmtFunctionCallNode node);
 }
