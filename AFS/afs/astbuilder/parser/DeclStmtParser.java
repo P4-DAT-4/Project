@@ -10,23 +10,22 @@ import afs.astbuilder.nodes.type.TypeNode;
 import java.util.List;
 
 public class DeclStmtParser extends AFSBaseVisitor<StmtNode> {
+    private final DeclExprParser declExprParser = new DeclExprParser();
+
     @Override
     public StmtNode visitDeclStmtDef(AFSParser.DeclStmtDefContext ctx) {
         TypeParser typeParser = new TypeParser();
         TypeNode type = ctx.type().accept(typeParser);
 
         String id = ctx.ID().getText();
-
-        ExprParser exprParser = new ExprParser();
-        ExprNode expression = ctx.declExpr().accept(exprParser);
+        ExprNode expression = ctx.declExpr().accept(declExprParser);
 
         return new StmtDeclarationNode(type, id, expression);
     }
 
     @Override
     public StmtNode visitDeclStmtIf(AFSParser.DeclStmtIfContext ctx) {
-        ExprParser exprParser = new ExprParser();
-        ExprNode expression = ctx.declExpr().accept(exprParser);
+        ExprNode expression = ctx.declExpr().accept(declExprParser);
 
         List<AFSParser.DeclBlockContext> blockContexts = ctx.declBlock();
 
