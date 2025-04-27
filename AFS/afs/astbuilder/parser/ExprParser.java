@@ -15,11 +15,12 @@ public class ExprParser extends AFSBaseVisitor<ExprNode> {
 
     @Override
     public ExprNode visitListIndexExpr(AFSParser.ListIndexExprContext ctx) {
-        AFSParser.ExprContext leftExprCtx = ctx.expr(0);
-        AFSParser.ExprContext rightExprCtx = ctx.expr(1);
+        String identifier = ctx.ID().getText();
+        ExprIdentifierNode leftExpression = new ExprIdentifierNode(identifier);
 
-        ExprNode leftExpression = visit(leftExprCtx);
-        ExprNode rightExpression = visit(rightExprCtx);
+        ListAccessParser listAccessParser = new ListAccessParser();
+
+        ExprNode rightExpression = ctx.listAccess().accept(listAccessParser);
 
         return new ExprListAccessNode(leftExpression, rightExpression);
     }
@@ -109,49 +110,6 @@ public class ExprParser extends AFSBaseVisitor<ExprNode> {
         ExprNode rightExpression = visit(rightExprCtx);
 
         return new ExprConcatenationNode(leftExpression, rightExpression);
-    }
-
-    @Override
-    public ExprNode visitPlaceExpr(AFSParser.PlaceExprContext ctx) {
-        AFSParser.ExprContext leftExprCtx = ctx.expr(0);
-        AFSParser.ExprContext middleExprCtx = ctx.expr(1);
-        AFSParser.ExprContext rightExprCtx = ctx.expr(2);
-
-        ExprNode leftExpression = visit(leftExprCtx);
-        ExprNode middleExpression = visit(middleExprCtx);
-        ExprNode rightExpression = visit(rightExprCtx);
-
-        List<ExprNode> expressions = new ArrayList<>();
-        expressions.add(middleExpression);
-        expressions.add(rightExpression);
-
-        ExprListNode exprListNode = new ExprListNode(expressions);
-
-        return new ExprPlaceNode(leftExpression, exprListNode);
-    }
-
-    @Override
-    public ExprNode visitScaleExpr(AFSParser.ScaleExprContext ctx) {
-        AFSParser.ExprContext leftExprCtx = ctx.expr(0);
-        AFSParser.ExprContext rightExprCtx = ctx.expr(1);
-
-        ExprNode leftExpression = visit(leftExprCtx);
-        ExprNode rightExpression = visit(rightExprCtx);
-
-        return new ExprScaleNode(leftExpression, rightExpression);
-    }
-
-    @Override
-    public ExprNode visitRotateExpr(AFSParser.RotateExprContext ctx) {
-        AFSParser.ExprContext leftExprCtx = ctx.expr(0);
-        AFSParser.ExprContext middleExprCtx = ctx.expr(1);
-        AFSParser.ExprContext rightExprCtx = ctx.expr(2);
-
-        ExprNode leftExpression = visit(leftExprCtx);
-        ExprNode middleExpression = visit(middleExprCtx);
-        ExprNode rightExpression = visit(rightExprCtx);
-
-        return new ExprRotateNode(leftExpression, middleExpression, rightExpression);
     }
 
     @Override
@@ -260,41 +218,6 @@ public class ExprParser extends AFSBaseVisitor<ExprNode> {
         ExprNode rightExpression = visit(rightExprCtx);
 
         return new ExprAndNode(leftExpression, rightExpression);
-    }
-
-    @Override
-    public ExprNode visitTextExpr(AFSParser.TextExprContext ctx) {
-        AFSParser.ExprContext exprCtx = ctx.expr();
-
-        ExprNode expression = visit(exprCtx);
-
-        return new ExprTextNode(expression);
-    }
-
-    @Override
-    public ExprNode visitLineExpr(AFSParser.LineExprContext ctx) {
-        List<AFSParser.ExprContext> exprCtxs = ctx.expr();
-        List<ExprNode> expressions = new ArrayList<>();
-
-        for (AFSParser.ExprContext exprCtx : exprCtxs) {
-            ExprNode expression = visit(exprCtx);
-            expressions.add(expression);
-        }
-
-        return new ExprLineNode(expressions);
-    }
-
-    @Override
-    public ExprNode visitCurveExpr(AFSParser.CurveExprContext ctx) {
-        List<AFSParser.ExprContext> exprCtxs = ctx.expr();
-        List<ExprNode> expressions = new ArrayList<>();
-
-        for (AFSParser.ExprContext exprCtx : exprCtxs) {
-            ExprNode expression = visit(exprCtx);
-            expressions.add(expression);
-        }
-
-        return new ExprCurveNode(expressions);
     }
 
     @Override
