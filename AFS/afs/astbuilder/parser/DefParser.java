@@ -30,7 +30,7 @@ public class DefParser extends AFSBaseVisitor<DefNode> {
         }
 
         BlockParser blockParser = new BlockParser();
-        StmtNode statement = ctx.block().accept(blockParser);
+        StmtNode statement = ctx.impBlock().accept(blockParser);
 
         return new DefFunctionNode(type, identifier, params, statement);
     }
@@ -48,7 +48,7 @@ public class DefParser extends AFSBaseVisitor<DefNode> {
         }
 
         BlockParser blockParser = new BlockParser();
-        StmtNode statement = ctx.block().accept(blockParser);
+        StmtNode statement = ctx.declBlock().accept(blockParser);
 
         return new DefFunctionNode(type, identifier, params, statement);
     }
