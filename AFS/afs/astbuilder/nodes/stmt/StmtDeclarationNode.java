@@ -1,26 +1,30 @@
 package afs.astbuilder.nodes.stmt;
 
-import afs.astbuilder.nodes.def.DefDeclarationNode;
+import afs.astbuilder.nodes.expr.ExprNode;
+import afs.astbuilder.nodes.type.TypeNode;
 import afs.astbuilder.visitor.StmtVisitor;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 public class StmtDeclarationNode extends StmtNode {
-    private final List<DefDeclarationNode> declarations;
-    private final StmtNode statement;
+    private final TypeNode type;
+    private final String identifier;
+    private final ExprNode expression;
 
-    public StmtDeclarationNode(List<DefDeclarationNode> declarations, StmtNode statement) {
-        this.declarations = declarations;
-        this.statement = statement;
+    public StmtDeclarationNode(TypeNode type, String identifier, ExprNode expression) {
+        this.type = type;
+        this.identifier = identifier;
+        this.expression = expression;
     }
 
-    public List<DefDeclarationNode> getDeclarations() {
-        return declarations;
+    public TypeNode getType() {
+        return type;
     }
 
-    public StmtNode getStatement() {
-        return statement;
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public ExprNode getExpression() {
+        return expression;
     }
 
     @Override
@@ -30,6 +34,6 @@ public class StmtDeclarationNode extends StmtNode {
 
     @Override
     public String toString() {
-        return String.format("StmtDeclaration (%s %s)", declarations.stream().map(DefDeclarationNode::toString).collect(Collectors.joining(",")), statement);
+        return String.format("StmtDeclaration (%s %s = %s)", type, identifier, expression);
     }
 }
