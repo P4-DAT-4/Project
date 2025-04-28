@@ -1,5 +1,7 @@
 package afs.astbuilder.nodes.def;
 
+
+import afs.astbuilder.checker.types.AFSType;
 import afs.astbuilder.nodes.expr.ExprIdentifierNode;
 import afs.astbuilder.nodes.expr.ExprNode;
 import afs.astbuilder.nodes.type.TypeNode;

@@ -1,5 +1,6 @@
 package afs.astbuilder.nodes.def;
 
+import afs.astbuilder.checker.types.AFSType;
 import afs.astbuilder.nodes.event.EventNode;
 import afs.astbuilder.nodes.expr.ExprFunctionCallNode;
 import afs.astbuilder.visitor.DefVisitor;
@@ -22,8 +23,8 @@ public class DefVisualizeNode extends DefNode {
     }
 
     @Override
-    public void acceptVisit(DefVisitor visitor) {
-        visitor.visitDefVisualizeNode(this);
+    public AFSType acceptVisit(DefVisitor visitor) {
+        return visitor.visitDefVisualizeNode(this);
     }
 
     @Override

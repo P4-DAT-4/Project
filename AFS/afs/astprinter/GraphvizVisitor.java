@@ -41,6 +41,7 @@ public class GraphvizVisitor implements ExprVisitor, StmtVisitor, TypeVisitor, E
         String rightId = "node" + idCounter;
         edges.append("    ").append(nodeId).append(" -> ").append(rightId).append(";\n");
         node.getRightExpression().acceptVisit(this);
+        return null;
     }
 
     @Override
@@ -55,12 +56,14 @@ public class GraphvizVisitor implements ExprVisitor, StmtVisitor, TypeVisitor, E
         String rightId = "node" + idCounter;
         edges.append("    ").append(nodeId).append(" -> ").append(rightId).append(";\n");
         node.getRightExpression().acceptVisit(this);
+        return null;
     }
 
     @Override
     public AFSType visitExprBoolNode(ExprBoolNode node) {
         String nodeId = "node" + idCounter++;
         nodes.append("    ").append(nodeId).append(" [label=\"").append(node.toString()).append("\"];\n");
+        return null;
     }
 
     @Override
@@ -75,6 +78,7 @@ public class GraphvizVisitor implements ExprVisitor, StmtVisitor, TypeVisitor, E
         String rightId = "node" + idCounter;
         edges.append("    ").append(nodeId).append(" -> ").append(rightId).append(";\n");
         node.getRightExpression().acceptVisit(this);
+        return null;
     }
 
     @Override
@@ -87,6 +91,7 @@ public class GraphvizVisitor implements ExprVisitor, StmtVisitor, TypeVisitor, E
             edges.append("    ").append(nodeId).append(" -> ").append(exprId).append(";\n");
             expr.acceptVisit(this);
         }
+        return null;
     }
 
     @Override
@@ -101,11 +106,13 @@ public class GraphvizVisitor implements ExprVisitor, StmtVisitor, TypeVisitor, E
         String rightId = "node" + idCounter;
         edges.append("    ").append(nodeId).append(" -> ").append(rightId).append(";\n");
         node.getRightExpression().acceptVisit(this);
+        return null;
     }
 
     public AFSType visitExprDoubleNode(ExprDoubleNode node) {
         String nodeId = "node" + idCounter++;
         nodes.append("    ").append(nodeId).append(" [label=\"").append(node.toString()).append("\"];\n");
+        return null;
     }
 
     @Override
@@ -120,6 +127,7 @@ public class GraphvizVisitor implements ExprVisitor, StmtVisitor, TypeVisitor, E
         String rightId = "node" + idCounter;
         edges.append("    ").append(nodeId).append(" -> ").append(rightId).append(";\n");
         node.getRightExpression().acceptVisit(this);
+        return null;
     }
 
     @Override
@@ -136,18 +144,21 @@ public class GraphvizVisitor implements ExprVisitor, StmtVisitor, TypeVisitor, E
             edges.append("    ").append(nodeId).append(" -> ").append(exprId).append(";\n");
             expr.acceptVisit(this);
         }
+        return null;
     }
 
     @Override
     public AFSType visitExprIdentifierNode(ExprIdentifierNode node) {
         String nodeId = "node" + idCounter++;
         nodes.append("    ").append(nodeId).append(" [label=\"").append(node.toString()).append("\"];\n");
+        return null;
     }
 
     @Override
     public AFSType visitExprIntNode(ExprIntNode node) {
         String nodeId = "node" + idCounter++;
         nodes.append("    ").append(nodeId).append(" [label=\"").append(node.toString()).append("\"];\n");
+        return null;
     }
 
     @Override
@@ -162,6 +173,7 @@ public class GraphvizVisitor implements ExprVisitor, StmtVisitor, TypeVisitor, E
         String rightId = "node" + idCounter;
         edges.append("    ").append(nodeId).append(" -> ").append(rightId).append(";\n");
         node.getRightExpression().acceptVisit(this);
+        return null;
     }
 
     @Override
@@ -174,6 +186,7 @@ public class GraphvizVisitor implements ExprVisitor, StmtVisitor, TypeVisitor, E
             edges.append("    ").append(nodeId).append(" -> ").append(exprId).append(";\n");
             expr.acceptVisit(this);
         }
+        return null;
     }
 
     @Override
@@ -188,6 +201,7 @@ public class GraphvizVisitor implements ExprVisitor, StmtVisitor, TypeVisitor, E
         String rightId = "node" + idCounter;
         edges.append("    ").append(nodeId).append(" -> ").append(rightId).append(";\n");
         node.getRightExpression().acceptVisit(this);
+        return null;
     }
 
     @Override
@@ -200,6 +214,7 @@ public class GraphvizVisitor implements ExprVisitor, StmtVisitor, TypeVisitor, E
             edges.append("    ").append(nodeId).append(" -> ").append(exprId).append(";\n");
             expr.acceptVisit(this);
         }
+        return null;
     }
 
     @Override
@@ -214,6 +229,7 @@ public class GraphvizVisitor implements ExprVisitor, StmtVisitor, TypeVisitor, E
         String rightId = "node" + idCounter;
         edges.append("    ").append(nodeId).append(" -> ").append(rightId).append(";\n");
         node.getRightExpression().acceptVisit(this);
+        return null;
     }
 
     @Override
@@ -224,6 +240,7 @@ public class GraphvizVisitor implements ExprVisitor, StmtVisitor, TypeVisitor, E
         String exprId = "node" + idCounter;
         node.getExpression().acceptVisit(this);
         edges.append("    ").append(nodeId).append(" -> ").append(exprId).append(";\n");
+        return null;
     }
 
     @Override
@@ -234,6 +251,7 @@ public class GraphvizVisitor implements ExprVisitor, StmtVisitor, TypeVisitor, E
         String exprId = "node" + idCounter;
         node.getExpression().acceptVisit(this);
         edges.append("    ").append(nodeId).append(" -> ").append(exprId).append(";\n");
+        return null;
     }
 
     @Override
@@ -248,6 +266,7 @@ public class GraphvizVisitor implements ExprVisitor, StmtVisitor, TypeVisitor, E
         String rightId = "node" + idCounter;
         edges.append("    ").append(nodeId).append(" -> ").append(rightId).append(";\n");
         node.getRightExpression().acceptVisit(this);
+        return null;
     }
 
     @Override
@@ -266,6 +285,7 @@ public class GraphvizVisitor implements ExprVisitor, StmtVisitor, TypeVisitor, E
         String rightId = "node" + idCounter;
         edges.append("    ").append(nodeId).append(" -> ").append(rightId).append(";\n");
         node.getRightExpression().acceptVisit(this);
+        return null;
     }
 
     @Override
@@ -280,12 +300,14 @@ public class GraphvizVisitor implements ExprVisitor, StmtVisitor, TypeVisitor, E
         String rightId = "node" + idCounter;
         edges.append("    ").append(nodeId).append(" -> ").append(rightId).append(";\n");
         node.getRightExpression().acceptVisit(this);
+        return null;
     }
 
     @Override
     public AFSType visitExprStringNode(ExprStringNode node) {
         String nodeId = "node" + idCounter++;
         nodes.append("    ").append(nodeId).append(" [label=\"").append(node.toString()).append("\"];\n");
+        return null;
     }
 
     @Override
@@ -300,6 +322,7 @@ public class GraphvizVisitor implements ExprVisitor, StmtVisitor, TypeVisitor, E
         String rightId = "node" + idCounter;
         edges.append("    ").append(nodeId).append(" -> ").append(rightId).append(";\n");
         node.getRightExpression().acceptVisit(this);
+        return null;
     }
 
     @Override
@@ -310,6 +333,7 @@ public class GraphvizVisitor implements ExprVisitor, StmtVisitor, TypeVisitor, E
         String exprId = "node" + idCounter;
         edges.append("    ").append(nodeId).append(" -> ").append(exprId).append(";\n");
         node.getExpression().acceptVisit(this);
+        return null;
     }
 
     @Override
@@ -324,6 +348,7 @@ public class GraphvizVisitor implements ExprVisitor, StmtVisitor, TypeVisitor, E
         String rightId = "node" + idCounter;
         edges.append("    ").append(nodeId).append(" -> ").append(rightId).append(";\n");
         node.getRightExpression().acceptVisit(this);
+        return null;
     }
 
     @Override
@@ -338,6 +363,7 @@ public class GraphvizVisitor implements ExprVisitor, StmtVisitor, TypeVisitor, E
         String rightId = "node" + idCounter;
         edges.append("    ").append(nodeId).append(" -> ").append(rightId).append(";\n");
         node.getRightStatement().acceptVisit(this);
+        return null;
     }
 
     @Override
@@ -354,6 +380,7 @@ public class GraphvizVisitor implements ExprVisitor, StmtVisitor, TypeVisitor, E
         String statementId = "node" + idCounter;
         edges.append("    ").append(nodeId).append(" -> ").append(statementId).append(";\n");
         node.getStatement().acceptVisit(this);
+        return null;
     }
 
     @Override
@@ -372,6 +399,7 @@ public class GraphvizVisitor implements ExprVisitor, StmtVisitor, TypeVisitor, E
         String rightId = "node" + idCounter;
         edges.append("    ").append(nodeId).append(" -> ").append(rightId).append(";\n");
         node.getRightStatement().acceptVisit(this);
+        return null;
     }
 
     @Override
@@ -382,12 +410,14 @@ public class GraphvizVisitor implements ExprVisitor, StmtVisitor, TypeVisitor, E
         String exprId = "node" + idCounter;
         edges.append("    ").append(nodeId).append(" -> ").append(exprId).append(";\n");
         node.getExpression().acceptVisit(this);
+        return null;
     }
 
     @Override
     public AFSType visitStmtSkipNode(StmtSkipNode node) {
         String nodeId = "node" + idCounter++;
         nodes.append("    ").append(nodeId).append(" [label=\"").append(node.toString()).append("\"];\n");
+        return null;
     }
 
     @Override
@@ -402,6 +432,7 @@ public class GraphvizVisitor implements ExprVisitor, StmtVisitor, TypeVisitor, E
         String statementId = "node" + idCounter;
         edges.append("    ").append(nodeId).append(" -> ").append(statementId).append(";\n");
         node.getStatement().acceptVisit(this);
+        return null;
     }
 
     @Override
@@ -412,6 +443,7 @@ public class GraphvizVisitor implements ExprVisitor, StmtVisitor, TypeVisitor, E
         String funcCallId = "node" + idCounter;
         edges.append("    ").append(nodeId).append(" -> ").append(funcCallId).append(";\n");
         node.getFunctionCall().acceptVisit(this);
+        return null;
     }
 
     @Override
@@ -430,24 +462,28 @@ public class GraphvizVisitor implements ExprVisitor, StmtVisitor, TypeVisitor, E
         String exprId = "node" + idCounter;
         edges.append("    ").append(nodeId).append(" -> ").append(exprId).append(";\n");
         node.getExpression().acceptVisit(this);
+        return null;
     }
 
     @Override
     public AFSType visitTypeBoolNode(TypeBoolNode node) {
         String nodeId = "node" + idCounter++;
         nodes.append("    ").append(nodeId).append(" [label=\"").append(node.toString()).append("\"];\n");
+        return null;
     }
 
     @Override
     public AFSType visitTypeDoubleNode(TypeDoubleNode node) {
         String nodeId = "node" + idCounter++;
         nodes.append("    ").append(nodeId).append(" [label=\"").append(node.toString()).append("\"];\n");
+        return null;
     }
 
     @Override
     public AFSType visitTypeIntNode(TypeIntNode node) {
         String nodeId = "node" + idCounter++;
         nodes.append("    ").append(nodeId).append(" [label=\"").append(node.toString()).append("\"];\n");
+        return null;
     }
 
     @Override
@@ -458,12 +494,14 @@ public class GraphvizVisitor implements ExprVisitor, StmtVisitor, TypeVisitor, E
         String typeId = "node" + idCounter;
         edges.append("    ").append(nodeId).append(" -> ").append(typeId).append(";\n");
         node.getType().acceptVisit(this);
+        return null;
     }
 
     @Override
     public AFSType visitTypeShapeNode(TypeShapeNode node) {
         String nodeId = "node" + idCounter++;
         nodes.append("    ").append(nodeId).append(" [label=\"").append(node.toString()).append("\"];\n");
+        return null;
     }
 
     @Override

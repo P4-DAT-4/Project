@@ -1,9 +1,9 @@
 package afs.astbuilder.nodes.expr;
 
+import afs.astbuilder.checker.types.AFSType;
 import afs.astbuilder.visitor.ExprVisitor;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ExprFunctionCallNode extends ExprNode {
     private final ExprIdentifierNode identifier;
@@ -23,8 +23,8 @@ public class ExprFunctionCallNode extends ExprNode {
     }
 
     @Override
-    public void acceptVisit(ExprVisitor visitor) {
-        visitor.visitExprFunctionCallNode(this);
+    public AFSType acceptVisit(ExprVisitor visitor) {
+        return visitor.visitExprFunctionCallNode(this);
     }
 
     @Override

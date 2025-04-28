@@ -1,5 +1,6 @@
 package afs.astbuilder.nodes.expr;
 
+import afs.astbuilder.checker.types.AFSType;
 import afs.astbuilder.visitor.ExprVisitor;
 
 public class ExprRotateNode extends ExprNode {
@@ -26,8 +27,8 @@ public class ExprRotateNode extends ExprNode {
     }
 
     @Override
-    public void acceptVisit(ExprVisitor visitor) {
-        visitor.visitExprRotateNode(this);
+    public AFSType acceptVisit(ExprVisitor visitor) {
+        return visitor.visitExprRotateNode(this);
     }
 
     @Override

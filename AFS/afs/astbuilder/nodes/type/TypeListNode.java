@@ -1,5 +1,6 @@
 package afs.astbuilder.nodes.type;
 
+import afs.astbuilder.checker.types.AFSType;
 import afs.astbuilder.visitor.TypeVisitor;
 
 public class TypeListNode extends TypeNode {
@@ -14,8 +15,8 @@ public class TypeListNode extends TypeNode {
     }
 
     @Override
-    public void acceptVisit(TypeVisitor visitor) {
-        visitor.visitTypeListNode(this);
+    public AFSType acceptVisit(TypeVisitor visitor) {
+        return visitor.visitTypeListNode(this);
     }
 
     @Override

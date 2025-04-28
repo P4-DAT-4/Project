@@ -1,30 +1,31 @@
 package afs.astbuilder.visitor;
 
+import afs.astbuilder.checker.types.AFSType;
 import afs.astbuilder.nodes.expr.*;
 
 public interface ExprVisitor extends ASTVisitor {
-    void visitExprAdditionNode(ExprAdditionNode node);
-    void visitExprAndNode(ExprAndNode node);
-    void visitExprBoolNode(ExprBoolNode node);
-    void visitExprConcatenationNode(ExprConcatenationNode node);
-    void visitExprCurveNode(ExprCurveNode node);
-    void visitExprDivisionNode(ExprDivisionNode node);
-    void visitExprDoubleNode(ExprDoubleNode node);
-    void visitExprEqualNode(ExprEqualsNode node);
-    void visitExprFunctionCallNode(ExprFunctionCallNode node);
-    void visitExprIdentifierNode(ExprIdentifierNode node);
-    void visitExprIntNode(ExprIntNode node);
-    void visitExprLessThanNode(ExprLessThanNode node);
-    void visitExprLineNode(ExprLineNode node);
-    void visitExprListAccessNode(ExprListAccessNode node);
-    void visitExprListNode(ExprListNode node);
-    void visitExprMultiplicationNode(ExprMultiplicationNode node);
-    void visitExprNegationNode(ExprNegationNode node);
-    void visitExprNotNode(ExprNotNode node);
-    void visitExprPlaceNode(ExprPlaceNode node);
-    void visitExprRotateNode(ExprRotateNode node);
-    void visitExprScaleNode(ExprScaleNode node);
-    void visitExprStringNode(ExprStringNode node);
-    void visitExprSubtractionNode(ExprSubtractionNode node);
-    void visitExprTextNode(ExprTextNode node);
+    AFSType visitExprAdditionNode(ExprAdditionNode node);
+    AFSType visitExprAndNode(ExprAndNode node);
+    AFSType visitExprBoolNode(ExprBoolNode node);
+    AFSType visitExprConcatenationNode(ExprConcatenationNode node);
+    AFSType visitExprCurveNode(ExprCurveNode node);
+    AFSType visitExprDivisionNode(ExprDivisionNode node);
+    AFSType visitExprDoubleNode(ExprDoubleNode node);
+    AFSType visitExprEqualNode(ExprEqualsNode node);
+    AFSType visitExprFunctionCallNode(ExprFunctionCallNode node);
+    AFSType visitExprIdentifierNode(ExprIdentifierNode node);
+    AFSType visitExprIntNode(ExprIntNode node);
+    AFSType visitExprLessThanNode(ExprLessThanNode node);
+    AFSType visitExprLineNode(ExprLineNode node);
+    AFSType visitExprListAccessNode(ExprListAccessNode node);
+    AFSType visitExprListNode(ExprListNode node);
+    AFSType visitExprMultiplicationNode(ExprMultiplicationNode node);
+    AFSType visitExprNegationNode(ExprNegationNode node);
+    AFSType visitExprNotNode(ExprNotNode node);
+    AFSType visitExprPlaceNode(ExprPlaceNode node);
+    AFSType visitExprRotateNode(ExprRotateNode node);
+    AFSType visitExprScaleNode(ExprScaleNode node);
+    AFSType visitExprStringNode(ExprStringNode node);
+    AFSType visitExprSubtractionNode(ExprSubtractionNode node);
+    AFSType visitExprTextNode(ExprTextNode node);
 }

@@ -1,7 +1,8 @@
 package afs.astbuilder.visitor;
 
+import afs.astbuilder.checker.types.AFSType;
 import afs.astbuilder.nodes.def.Param;
 
 public interface ParamVisitor extends ASTVisitor {
-    void visitParam(Param node);
+    AFSType visitParam(Param node);
 }

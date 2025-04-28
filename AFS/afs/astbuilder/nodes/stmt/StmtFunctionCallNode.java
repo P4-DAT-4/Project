@@ -1,5 +1,6 @@
 package afs.astbuilder.nodes.stmt;
 
+import afs.astbuilder.checker.types.AFSType;
 import afs.astbuilder.nodes.expr.ExprFunctionCallNode;
 import afs.astbuilder.visitor.StmtVisitor;
 
@@ -15,8 +16,8 @@ public class StmtFunctionCallNode extends StmtNode {
     }
 
     @Override
-    public void acceptVisit(StmtVisitor visitor) {
-        visitor.visitStmtFunctionCallNode(this);
+    public AFSType acceptVisit(StmtVisitor visitor) {
+        return visitor.visitStmtFunctionCallNode(this);
     }
 
     @Override

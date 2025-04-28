@@ -31,14 +31,14 @@ public class ParseTest {
         return progContext.accept(progParser);
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         try {
             Path sourceFile = Path.of("input.txt"); // adjust to your file
-            ProgNode ast = buildASTFromFile(sourceFile);
+            ProgNode root = buildASTFromFile(sourceFile);
 
             GraphvizVisitor printer = new GraphvizVisitor();
 
-            ast.acceptVisit(printer);
+            root.acceptVisit(printer);
 
             String dotCode = printer.getGraphvizCode();
 

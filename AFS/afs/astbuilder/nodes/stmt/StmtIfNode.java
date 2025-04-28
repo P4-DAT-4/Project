@@ -1,5 +1,6 @@
 package afs.astbuilder.nodes.stmt;
 
+import afs.astbuilder.checker.types.AFSType;
 import afs.astbuilder.nodes.expr.ExprNode;
 import afs.astbuilder.visitor.StmtVisitor;
 
@@ -27,8 +28,8 @@ public class StmtIfNode extends StmtNode {
     }
 
     @Override
-    public void acceptVisit(StmtVisitor visitor) {
-        visitor.visitStmtIfNode(this);
+    public AFSType acceptVisit(StmtVisitor visitor) {
+        return visitor.visitStmtIfNode(this);
     }
 
     @Override

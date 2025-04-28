@@ -1,5 +1,6 @@
 package afs.astbuilder.nodes.def;
 
+import afs.astbuilder.checker.types.AFSType;
 import afs.astbuilder.nodes.AbstractSyntaxNode;
 import afs.astbuilder.nodes.expr.ExprIdentifierNode;
 import afs.astbuilder.nodes.type.TypeNode;
@@ -23,8 +24,8 @@ public class Param extends AbstractSyntaxNode<ParamVisitor> {
     }
 
     @Override
-    public void acceptVisit(ParamVisitor visitor) {
-        visitor.visitParam(this);
+    public AFSType acceptVisit(ParamVisitor visitor) {
+        return visitor.visitParam(this);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package afs.astbuilder.nodes.event;
 
+import afs.astbuilder.checker.types.AFSType;
 import afs.astbuilder.visitor.EventVisitor;
 
 public class EventCompositionNode extends EventNode {
@@ -20,8 +21,8 @@ public class EventCompositionNode extends EventNode {
     }
 
     @Override
-    public void acceptVisit(EventVisitor visitor) {
-        visitor.visitEventCompositionNode(this);
+    public AFSType acceptVisit(EventVisitor visitor) {
+        return visitor.visitEventCompositionNode(this);
     }
 
     @Override

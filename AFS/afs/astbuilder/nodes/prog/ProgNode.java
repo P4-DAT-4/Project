@@ -1,11 +1,11 @@
 package afs.astbuilder.nodes.prog;
 
+import afs.astbuilder.checker.types.AFSType;
 import afs.astbuilder.nodes.AbstractSyntaxNode;
 import afs.astbuilder.nodes.def.DefNode;
 import afs.astbuilder.visitor.ProgVisitor;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ProgNode extends AbstractSyntaxNode<ProgVisitor> {
     private final List<DefNode> definitions;
@@ -19,8 +19,8 @@ public class ProgNode extends AbstractSyntaxNode<ProgVisitor> {
     }
 
     @Override
-    public void acceptVisit(ProgVisitor visitor) {
-        visitor.visitProgNode(this);
+    public AFSType acceptVisit(ProgVisitor visitor) {
+        return visitor.visitProgNode(this);
     }
 
     @Override

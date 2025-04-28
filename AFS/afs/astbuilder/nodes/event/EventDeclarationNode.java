@@ -1,5 +1,6 @@
 package afs.astbuilder.nodes.event;
 
+import afs.astbuilder.checker.types.AFSType;
 import afs.astbuilder.nodes.expr.ExprFunctionCallNode;
 import afs.astbuilder.nodes.expr.ExprNode;
 import afs.astbuilder.visitor.EventVisitor;
@@ -22,8 +23,8 @@ public class EventDeclarationNode extends EventNode {
     }
 
     @Override
-    public void acceptVisit(EventVisitor visitor) {
-        visitor.visitEventDeclarationNode(this);
+    public AFSType acceptVisit(EventVisitor visitor) {
+        return visitor.visitEventDeclarationNode(this);
     }
 
     @Override

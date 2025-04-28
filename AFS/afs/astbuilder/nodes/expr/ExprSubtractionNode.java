@@ -1,5 +1,6 @@
 package afs.astbuilder.nodes.expr;
 
+import afs.astbuilder.checker.types.AFSType;
 import afs.astbuilder.visitor.ExprVisitor;
 
 public class ExprSubtractionNode extends ExprNode {
@@ -20,8 +21,8 @@ public class ExprSubtractionNode extends ExprNode {
     }
 
     @Override
-    public void acceptVisit(ExprVisitor visitor) {
-        visitor.visitExprSubtractionNode(this);
+    public AFSType acceptVisit(ExprVisitor visitor) {
+        return visitor.visitExprSubtractionNode(this);
     }
 
     @Override

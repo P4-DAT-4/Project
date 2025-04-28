@@ -13,6 +13,8 @@ public class ProgParser extends AFSBaseVisitor<ProgNode> {
         List<DefNode> defs = new ArrayList<>();
         DefParser defParser = new DefParser();
 
+
+
         for (var defCtx : ctx.def()) {
             DefNode def = defCtx.accept(defParser);
             defs.add(def);
