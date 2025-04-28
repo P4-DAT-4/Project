@@ -4,7 +4,7 @@ import afs.astbuilder.visitor.ASTVisitor;
 
 public abstract class AbstractSyntaxNode<T extends ASTVisitor> {
 
-    public abstract void acceptVisit(T visitor);
+    public abstract AFSType acceptVisit(T visitor);
 
     @Override
     public String toString() {

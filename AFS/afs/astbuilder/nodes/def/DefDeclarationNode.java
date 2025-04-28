@@ -29,8 +29,8 @@ public class DefDeclarationNode extends DefNode {
     }
 
     @Override
-    public void acceptVisit(DefVisitor visitor) {
-        visitor.visitDefDeclarationNode(this);
+    public AFSType acceptVisit(DefVisitor visitor) {
+        return visitor.visitDefDeclarationNode(this);
     }
 
     @Override

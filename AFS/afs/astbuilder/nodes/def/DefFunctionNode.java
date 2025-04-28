@@ -1,12 +1,12 @@
 package afs.astbuilder.nodes.def;
 
+import afs.astbuilder.checker.types.AFSType;
 import afs.astbuilder.nodes.expr.ExprIdentifierNode;
 import afs.astbuilder.nodes.stmt.StmtNode;
 import afs.astbuilder.nodes.type.TypeNode;
 import afs.astbuilder.visitor.DefVisitor;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class DefFunctionNode extends DefNode {
     private final TypeNode type;
@@ -38,8 +38,8 @@ public class DefFunctionNode extends DefNode {
     }
 
     @Override
-    public void acceptVisit(DefVisitor visitor) {
-        visitor.visitDefFunctionNode(this);
+    public AFSType acceptVisit(DefVisitor visitor) {
+        return visitor.visitDefFunctionNode(this);
     }
 
     @Override
