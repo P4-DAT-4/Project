@@ -204,6 +204,7 @@ public class ExprTypeChecker implements ExprVisitor {
         } else {
             throw new TypeCheckException("Invalid types for place: " + expression1 + " and " + type);
         }
+
     }
 
     @Override
