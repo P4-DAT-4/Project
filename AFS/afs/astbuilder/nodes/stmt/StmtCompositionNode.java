@@ -1,8 +1,5 @@
 package afs.astbuilder.nodes.stmt;
 
-import afs.astbuilder.checker.types.AFSType;
-import afs.astbuilder.visitor.StmtVisitor;
-
 public class StmtCompositionNode extends StmtNode {
     private final StmtNode leftStatement;
     private final StmtNode rightStatement;
@@ -18,11 +15,6 @@ public class StmtCompositionNode extends StmtNode {
 
     public StmtNode getRightStatement() {
         return rightStatement;
-    }
-
-    @Override
-    public AFSType acceptVisit(StmtVisitor visitor) {
-        return visitor.visitStmtCompositionNode(this);
     }
 
     @Override

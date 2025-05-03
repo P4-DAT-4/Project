@@ -1,9 +1,6 @@
 package afs.astbuilder.nodes.expr;
 
-import afs.astbuilder.checker.types.AFSType;
-import afs.astbuilder.visitor.ExprVisitor;
-
-public class ExprListAccessNode extends ExprNode{
+public class ExprListAccessNode extends ExprNode {
     private final ExprNode leftExpression;
     private final ExprNode rightExpression;
 
@@ -12,21 +9,11 @@ public class ExprListAccessNode extends ExprNode{
         this.rightExpression = rightExpression;
     }
 
-    public ExprNode getLeftExpression() {
+    public ExprNode leftExpression() {
         return leftExpression;
     }
 
-    public ExprNode getRightExpression() {
+    public ExprNode rightExpression() {
         return rightExpression;
-    }
-
-    @Override
-    public AFSType acceptVisit(ExprVisitor visitor) {
-        return visitor.visitExprListAccessNode(this);
-    }
-
-    @Override
-    public String toString() {
-        return "e1[e2]";
     }
 }

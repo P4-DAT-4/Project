@@ -1,10 +1,8 @@
 package afs.astbuilder.nodes.def;
 
-import afs.astbuilder.checker.types.AFSType;
 import afs.astbuilder.nodes.expr.ExprIdentifierNode;
 import afs.astbuilder.nodes.stmt.StmtNode;
 import afs.astbuilder.nodes.type.TypeNode;
-import afs.astbuilder.visitor.DefVisitor;
 
 import java.util.List;
 
@@ -35,11 +33,6 @@ public class DefFunctionNode extends DefNode {
 
     public StmtNode getStatement() {
         return statement;
-    }
-
-    @Override
-    public AFSType acceptVisit(DefVisitor visitor) {
-        return visitor.visitDefFunctionNode(this);
     }
 
     @Override

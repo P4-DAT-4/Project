@@ -1,8 +1,5 @@
 package afs.astbuilder.nodes.event;
 
-import afs.astbuilder.checker.types.AFSType;
-import afs.astbuilder.visitor.EventVisitor;
-
 public class EventCompositionNode extends EventNode {
     private final EventNode leftEvent;
     private final EventNode rightEvent;
@@ -18,11 +15,6 @@ public class EventCompositionNode extends EventNode {
 
     public EventNode getRightEvent() {
         return rightEvent;
-    }
-
-    @Override
-    public AFSType acceptVisit(EventVisitor visitor) {
-        return visitor.visitEventCompositionNode(this);
     }
 
     @Override

@@ -1,8 +1,6 @@
 package afs.astbuilder.nodes.stmt;
 
-import afs.astbuilder.checker.types.AFSType;
 import afs.astbuilder.nodes.expr.ExprNode;
-import afs.astbuilder.visitor.StmtVisitor;
 
 public class StmtAssignmentNode extends StmtNode {
     private final ExprNode leftExpression;
@@ -20,11 +18,6 @@ public class StmtAssignmentNode extends StmtNode {
 
     public ExprNode getRightExpression() {
         return rightExpression;
-    }
-
-    @Override
-    public AFSType acceptVisit(StmtVisitor visitor) {
-        return visitor.visitStmtAssignmentNode(this);
     }
 
     @Override
