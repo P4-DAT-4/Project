@@ -1,0 +1,15 @@
+# Ignore everything
+*
+
+# Keep src, gradle, etc
+!CocoR/
+!src/
+!ReadMe.md
+!gradle/
+!gradlew
+!gradlew.bat
+!build.gradle
+!settings.gradle
+!gradle.properties
+!afs.bat
+!afs.sh
