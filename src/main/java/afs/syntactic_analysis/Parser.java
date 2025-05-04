@@ -1,16 +1,16 @@
 package afs.syntactic_analysis;
 
 import afs.nodes.def.*;
-import afs.nodes.event.*;
+import afs.nodes.event.EventCompositionNode;
+import afs.nodes.event.EventDeclarationNode;
+import afs.nodes.event.EventNode;
 import afs.nodes.expr.*;
-import afs.nodes.prog.*;
+import afs.nodes.prog.ProgNode;
 import afs.nodes.stmt.*;
 import afs.nodes.type.*;
 
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.List;
 
 /* The required start of a Coco/R grammar file. "Program" specifies the starting symbol of the grammar. */
 
@@ -21,8 +21,6 @@ public class Parser {
 	public static final int _DOUBLE = 2;
 	public static final int _STRING = 3;
 	public static final int _IDENT = 4;
-	public static final int _lSqBracket = 5;
-	public static final int _lParentheses = 6;
 	public static final int maxT = 56;
 
 	static final boolean _T = true;
@@ -154,14 +152,6 @@ public class Parser {
         }
         return exprs;
     }
-
-    private boolean FollowedByStartSqBracket() {
-        return la.kind == _lSqBracket;
-    }
-
-    private boolean FollowedByStartLSqBracketOrLParentheses() {
-        return la.kind == _lSqBracket || la.kind == _lParentheses;
-    }
 /*------------------------------------------------------------------------*/
 /* The following section contains the token specification of AFS.*/
 
@@ -244,9 +234,9 @@ public class Parser {
 		DefNode  def;
 		def = null; 
 		while (!(StartOf(2))) {SynErr(57); Get();}
-		if (la.kind == 11) {
+		if (la.kind == 9) {
 			def = FnDef();
-		} else if (la.kind == 14) {
+		} else if (la.kind == 13) {
 			def = ImgDef();
 		} else if (StartOf(3)) {
 			def = VarDef();
@@ -256,12 +246,12 @@ public class Parser {
 
 	DefNode  Visualize() {
 		DefNode  vis;
-		Expect(7);
+		Expect(5);
 		int line = t.line; int col = t.col; 
 		Expect(4);
 		ExprIdentifierNode ident = new ExprIdentifierNode(t.val, line, col); 
 		ExprFunctionCallNode funcCall = FuncCall(ident, line, col);
-		Expect(8);
+		Expect(6);
 		EventNode event = Events();
 		vis = new DefVisualizeNode(funcCall, event, line, col); 
 		return vis;
@@ -270,17 +260,17 @@ public class Parser {
 	ExprFunctionCallNode  FuncCall(ExprIdentifierNode ident, int line, int col) {
 		ExprFunctionCallNode  funcCall;
 		List<ExprNode> exprList = new ArrayList<>(); 
-		Expect(6);
+		Expect(10);
 		if (StartOf(4)) {
 			ExprNode arg1 = Expr();
 			exprList.add(arg1); 
-			while (la.kind == 12) {
+			while (la.kind == 11) {
 				Get();
 				ExprNode argX = Expr();
 				exprList.add(argX); 
 			}
 		}
-		Expect(13);
+		Expect(12);
 		funcCall = new ExprFunctionCallNode(ident, exprList, line, col); 
 		return funcCall;
 	}
@@ -289,21 +279,21 @@ public class Parser {
 		EventNode  event;
 		List<EventNode> events = new ArrayList<>(); 
 		ExprNode expr = Expr();
-		Expect(9);
+		Expect(7);
 		Expect(4);
 		int line = t.line; int col = t.col; ExprIdentifierNode ident = new ExprIdentifierNode(t.val, t.line, t.col); 
 		ExprFunctionCallNode funcCall = FuncCall(ident, line, col);
 		events.add(new EventDeclarationNode(expr, funcCall, line, col)); 
-		Expect(10);
+		Expect(8);
 		while (StartOf(4)) {
 			expr = Expr();
 			line = t.line; col = t.col; 
-			Expect(9);
+			Expect(7);
 			Expect(4);
 			line = t.line; col = t.col; ident = new ExprIdentifierNode(t.val, t.line, t.col); 
 			funcCall = FuncCall(ident, line, col);
 			events.add(new EventDeclarationNode(expr, funcCall, line, col)); 
-			Expect(10);
+			Expect(8);
 		}
 		event = toCompEvent(events); 
 		return event;
@@ -312,7 +302,7 @@ public class Parser {
 	ExprNode  Expr() {
 		ExprNode  expr;
 		expr = AndExpr();
-		while (la.kind == 33) {
+		while (la.kind == 32) {
 			Get();
 			String op = t.val; int line = t.line; int col = t.col; 
 			ExprNode right = AndExpr();
@@ -324,21 +314,21 @@ public class Parser {
 	DefNode  FnDef() {
 		DefNode  func;
 		List<Param> params = new ArrayList<>(); 
-		Expect(11);
+		Expect(9);
 		TypeNode type = Type();
 		Expect(4);
 		int line = t.line; int col = t.col; ExprIdentifierNode ident = new ExprIdentifierNode(t.val, line, col); 
-		Expect(6);
+		Expect(10);
 		if (StartOf(3)) {
 			Param param = Param();
 			params.add(param); 
-			while (la.kind == 12) {
+			while (la.kind == 11) {
 				Get();
 				param = Param();
 				params.add(param); 
 			}
 		}
-		Expect(13);
+		Expect(12);
 		StmtNode stmt = StmtBlock();
 		func = new DefFunctionNode(type, ident, params, stmt, line, col); 
 		return func;
@@ -347,20 +337,20 @@ public class Parser {
 	DefNode  ImgDef() {
 		DefNode  img;
 		List<Param> params = new ArrayList<>(); 
-		Expect(14);
+		Expect(13);
 		Expect(4);
 		int line = t.line; int col = t.col; ExprIdentifierNode ident = new ExprIdentifierNode(t.val, line, col); 
-		Expect(6);
+		Expect(10);
 		if (StartOf(3)) {
 			Param param = Param();
 			params.add(param); 
-			while (la.kind == 12) {
+			while (la.kind == 11) {
 				Get();
 				param = Param();
 				params.add(param); 
 			}
 		}
-		Expect(13);
+		Expect(12);
 		StmtNode decl = DeclBlock();
 		img = new DefFunctionNode(new TypeShapeNode(line, col), ident, params, decl, line, col); 
 		return img;
@@ -371,8 +361,10 @@ public class Parser {
 		TypeNode type = Type();
 		Expect(4);
 		int line = t.line; int col = t.col; ExprIdentifierNode ident = new ExprIdentifierNode(t.val, line, col); 
+		Expect(14);
 		ExprNode expr = Expr();
 		def = new DefDeclarationNode(type, ident, expr, line, col); 
+		Expect(8);
 		return def;
 	}
 
@@ -405,7 +397,7 @@ public class Parser {
 			type = new TypeVoidNode(t.line, t.col); 
 			break;
 		}
-		case 5: {
+		case 48: {
 			Get();
 			TypeNode innerType = Type();
 			Expect(49);
@@ -457,20 +449,20 @@ public class Parser {
 		stmt = new StmtSkipNode(); 
 		if (StartOf(3)) {
 			stmt = StmtDeclaration();
-		} else if (la.kind == 18) {
+		} else if (la.kind == 17) {
 			stmt = StmtIf();
-		} else if (la.kind == 21) {
+		} else if (la.kind == 20) {
 			stmt = StmtWhile();
-		} else if (la.kind == 22) {
+		} else if (la.kind == 21) {
 			stmt = StmtReturn();
 		} else if (la.kind == 4) {
 			Get();
 			int line = t.line; int col = t.col; ExprIdentifierNode ident = new ExprIdentifierNode(t.val, t.line, t.col); 
-			if (la.kind == 17) {
+			if (la.kind == 14) {
 				stmt = StmtAssignment(ident, line, col);
-			} else if (la.kind == 5) {
+			} else if (la.kind == 48) {
 				stmt = StmtListAssignment(ident, line, col);
-			} else if (la.kind == 6) {
+			} else if (la.kind == 10) {
 				stmt = StmtFuncCall(ident, line, col);
 			} else SynErr(60);
 		} else SynErr(61);
@@ -482,25 +474,25 @@ public class Parser {
 		TypeNode type = Type();
 		Expect(4);
 		int line = t.line; int col = t.col; ExprIdentifierNode ident = new ExprIdentifierNode(t.val, t.line, t.col); 
-		Expect(17);
+		Expect(14);
 		ExprNode expr = Expr();
 		stmt = new StmtDeclarationNode(type, ident, expr, line, col); 
-		Expect(10);
+		Expect(8);
 		return stmt;
 	}
 
 	StmtNode  StmtIf() {
 		StmtNode  stmt;
-		while (!(la.kind == 0 || la.kind == 18)) {SynErr(62); Get();}
-		Expect(18);
+		while (!(la.kind == 0 || la.kind == 17)) {SynErr(62); Get();}
+		Expect(17);
 		int line = t.line; int col = t.col; 
-		Expect(6);
+		Expect(10);
 		ExprNode expr = Expr();
-		Expect(13);
-		Expect(19);
+		Expect(12);
+		Expect(18);
 		StmtNode thenStmt = StmtBlock();
 		stmt = new StmtIfNode(expr, thenStmt, new StmtSkipNode(), line, col); 
-		if (la.kind == 20) {
+		if (la.kind == 19) {
 			Get();
 			StmtNode elseStmt = StmtBlock();
 			stmt = new StmtIfNode(expr, thenStmt, elseStmt, line, col); 
@@ -510,13 +502,13 @@ public class Parser {
 
 	StmtNode  StmtWhile() {
 		StmtNode  stmt;
-		while (!(la.kind == 0 || la.kind == 21)) {SynErr(63); Get();}
-		Expect(21);
+		while (!(la.kind == 0 || la.kind == 20)) {SynErr(63); Get();}
+		Expect(20);
 		int line = t.line; int col = t.col; 
-		Expect(6);
+		Expect(10);
 		ExprNode expr = Expr();
-		Expect(13);
-		Expect(9);
+		Expect(12);
+		Expect(7);
 		StmtNode whlStmt = StmtBlock();
 		stmt = new StmtWhileNode(expr, whlStmt, line, col); 
 		return stmt;
@@ -524,37 +516,37 @@ public class Parser {
 
 	StmtNode  StmtReturn() {
 		StmtNode  stmt;
-		Expect(22);
+		Expect(21);
 		int line = t.line; int col = t.col; 
 		ExprNode expr = Expr();
 		stmt = new StmtReturnNode(expr, line, col); 
-		Expect(10);
+		Expect(8);
 		return stmt;
 	}
 
 	StmtNode  StmtAssignment(ExprIdentifierNode ident, int line, int col) {
 		StmtNode  stmt;
-		Expect(17);
+		Expect(14);
 		ExprNode expr = Expr();
 		stmt = new StmtAssignmentNode(ident, expr, line, col); 
-		Expect(10);
+		Expect(8);
 		return stmt;
 	}
 
 	StmtNode  StmtListAssignment(ExprIdentifierNode ident, int line, int col) {
 		StmtNode  stmt;
 		ExprNode leftExpr = ExprListAccess(ident);
-		Expect(17);
+		Expect(14);
 		ExprNode rightExpr = Expr();
 		stmt = new StmtAssignmentNode(leftExpr, rightExpr, line, col); 
-		Expect(10);
+		Expect(8);
 		return stmt;
 	}
 
 	StmtNode  StmtFuncCall(ExprIdentifierNode ident, int line, int col) {
 		StmtNode  stmt;
 		ExprFunctionCallNode funcCall = FuncCall(ident, line, col);
-		Expect(10);
+		Expect(8);
 		stmt = new StmtFunctionCallNode(funcCall, t.line, t.col); 
 		return stmt;
 	}
@@ -562,12 +554,12 @@ public class Parser {
 	ExprNode  ExprListAccess(ExprIdentifierNode ident) {
 		ExprNode  expr;
 		List<ExprNode> exprList = new ArrayList<>(); exprList.add(ident); 
-		Expect(5);
+		Expect(48);
 		ExprNode firstLa = Expr();
 		exprList.add(firstLa); 
 		Expect(49);
-		while (FollowedByStartSqBracket()) {
-			Expect(5);
+		while (la.kind == 48) {
+			Get();
 			ExprNode extraLa = Expr();
 			exprList.add(extraLa); 
 			Expect(49);
@@ -581,7 +573,7 @@ public class Parser {
 		decl = new StmtSkipNode(); 
 		if (StartOf(7)) {
 			decl = DeclDecl();
-		} else if (la.kind == 18) {
+		} else if (la.kind == 17) {
 			decl = DeclIf();
 		} else SynErr(64);
 		return decl;
@@ -592,25 +584,25 @@ public class Parser {
 		TypeNode type = DeclType();
 		Expect(4);
 		int line = t.line; int col = t.col; ExprIdentifierNode ident = new ExprIdentifierNode(t.val, t.line, t.col); 
-		Expect(17);
+		Expect(14);
 		ExprNode declExpr = DeclExpr();
 		decl = new StmtDeclarationNode(type, ident, declExpr, line, col); 
-		Expect(10);
+		Expect(8);
 		return decl;
 	}
 
 	StmtNode  DeclIf() {
 		StmtNode  decl;
-		while (!(la.kind == 0 || la.kind == 18)) {SynErr(65); Get();}
-		Expect(18);
+		while (!(la.kind == 0 || la.kind == 17)) {SynErr(65); Get();}
+		Expect(17);
 		int line = t.line; int col = t.col; 
-		Expect(6);
+		Expect(10);
 		ExprNode expr = Expr();
-		Expect(13);
-		Expect(19);
+		Expect(12);
+		Expect(18);
 		StmtNode thenDecl = DeclBlock();
 		decl = new StmtIfNode(expr, thenDecl, new StmtSkipNode(), line, col); 
-		if (la.kind == 20) {
+		if (la.kind == 19) {
 			Get();
 			StmtNode elseDecl = DeclBlock();
 			decl = new StmtIfNode(expr, thenDecl, elseDecl, line, col); 
@@ -634,31 +626,31 @@ public class Parser {
 		ExprNode  declExpr;
 		declExpr = null; 
 		switch (la.kind) {
-		case 23: {
+		case 22: {
 			declExpr = Text();
 			break;
 		}
-		case 24: {
+		case 23: {
 			declExpr = Line();
 			break;
 		}
-		case 26: {
+		case 25: {
 			declExpr = Curve();
 			break;
 		}
-		case 27: {
+		case 26: {
 			declExpr = Place();
 			break;
 		}
-		case 29: {
+		case 28: {
 			declExpr = Scale();
 			break;
 		}
-		case 31: {
+		case 30: {
 			declExpr = Rotate();
 			break;
 		}
-		case 1: case 2: case 3: case 4: case 5: case 6: case 43: case 46: case 47: case 48: {
+		case 1: case 2: case 3: case 4: case 10: case 42: case 45: case 46: case 47: case 48: {
 			declExpr = Expr();
 			break;
 		}
@@ -669,7 +661,7 @@ public class Parser {
 
 	ExprNode  Text() {
 		ExprNode  declExpr;
-		Expect(23);
+		Expect(22);
 		int line = t.line; int col = t.col; 
 		ExprNode expr = Expr();
 		declExpr = new ExprTextNode(expr, line, col); 
@@ -679,14 +671,14 @@ public class Parser {
 	ExprNode  Line() {
 		ExprNode  declExpr;
 		List<ExprListDeclaration> coords = new ArrayList<>(); 
-		Expect(24);
+		Expect(23);
 		int line = t.line; int col = t.col; 
 		ExprListDeclaration firstCoord = Coord();
 		coords.add(firstCoord); 
-		Expect(25);
+		Expect(24);
 		ExprListDeclaration secondCoord = Coord();
 		coords.add(secondCoord); 
-		while (la.kind == 25) {
+		while (la.kind == 24) {
 			Get();
 			ExprListDeclaration extraCoords = Coord();
 			coords.add(extraCoords); 
@@ -698,14 +690,14 @@ public class Parser {
 	ExprNode  Curve() {
 		ExprNode  declExpr;
 		List<ExprListDeclaration> coords = new ArrayList<>(); 
-		Expect(26);
+		Expect(25);
 		int line = t.line; int col = t.col; 
 		ExprListDeclaration firstCoord = Coord();
 		coords.add(firstCoord); 
-		Expect(25);
+		Expect(24);
 		ExprListDeclaration secondCoord = Coord();
 		coords.add(secondCoord); 
-		while (la.kind == 25) {
+		while (la.kind == 24) {
 			Get();
 			ExprListDeclaration extraCoords = Coord();
 			coords.add(extraCoords); 
@@ -716,10 +708,10 @@ public class Parser {
 
 	ExprNode  Place() {
 		ExprNode  declExpr;
-		Expect(27);
+		Expect(26);
 		int line = t.line; int col = t.col; 
 		ExprNode lExpr = Expr();
-		Expect(28);
+		Expect(27);
 		ExprNode rExpr = Coord();
 		declExpr = new ExprPlaceNode(lExpr, rExpr, line, col); 
 		return declExpr;
@@ -727,10 +719,10 @@ public class Parser {
 
 	ExprNode  Scale() {
 		ExprNode  declExpr;
-		Expect(29);
+		Expect(28);
 		int line = t.line; int col = t.col; 
 		ExprNode lExpr = Expr();
-		Expect(30);
+		Expect(29);
 		ExprNode rExpr = Expr();
 		declExpr = new ExprScaleNode(lExpr, rExpr, line, col); 
 		return declExpr;
@@ -738,12 +730,12 @@ public class Parser {
 
 	ExprNode  Rotate() {
 		ExprNode  declExpr;
-		Expect(31);
+		Expect(30);
 		int line = t.line; int col = t.col; 
 		ExprNode lExpr = Expr();
-		Expect(32);
+		Expect(31);
 		ExprNode mExpr = Expr();
-		Expect(30);
+		Expect(29);
 		ExprNode rExpr = Expr();
 		declExpr = new ExprRotateNode(lExpr, mExpr, rExpr, line, col); 
 		return declExpr;
@@ -752,13 +744,13 @@ public class Parser {
 	ExprListDeclaration  Coord() {
 		ExprListDeclaration  coord;
 		List<ExprNode> coords = new ArrayList<>(); 
-		Expect(6);
+		Expect(10);
 		ExprNode x = Expr();
 		coords.add(x); 
-		Expect(12);
+		Expect(11);
 		ExprNode y = Expr();
 		coords.add(y); 
-		Expect(13);
+		Expect(12);
 		coord = new ExprListDeclaration(coords, t.line, t.col); 
 		return coord;
 	}
@@ -766,7 +758,7 @@ public class Parser {
 	ExprNode  AndExpr() {
 		ExprNode  expr;
 		expr = EqExpr();
-		while (la.kind == 34) {
+		while (la.kind == 33) {
 			Get();
 			String op = t.val; int line = t.line; int col = t.col; 
 			ExprNode right = EqExpr();
@@ -778,8 +770,8 @@ public class Parser {
 	ExprNode  EqExpr() {
 		ExprNode  expr;
 		expr = RelExpr();
-		while (la.kind == 35 || la.kind == 36) {
-			if (la.kind == 35) {
+		while (la.kind == 34 || la.kind == 35) {
+			if (la.kind == 34) {
 				Get();
 			} else {
 				Get();
@@ -795,11 +787,11 @@ public class Parser {
 		ExprNode  expr;
 		expr = ConcatExpr();
 		while (StartOf(8)) {
-			if (la.kind == 37) {
+			if (la.kind == 36) {
+				Get();
+			} else if (la.kind == 37) {
 				Get();
 			} else if (la.kind == 38) {
-				Get();
-			} else if (la.kind == 39) {
 				Get();
 			} else {
 				Get();
@@ -814,7 +806,7 @@ public class Parser {
 	ExprNode  ConcatExpr() {
 		ExprNode  expr;
 		expr = PlusExpr();
-		while (la.kind == 41) {
+		while (la.kind == 40) {
 			Get();
 			String op = t.val; int line = t.line; int col = t.col; 
 			ExprNode right = PlusExpr();
@@ -826,8 +818,8 @@ public class Parser {
 	ExprNode  PlusExpr() {
 		ExprNode  expr;
 		expr = MultExpr();
-		while (la.kind == 42 || la.kind == 43) {
-			if (la.kind == 42) {
+		while (la.kind == 41 || la.kind == 42) {
+			if (la.kind == 41) {
 				Get();
 			} else {
 				Get();
@@ -842,8 +834,8 @@ public class Parser {
 	ExprNode  MultExpr() {
 		ExprNode  expr;
 		expr = NotExpr();
-		while (la.kind == 44 || la.kind == 45) {
-			if (la.kind == 44) {
+		while (la.kind == 43 || la.kind == 44) {
+			if (la.kind == 43) {
 				Get();
 			} else {
 				Get();
@@ -858,8 +850,8 @@ public class Parser {
 	ExprNode  NotExpr() {
 		ExprNode  expr;
 		List<Character> unaries = new ArrayList(); int line = -1; int col = -1; 
-		while (la.kind == 43 || la.kind == 46) {
-			if (la.kind == 46) {
+		while (la.kind == 42 || la.kind == 45) {
+			if (la.kind == 45) {
 				Get();
 				unaries.add('!'); 
 			} else {
@@ -881,16 +873,16 @@ public class Parser {
 			Get();
 			ExprIdentifierNode ident = new ExprIdentifierNode(t.val, t.line, t.col); 
 			expr = ident; 
-			if (FollowedByStartLSqBracketOrLParentheses()) {
-				if (la.kind == 5) {
+			if (la.kind == 10 || la.kind == 48) {
+				if (la.kind == 48) {
 					expr = ExprListAccess(ident);
-				} else if (la.kind == 6) {
+				} else {
 					expr = FuncCall(ident, t.line, t.col);
-				} else SynErr(68);
+				}
 			}
 			break;
 		}
-		case 5: {
+		case 48: {
 			expr = ExprListDeclaration();
 			break;
 		}
@@ -909,8 +901,8 @@ public class Parser {
 			expr = new ExprStringNode(t.val, t.line, t.col); 
 			break;
 		}
-		case 47: case 48: {
-			if (la.kind == 47) {
+		case 46: case 47: {
+			if (la.kind == 46) {
 				Get();
 			} else {
 				Get();
@@ -918,13 +910,13 @@ public class Parser {
 			expr = new ExprBoolNode(t.val, t.line, t.col); 
 			break;
 		}
-		case 6: {
+		case 10: {
 			Get();
 			expr = Expr();
-			Expect(13);
+			Expect(12);
 			break;
 		}
-		default: SynErr(69); break;
+		default: SynErr(68); break;
 		}
 		return expr;
 	}
@@ -932,13 +924,13 @@ public class Parser {
 	ExprNode  ExprListDeclaration() {
 		ExprNode  expr;
 		List<ExprNode> exprs = new ArrayList<>(); 
-		Expect(5);
+		Expect(48);
 		int line = t.line; int col = t.col; 
 		if (StartOf(4)) {
 			expr = Expr();
 			exprs.add(expr); 
 		}
-		while (la.kind == 12) {
+		while (la.kind == 11) {
 			Get();
 			expr = Expr();
 			exprs.add(expr); 
@@ -961,15 +953,15 @@ public class Parser {
 	}
 
 	private static final boolean[][] set = {
-		{_T,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_T, _x,_x,_T,_x, _x,_x,_T,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_T,_T, _x,_x},
-		{_x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_T, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_T,_T, _x,_x},
-		{_T,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_T, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_T,_T, _x,_x},
-		{_x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_T,_T, _x,_x},
-		{_x,_T,_T,_T, _T,_T,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_x,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x},
-		{_x,_x,_x,_x, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_T,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_T,_T, _x,_x},
-		{_x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _x,_x},
-		{_x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _x,_x},
-		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x}
+		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_T,_x,_x, _x,_T,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_T, _T,_T,_T,_T, _x,_x},
+		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_T, _T,_T,_T,_T, _x,_x},
+		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_T, _T,_T,_T,_T, _x,_x},
+		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_T, _T,_T,_T,_T, _x,_x},
+		{_x,_T,_T,_T, _T,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x},
+		{_x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_T, _T,_T,_T,_T, _x,_x},
+		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_T,_T, _T,_T,_T,_T, _x,_x},
+		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_T,_T, _T,_T,_T,_T, _x,_x},
+		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x}
 
 	};
 } // end Parser
@@ -999,50 +991,50 @@ class Errors {
 			case 2: s = "DOUBLE expected"; break;
 			case 3: s = "STRING expected"; break;
 			case 4: s = "IDENT expected"; break;
-			case 5: s = "lSqBracket expected"; break;
-			case 6: s = "lParentheses expected"; break;
-			case 7: s = "\"visualize\" expected"; break;
-			case 8: s = "\":\" expected"; break;
-			case 9: s = "\"do\" expected"; break;
-			case 10: s = "\";\" expected"; break;
-			case 11: s = "\"fn\" expected"; break;
-			case 12: s = "\",\" expected"; break;
-			case 13: s = "\")\" expected"; break;
-			case 14: s = "\"img\" expected"; break;
+			case 5: s = "\"visualize\" expected"; break;
+			case 6: s = "\":\" expected"; break;
+			case 7: s = "\"do\" expected"; break;
+			case 8: s = "\";\" expected"; break;
+			case 9: s = "\"fn\" expected"; break;
+			case 10: s = "\"(\" expected"; break;
+			case 11: s = "\",\" expected"; break;
+			case 12: s = "\")\" expected"; break;
+			case 13: s = "\"img\" expected"; break;
+			case 14: s = "\"=\" expected"; break;
 			case 15: s = "\"{\" expected"; break;
 			case 16: s = "\"}\" expected"; break;
-			case 17: s = "\"=\" expected"; break;
-			case 18: s = "\"if\" expected"; break;
-			case 19: s = "\"then\" expected"; break;
-			case 20: s = "\"else\" expected"; break;
-			case 21: s = "\"while\" expected"; break;
-			case 22: s = "\"return\" expected"; break;
-			case 23: s = "\"text\" expected"; break;
-			case 24: s = "\"line\" expected"; break;
-			case 25: s = "\"to\" expected"; break;
-			case 26: s = "\"curve\" expected"; break;
-			case 27: s = "\"place\" expected"; break;
-			case 28: s = "\"at\" expected"; break;
-			case 29: s = "\"scale\" expected"; break;
-			case 30: s = "\"by\" expected"; break;
-			case 31: s = "\"rotate\" expected"; break;
-			case 32: s = "\"around\" expected"; break;
-			case 33: s = "\"||\" expected"; break;
-			case 34: s = "\"&&\" expected"; break;
-			case 35: s = "\"==\" expected"; break;
-			case 36: s = "\"!=\" expected"; break;
-			case 37: s = "\"<=\" expected"; break;
-			case 38: s = "\"<\" expected"; break;
-			case 39: s = "\">=\" expected"; break;
-			case 40: s = "\">\" expected"; break;
-			case 41: s = "\"++\" expected"; break;
-			case 42: s = "\"+\" expected"; break;
-			case 43: s = "\"-\" expected"; break;
-			case 44: s = "\"*\" expected"; break;
-			case 45: s = "\"/\" expected"; break;
-			case 46: s = "\"!\" expected"; break;
-			case 47: s = "\"true\" expected"; break;
-			case 48: s = "\"false\" expected"; break;
+			case 17: s = "\"if\" expected"; break;
+			case 18: s = "\"then\" expected"; break;
+			case 19: s = "\"else\" expected"; break;
+			case 20: s = "\"while\" expected"; break;
+			case 21: s = "\"return\" expected"; break;
+			case 22: s = "\"text\" expected"; break;
+			case 23: s = "\"line\" expected"; break;
+			case 24: s = "\"to\" expected"; break;
+			case 25: s = "\"curve\" expected"; break;
+			case 26: s = "\"place\" expected"; break;
+			case 27: s = "\"at\" expected"; break;
+			case 28: s = "\"scale\" expected"; break;
+			case 29: s = "\"by\" expected"; break;
+			case 30: s = "\"rotate\" expected"; break;
+			case 31: s = "\"around\" expected"; break;
+			case 32: s = "\"||\" expected"; break;
+			case 33: s = "\"&&\" expected"; break;
+			case 34: s = "\"==\" expected"; break;
+			case 35: s = "\"!=\" expected"; break;
+			case 36: s = "\"<=\" expected"; break;
+			case 37: s = "\"<\" expected"; break;
+			case 38: s = "\">=\" expected"; break;
+			case 39: s = "\">\" expected"; break;
+			case 40: s = "\"++\" expected"; break;
+			case 41: s = "\"+\" expected"; break;
+			case 42: s = "\"-\" expected"; break;
+			case 43: s = "\"*\" expected"; break;
+			case 44: s = "\"/\" expected"; break;
+			case 45: s = "\"!\" expected"; break;
+			case 46: s = "\"true\" expected"; break;
+			case 47: s = "\"false\" expected"; break;
+			case 48: s = "\"[\" expected"; break;
 			case 49: s = "\"]\" expected"; break;
 			case 50: s = "\"shape\" expected"; break;
 			case 51: s = "\"int\" expected"; break;
@@ -1063,7 +1055,6 @@ class Errors {
 			case 66: s = "invalid DeclType"; break;
 			case 67: s = "invalid DeclExpr"; break;
 			case 68: s = "invalid Term"; break;
-			case 69: s = "invalid Term"; break;
 			default: s = "error " + n; break;
 		}
 		printMsg(line, col, s);

@@ -144,14 +144,6 @@ COMPILER Program
         }
         return exprs;
     }
-
-    private boolean FollowedByStartSqBracket() {
-        return la.kind == _lSqBracket;
-    }
-
-    private boolean FollowedByStartLSqBracketOrLParentheses() {
-        return la.kind == _lSqBracket || la.kind == _lParentheses;
-    }
 /*------------------------------------------------------------------------*/
 /* The following section contains the token specification of AFS.*/
 CHARACTERS
@@ -164,8 +156,6 @@ TOKENS
   DOUBLE = digit {digit} "." digit {digit} .
   STRING = '"' { letter | digit } '"' .
   IDENT  = ('_' | letter) {letter | digit | '_'} .
-  lSqBracket = "[" .
-  lParentheses = "(" .
 
 COMMENTS FROM "/*" TO "*/" NESTED  /* Nested means: "There can be comments inside comments" */
 COMMENTS FROM "//" TO lf
@@ -248,7 +238,9 @@ Param<out Param param> =
 VarDef<out DefNode def> =
     Type<out TypeNode type>
     IDENT (. int line = t.line; int col = t.col; ExprIdentifierNode ident = new ExprIdentifierNode(t.val, line, col); .)
+    "="
     Expr<out ExprNode expr> (. def = new DefDeclarationNode(type, ident, expr, line, col); .)
+    ";"
 .
 
 /*-----------------------------------Statements-----------------------------------*/
@@ -487,10 +479,8 @@ NotExpr<out ExprNode expr>          (. List<Character> unaries = new ArrayList()
 
 Term<out ExprNode expr> = (. expr = null; .)
     (   IDENT (. ExprIdentifierNode ident = new ExprIdentifierNode(t.val, t.line, t.col); .) (. expr = ident; .)
-        [  IF(FollowedByStartLSqBracketOrLParentheses())
-            ( ExprListAccess<out expr, ident>
-            | FuncCall<out expr, ident, t.line, t.col> )
-        ]
+        [ ( ExprListAccess<out expr, ident>
+          | FuncCall<out expr, ident, t.line, t.col> ) ]
     |   ExprListDeclaration<out expr>
     |   INT     (. expr = new ExprIntNode(t.val, t.line, t.col); .)
     |   DOUBLE  (. expr = new ExprDoubleNode(t.val, t.line, t.col); .)
@@ -503,7 +493,7 @@ ExprListAccess<out ExprNode expr, ExprIdentifierNode ident> = (. List<ExprNode> 
     "["
     Expr<out ExprNode firstLa> (. exprList.add(firstLa); .)
     "]"
-    { IF(FollowedByStartSqBracket())
+    {
     "["
     Expr<out ExprNode extraLa> (. exprList.add(extraLa); .)
     "]"

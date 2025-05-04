@@ -1,10 +1,10 @@
 package afs.syntactic_analysis;
 
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 class Token {
 	public int kind;    // token kind
@@ -272,52 +272,52 @@ public class Scanner {
 	static {
 		start = new StartStates();
 		literals = new HashMap();
-		for (int i = 48; i <= 57; ++i) start.set(i, 8);
+		for (int i = 48; i <= 57; ++i) start.set(i, 6);
 		for (int i = 65; i <= 90; ++i) start.set(i, 5);
 		for (int i = 95; i <= 95; ++i) start.set(i, 5);
 		for (int i = 97; i <= 122; ++i) start.set(i, 5);
 		start.set(34, 3); 
-		start.set(91, 6); 
-		start.set(40, 7); 
-		start.set(58, 9); 
-		start.set(59, 10); 
-		start.set(44, 11); 
-		start.set(41, 12); 
-		start.set(123, 13); 
-		start.set(125, 14); 
+		start.set(58, 7); 
+		start.set(59, 8); 
+		start.set(40, 9); 
+		start.set(44, 10); 
+		start.set(41, 11); 
 		start.set(61, 28); 
-		start.set(124, 15); 
-		start.set(38, 17); 
+		start.set(123, 12); 
+		start.set(125, 13); 
+		start.set(124, 14); 
+		start.set(38, 16); 
 		start.set(33, 29); 
 		start.set(60, 30); 
 		start.set(62, 31); 
 		start.set(43, 32); 
-		start.set(45, 24); 
-		start.set(42, 25); 
-		start.set(47, 26); 
+		start.set(45, 23); 
+		start.set(42, 24); 
+		start.set(47, 25); 
+		start.set(91, 26); 
 		start.set(93, 27); 
 		start.set(Buffer.EOF, -1);
-		literals.put("visualize", 7);
-		literals.put("do", 9);
-		literals.put("fn", 11);
-		literals.put("img", 14);
-		literals.put("if", 18);
-		literals.put("then", 19);
-		literals.put("else", 20);
-		literals.put("while", 21);
-		literals.put("return", 22);
-		literals.put("text", 23);
-		literals.put("line", 24);
-		literals.put("to", 25);
-		literals.put("curve", 26);
-		literals.put("place", 27);
-		literals.put("at", 28);
-		literals.put("scale", 29);
-		literals.put("by", 30);
-		literals.put("rotate", 31);
-		literals.put("around", 32);
-		literals.put("true", 47);
-		literals.put("false", 48);
+		literals.put("visualize", 5);
+		literals.put("do", 7);
+		literals.put("fn", 9);
+		literals.put("img", 13);
+		literals.put("if", 17);
+		literals.put("then", 18);
+		literals.put("else", 19);
+		literals.put("while", 20);
+		literals.put("return", 21);
+		literals.put("text", 22);
+		literals.put("line", 23);
+		literals.put("to", 24);
+		literals.put("curve", 25);
+		literals.put("place", 26);
+		literals.put("at", 27);
+		literals.put("scale", 28);
+		literals.put("by", 29);
+		literals.put("rotate", 30);
+		literals.put("around", 31);
+		literals.put("true", 46);
+		literals.put("false", 47);
 		literals.put("shape", 50);
 		literals.put("int", 51);
 		literals.put("double", 52);
@@ -478,34 +478,34 @@ public class Scanner {
 					if (ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z') {AddCh(); state = 5; break;}
 					else {t.kind = 4; t.val = new String(tval, 0, tlen); CheckLiteral(); return t;}
 				case 6:
-					{t.kind = 5; break loop;}
+					recEnd = pos; recKind = 1;
+					if (ch >= '0' && ch <= '9') {AddCh(); state = 6; break;}
+					else if (ch == '.') {AddCh(); state = 1; break;}
+					else {t.kind = 1; break loop;}
 				case 7:
 					{t.kind = 6; break loop;}
 				case 8:
-					recEnd = pos; recKind = 1;
-					if (ch >= '0' && ch <= '9') {AddCh(); state = 8; break;}
-					else if (ch == '.') {AddCh(); state = 1; break;}
-					else {t.kind = 1; break loop;}
-				case 9:
 					{t.kind = 8; break loop;}
-				case 10:
+				case 9:
 					{t.kind = 10; break loop;}
+				case 10:
+					{t.kind = 11; break loop;}
 				case 11:
 					{t.kind = 12; break loop;}
 				case 12:
-					{t.kind = 13; break loop;}
-				case 13:
 					{t.kind = 15; break loop;}
-				case 14:
+				case 13:
 					{t.kind = 16; break loop;}
+				case 14:
+					if (ch == '|') {AddCh(); state = 15; break;}
+					else {state = 0; break;}
 				case 15:
-					if (ch == '|') {AddCh(); state = 16; break;}
-					else {state = 0; break;}
+					{t.kind = 32; break loop;}
 				case 16:
-					{t.kind = 33; break loop;}
-				case 17:
-					if (ch == '&') {AddCh(); state = 18; break;}
+					if (ch == '&') {AddCh(); state = 17; break;}
 					else {state = 0; break;}
+				case 17:
+					{t.kind = 33; break loop;}
 				case 18:
 					{t.kind = 34; break loop;}
 				case 19:
@@ -513,39 +513,39 @@ public class Scanner {
 				case 20:
 					{t.kind = 36; break loop;}
 				case 21:
-					{t.kind = 37; break loop;}
+					{t.kind = 38; break loop;}
 				case 22:
-					{t.kind = 39; break loop;}
+					{t.kind = 40; break loop;}
 				case 23:
-					{t.kind = 41; break loop;}
+					{t.kind = 42; break loop;}
 				case 24:
 					{t.kind = 43; break loop;}
 				case 25:
 					{t.kind = 44; break loop;}
 				case 26:
-					{t.kind = 45; break loop;}
+					{t.kind = 48; break loop;}
 				case 27:
 					{t.kind = 49; break loop;}
 				case 28:
-					recEnd = pos; recKind = 17;
-					if (ch == '=') {AddCh(); state = 19; break;}
-					else {t.kind = 17; break loop;}
+					recEnd = pos; recKind = 14;
+					if (ch == '=') {AddCh(); state = 18; break;}
+					else {t.kind = 14; break loop;}
 				case 29:
-					recEnd = pos; recKind = 46;
-					if (ch == '=') {AddCh(); state = 20; break;}
-					else {t.kind = 46; break loop;}
+					recEnd = pos; recKind = 45;
+					if (ch == '=') {AddCh(); state = 19; break;}
+					else {t.kind = 45; break loop;}
 				case 30:
-					recEnd = pos; recKind = 38;
-					if (ch == '=') {AddCh(); state = 21; break;}
-					else {t.kind = 38; break loop;}
+					recEnd = pos; recKind = 37;
+					if (ch == '=') {AddCh(); state = 20; break;}
+					else {t.kind = 37; break loop;}
 				case 31:
-					recEnd = pos; recKind = 40;
-					if (ch == '=') {AddCh(); state = 22; break;}
-					else {t.kind = 40; break loop;}
+					recEnd = pos; recKind = 39;
+					if (ch == '=') {AddCh(); state = 21; break;}
+					else {t.kind = 39; break loop;}
 				case 32:
-					recEnd = pos; recKind = 42;
-					if (ch == '+') {AddCh(); state = 23; break;}
-					else {t.kind = 42; break loop;}
+					recEnd = pos; recKind = 41;
+					if (ch == '+') {AddCh(); state = 22; break;}
+					else {t.kind = 41; break loop;}
 
 			}
 		}
