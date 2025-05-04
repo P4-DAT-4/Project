@@ -29,6 +29,7 @@ A parser built for Algorithm Frame Script (AFS) using CoCo/R. Language specifica
 - Once `AFS.jar` file has been generated, it can either be run directly or through the shell scrip `afs.sh` (Linux and Mac) or the bash script `afs.bat` (Windows).
 - Usage is `AFS <filename> [--print <outputfile>]`.
   - If the `--print` flag is specified, an outputfile must be provided.
+  - There is a Gradle task that runs the shell/bash script `./gradlew runAFS`.
 - The shell and bash scripts are set to run it with a default filename `intput.txt` and output file `output.dot`
 - If `--print` was used, a picture can be compiled with `dot -Tpng output.dot -o output.png` or with a DOT language plugin the picture can be generated automatically when opening the `output.dot` file.
   - Running the terminal command requires Graphviz to be installed

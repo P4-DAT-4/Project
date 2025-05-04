@@ -7,3 +7,5 @@ AFS.jar
 # Ignore input output
 input.txt
 output.dot
+*.txt
+*.png

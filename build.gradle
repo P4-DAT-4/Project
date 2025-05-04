@@ -34,8 +34,19 @@ tasks.register('GenerateParserScanner', Exec) {
     }
 }
 
+tasks.register("runAFS", Exec) {
+    def os = org.gradle.internal.os.OperatingSystem.current()
+    if (os.isWindows()) {
+        commandLine 'cmd', '/c', 'afs.bat'
+    } else if (os.isMacOsX() || os.isUnix()) {
+        commandLine 'bash', './afs.sh'  // macOS/Linux bash script
+    } else {
+        throw new GradleException("Unsupported OS")
+    }
+}
+
+
 compileJava.dependsOn(GenerateParserScanner)
-build.dependsOn(GenerateParserScanner)
 
 repositories {
     mavenCentral()
