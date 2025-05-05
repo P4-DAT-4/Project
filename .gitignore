@@ -1,11 +1,16 @@
-# Ignore generated folders/files
-.idea
-.gradle
-build
-AFS.jar
+#Ignore everything
+*
 
-# Ignore input output
-input.txt
-output.dot
-*.txt
-*.png
+#Keep CoCo/R, AFS and gradle files
+!/CocoR/**
+!/src/**
+!/gradle/**
+!.gitignore
+!afs.bat
+!afs.sh
+!build.gradle
+!gradle.properties
+!gradlew
+!gradlew.bat
+!README.md
+!settings.gradle
