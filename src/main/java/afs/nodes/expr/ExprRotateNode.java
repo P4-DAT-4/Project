@@ -1,6 +1,6 @@
 package afs.nodes.expr;
 
-public class ExprRotateNode extends ExprNode {
+public final class ExprRotateNode extends ExprNode {
     private final ExprNode leftExpression;
     private final ExprNode middleExpression;
     private final ExprNode rightExpression;

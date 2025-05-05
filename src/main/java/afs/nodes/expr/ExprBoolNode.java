@@ -1,6 +1,6 @@
 package afs.nodes.expr;
 
-public class ExprBoolNode extends ExprNode {
+public final class ExprBoolNode extends ExprNode {
     private final boolean value;
 
     public ExprBoolNode(String value, int line, int column) {

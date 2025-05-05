@@ -5,7 +5,7 @@ import afs.nodes.expr.ExprIdentifierNode;
 import afs.nodes.expr.ExprNode;
 import afs.nodes.type.TypeNode;
 
-public class DefDeclarationNode extends DefNode {
+public final class DefDeclarationNode extends DefNode {
     private final TypeNode type;
     private final ExprIdentifierNode identifier;
     private final ExprNode expression;

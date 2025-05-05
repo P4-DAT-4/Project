@@ -1,6 +1,6 @@
 package afs.nodes.type;
 
-public class TypeVoidNode extends TypeNode {
+public final class TypeVoidNode extends TypeNode {
     public TypeVoidNode(int lineNumber, int columnNumber) {
         super(lineNumber, columnNumber);
     }

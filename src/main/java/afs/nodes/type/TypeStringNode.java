@@ -1,6 +1,6 @@
 package afs.nodes.type;
 
-public class TypeStringNode extends TypeNode {
+public final class TypeStringNode extends TypeNode {
     public TypeStringNode(int lineNumber, int columnNumber) {
         super(lineNumber, columnNumber);
     }

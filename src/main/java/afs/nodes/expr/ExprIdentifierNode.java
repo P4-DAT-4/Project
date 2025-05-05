@@ -1,6 +1,6 @@
 package afs.nodes.expr;
 
-public class ExprIdentifierNode extends ExprNode {
+public final class ExprIdentifierNode extends ExprNode {
     private final String identifier;
 
     public ExprIdentifierNode(String identifier, int line, int column) {

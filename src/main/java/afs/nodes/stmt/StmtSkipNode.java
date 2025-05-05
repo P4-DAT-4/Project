@@ -1,6 +1,6 @@
 package afs.nodes.stmt;
 
-public class StmtSkipNode extends StmtNode {
+public final class StmtSkipNode extends StmtNode {
 
     public StmtSkipNode() {
         super(0, 0);

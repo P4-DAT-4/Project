@@ -1,6 +1,6 @@
 package afs.nodes.expr;
 
-public class ExprBinopNode extends ExprNode {
+public final class ExprBinopNode extends ExprNode {
     private final ExprNode leftExpression;
     private final ExprNode rightExpression;
     private final BinOp op;

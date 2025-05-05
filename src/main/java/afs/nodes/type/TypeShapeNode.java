@@ -1,6 +1,6 @@
 package afs.nodes.type;
 
-public class TypeShapeNode extends TypeNode {
+public final class TypeShapeNode extends TypeNode {
 
     public TypeShapeNode(int lineNumber, int columnNumber) {
         super(lineNumber, columnNumber);

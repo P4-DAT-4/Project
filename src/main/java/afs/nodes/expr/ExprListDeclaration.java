@@ -2,7 +2,7 @@ package afs.nodes.expr;
 
 import java.util.List;
 
-public class ExprListDeclaration extends ExprNode {
+public final class ExprListDeclaration extends ExprNode {
     private final List<ExprNode> expressions;
 
     public ExprListDeclaration(List<ExprNode> expressions, int line, int column) {

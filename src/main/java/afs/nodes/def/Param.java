@@ -4,7 +4,7 @@ import afs.nodes.AbstractSyntaxNode;
 import afs.nodes.expr.ExprIdentifierNode;
 import afs.nodes.type.TypeNode;
 
-public class Param extends AbstractSyntaxNode {
+public final class Param extends AbstractSyntaxNode {
     private final TypeNode type;
     private final ExprIdentifierNode identifier;
 

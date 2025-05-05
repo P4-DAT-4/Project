@@ -2,7 +2,7 @@ package afs.nodes.expr;
 
 import java.util.List;
 
-public class ExprFunctionCallNode extends ExprNode {
+public final class ExprFunctionCallNode extends ExprNode {
     private final ExprIdentifierNode identifier;
     private final List<ExprNode> arguments;
 

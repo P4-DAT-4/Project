@@ -2,7 +2,7 @@ package afs.nodes.stmt;
 
 import afs.nodes.expr.ExprFunctionCallNode;
 
-public class StmtFunctionCallNode extends StmtNode {
+public final class StmtFunctionCallNode extends StmtNode {
     private final ExprFunctionCallNode functionCall;
 
     public StmtFunctionCallNode(ExprFunctionCallNode functionCall, int line, int column) {

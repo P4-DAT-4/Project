@@ -1,6 +1,6 @@
 package afs.nodes.stmt;
 
-public class StmtCompositionNode extends StmtNode {
+public final class StmtCompositionNode extends StmtNode {
     private final StmtNode leftStatement;
     private final StmtNode rightStatement;
 

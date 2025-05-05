@@ -1,6 +1,6 @@
 package afs.nodes.expr;
 
-public class ExprPlaceNode extends ExprNode {
+public final class ExprPlaceNode extends ExprNode {
     private final ExprNode leftExpression;
     private final ExprNode rightExpression;
 

@@ -1,6 +1,6 @@
 package afs.nodes.type;
 
-public class TypeListNode extends TypeNode {
+public final class TypeListNode extends TypeNode {
     private final TypeNode type;
 
     public TypeListNode(TypeNode type, int line, int column) {

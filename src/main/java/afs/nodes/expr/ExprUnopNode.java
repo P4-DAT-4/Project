@@ -1,6 +1,6 @@
 package afs.nodes.expr;
 
-public class ExprUnopNode extends ExprNode {
+public final class ExprUnopNode extends ExprNode {
     private final ExprNode expr;
     private final UnOp op;
 

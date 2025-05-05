@@ -90,7 +90,6 @@ public class RecursiveGraphvizPrinter implements PrinterInterface {
                 int eventId = printEvent(node.getEvent());
                 addEdge(nodeId, eventId);
             }
-            default -> throw new IllegalStateException("Unknown def node: " + def);
         }
         return nodeId;
     }
@@ -125,7 +124,6 @@ public class RecursiveGraphvizPrinter implements PrinterInterface {
                 int funcCallId = printExpr(node.getFunctionCall());
                 addEdge(nodeId, funcCallId);
             }
-            default -> throw new IllegalStateException("Unknown event node: " + event);
         }
         return nodeId;
     }
@@ -185,7 +183,6 @@ public class RecursiveGraphvizPrinter implements PrinterInterface {
                 int bodyId = printStmt(node.getStatement());
                 addEdge(nodeId, bodyId);
             }
-            default -> throw new IllegalStateException("Unknown stmt node" + stmt);
         }
         return nodeId;
     }
@@ -272,7 +269,6 @@ public class RecursiveGraphvizPrinter implements PrinterInterface {
                 int exprId = printExpr(node.getExpression());
                 addEdge(nodeId, exprId);
             }
-            default -> throw new IllegalStateException("Unknown expr node " + expr);
         }
         return nodeId;
     }

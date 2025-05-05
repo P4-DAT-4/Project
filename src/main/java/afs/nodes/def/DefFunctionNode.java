@@ -6,7 +6,7 @@ import afs.nodes.type.TypeNode;
 
 import java.util.List;
 
-public class DefFunctionNode extends DefNode {
+public final class DefFunctionNode extends DefNode {
     private final TypeNode type;
     private final ExprIdentifierNode identifier;
     private final List<Param> parameters;

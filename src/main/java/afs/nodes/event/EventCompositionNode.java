@@ -1,6 +1,6 @@
 package afs.nodes.event;
 
-public class EventCompositionNode extends EventNode {
+public final class EventCompositionNode extends EventNode {
     private final EventNode leftEvent;
     private final EventNode rightEvent;
 

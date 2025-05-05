@@ -2,7 +2,7 @@ package afs.nodes.stmt;
 
 import afs.nodes.expr.ExprNode;
 
-public class StmtReturnNode extends StmtNode {
+public final class StmtReturnNode extends StmtNode {
     private final ExprNode expression;
 
     public StmtReturnNode(ExprNode expression, int line, int column) {

@@ -2,7 +2,7 @@ package afs.nodes.stmt;
 
 import afs.nodes.expr.ExprNode;
 
-public class StmtWhileNode extends StmtNode {
+public final class StmtWhileNode extends StmtNode {
     private final ExprNode expression;
     private final StmtNode statement;
 

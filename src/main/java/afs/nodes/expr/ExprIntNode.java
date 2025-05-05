@@ -1,6 +1,6 @@
 package afs.nodes.expr;
 
-public class ExprIntNode extends ExprNode {
+public final class ExprIntNode extends ExprNode {
     private final int value;
 
     public ExprIntNode(String value, int line, int column) {

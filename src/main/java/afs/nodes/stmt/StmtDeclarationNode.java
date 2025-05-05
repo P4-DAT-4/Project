@@ -4,7 +4,7 @@ import afs.nodes.expr.ExprIdentifierNode;
 import afs.nodes.expr.ExprNode;
 import afs.nodes.type.TypeNode;
 
-public class StmtDeclarationNode extends StmtNode {
+public final class StmtDeclarationNode extends StmtNode {
     private final TypeNode type;
     private final ExprIdentifierNode identifier;
     private final ExprNode expression;

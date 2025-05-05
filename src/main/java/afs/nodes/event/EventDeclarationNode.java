@@ -3,7 +3,7 @@ package afs.nodes.event;
 import afs.nodes.expr.ExprFunctionCallNode;
 import afs.nodes.expr.ExprNode;
 
-public class EventDeclarationNode extends EventNode {
+public final class EventDeclarationNode extends EventNode {
     private final ExprNode expression;
     private final ExprFunctionCallNode functionCall;
 

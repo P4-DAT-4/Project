@@ -1,6 +1,6 @@
 package afs.nodes.stmt;
 
-public class StmtBlockNode extends StmtNode {
+public final class StmtBlockNode extends StmtNode {
     private final StmtDeclarationNode declaration;
     private final StmtNode statement;
 
