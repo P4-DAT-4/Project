@@ -1,0 +1,153 @@
+
+---------- states ----------
+                0: digit 10
+                   #A  5
+                   '"'  3
+                   '['  6
+                   #B  9
+                   '+' 11
+                   '<' 12
+                   '>' 13
+                   '=' 22
+                   '!' 23
+                   '&'  7
+                   '|'  8
+                   ';' 14
+                   '(' 15
+                   ',' 16
+                   ')' 17
+                   '{' 18
+                   '}' 19
+                   ']' 20
+                   '-' 21
+                1: digit  2
+E(DOUBLE      ) 2: digit  2
+                3: #C  3
+                   '"'  4
+E(STRING      ) 4:
+E(IDENT       ) 5: #D  5
+E(_lSqBracket ) 6:
+                7: '&'  9
+                8: '|'  9
+E(BINOP       ) 9:
+E(INT         )10: digit 10
+                   '.'  1
+E(BINOP       )11: '+'  9
+E(BINOP       )12: '='  9
+E(BINOP       )13: '='  9
+E(";"         )14:
+E("("         )15:
+E(","         )16:
+E(")"         )17:
+E("{"         )18:
+E("}"         )19:
+E("]"         )20:
+E("-"         )21:
+E("="         )22: '='  9
+E("!"         )23: '='  9
+
+---------- character classes ----------
+letter:   'A'..'Z' 'a'..'z' 
+digit:    '0'..'9' 
+lf:       10 
+#A:       'A'..'Z' '_' 'a'..'z' 
+#B:       '*' '/' 
+#C:       '0'..'9' 'A'..'Z' 'a'..'z' 
+#D:       '0'..'9' 'A'..'Z' '_' 'a'..'z' 
+
+
+43 terminals
+82 symbols
+357 nodes
+7 sets
+Symbol Table:
+------------
+
+ nr name           typ  hasAt graph  del   line tokenKind
+  0 EOF            t    false                 0 fixedToken
+  1 INT            t    false               162 classToken
+  2 DOUBLE         t    false               163 classToken
+  3 STRING         t    false               164 classToken
+  4 IDENT          t    false               165 classLitToken
+  5 _lSqBracket    t    false               166 fixedToken
+  6 BINOP          t    false               167 fixedToken
+  7 "visualize"    t    false               189 litToken
+  8 "do"           t    false               198 litToken
+  9 ";"            t    false               201 fixedToken
+ 10 "fn"           t    false               218 litToken
+ 11 "("            t    false               219 fixedToken
+ 12 ","            t    false               221 fixedToken
+ 13 ")"            t    false               223 fixedToken
+ 14 "img"          t    false               228 litToken
+ 15 "{"            t    false               250 fixedToken
+ 16 "}"            t    false               253 fixedToken
+ 17 "="            t    false               271 fixedToken
+ 18 "if"           t    false               291 litToken
+ 19 "then"         t    false               293 litToken
+ 20 "else"         t    false               295 litToken
+ 21 "while"        t    false               301 litToken
+ 22 "return"       t    false               309 litToken
+ 23 "text"         t    false               370 litToken
+ 24 "line"         t    false               375 litToken
+ 25 "to"           t    false               377 litToken
+ 26 "curve"        t    false               385 litToken
+ 27 "place"        t    false               394 litToken
+ 28 "at"           t    false               396 litToken
+ 29 "scale"        t    false               409 litToken
+ 30 "by"           t    false               411 litToken
+ 31 "rotate"       t    false               416 litToken
+ 32 "around"       t    false               418 litToken
+ 33 "]"            t    false               446 fixedToken
+ 34 "!"            t    false               464 fixedToken
+ 35 "-"            t    false               465 fixedToken
+ 36 "shape"        t    false               476 litToken
+ 37 "int"          t    false               481 litToken
+ 38 "double"       t    false               482 litToken
+ 39 "bool"         t    false               483 litToken
+ 40 "string"       t    false               484 litToken
+ 41 "void"         t    false               485 litToken
+ 42 ???            t    false                 0 fixedToken
+  0 Program        nt   false     1 false   178 fixedToken
+  1 Prog           nt   false     2 false   182 fixedToken
+  2 Def            nt   false    36 false   211 fixedToken
+  3 Visualize      nt   false     8 false   188 fixedToken
+  4 FuncCall       nt   true    147 false   319 fixedToken
+  5 Events         nt   false    15 false   196 fixedToken
+  6 Expr           nt   false   260 false   425 fixedToken
+  7 FnDef          nt   false    40 false   217 fixedToken
+  8 ImgDef         nt   false    56 false   227 fixedToken
+  9 VarDef         nt   false    74 false   242 fixedToken
+ 10 Type           nt   false   341 false   480 fixedToken
+ 11 Param          nt   false    71 false   237 fixedToken
+ 12 StmtBlock      nt   false    79 false   249 fixedToken
+ 13 DeclBlock      nt   false   158 false   328 fixedToken
+ 14 Stmt           nt   false    88 false   256 fixedToken
+ 15 StmtDeclarat   nt   false   103 false   268 fixedToken
+ 16 StmtIf         nt   false   119 false   290 fixedToken
+ 17 StmtWhile      nt   false   131 false   300 fixedToken
+ 18 StmtReturn     nt   false   139 false   308 fixedToken
+ 19 StmtAssignme   nt   true    110 false   276 fixedToken
+ 20 StmtListAssi   nt   true    114 false   283 fixedToken
+ 21 StmtFuncCall   nt   true    144 false   314 fixedToken
+ 22 ExprListAcce   nt   true    293 false   443 fixedToken
+ 23 Decl           nt   false   167 false   335 fixedToken
+ 24 DeclDecl       nt   false   169 false   340 fixedToken
+ 25 DeclIf         nt   false   176 false   348 fixedToken
+ 26 DeclType       nt   false   335 false   475 fixedToken
+ 27 DeclExpr       nt   false   190 false   359 fixedToken
+ 28 Text           nt   false   202 false   369 fixedToken
+ 29 Line           nt   false   206 false   374 fixedToken
+ 30 Curve          nt   false   220 false   384 fixedToken
+ 31 Place          nt   false   233 false   393 fixedToken
+ 32 Scale          nt   false   246 false   408 fixedToken
+ 33 Rotate         nt   false   252 false   415 fixedToken
+ 34 Coord          nt   false   239 false   400 fixedToken
+ 35 Primary        nt   false   278 false   429 fixedToken
+ 36 BinOpExpr      nt   true    327 false   469 fixedToken
+ 37 ExprListDecl   nt   false   305 false   454 fixedToken
+ 38 UnOpExpr       nt   false   317 false   463 fixedToken
+
+Literal Tokens:
+--------------
+__lSqBracket = "[".
+
