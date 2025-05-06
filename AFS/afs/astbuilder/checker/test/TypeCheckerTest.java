@@ -1,8 +1,9 @@
 package afs.astbuilder.checker.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import afs.astbuilder.checker.TypeChecker;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 // Uses Junit5 for unit testing TypeChecker
