@@ -1,0 +1,57 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+application {
+    mainClass = 'afs.Main'
+}
+
+compileJava {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'afs.Main'  // Ensure the main class is set here
+        )
+    }
+    destinationDirectory = file("$rootDir")  // Output the JAR to the project root
+}
+
+tasks.register('GenerateParserScanner', Exec) {
+    workingDir = file('CocoR')  // Set the working directory
+    def os = org.gradle.internal.os.OperatingSystem.current()
+
+    if (os.isWindows()) {
+        commandLine 'cmd', '/c', 'cocoR.bat'  // Windows batch script
+    } else if (os.isMacOsX() || os.isUnix()) {
+        commandLine 'bash', './cocoR.sh'  // macOS/Linux bash script
+    } else {
+        throw new GradleException("Unsupported OS")
+    }
+}
+
+tasks.register("runAFS", Exec) {
+    def os = org.gradle.internal.os.OperatingSystem.current()
+    if (os.isWindows()) {
+        commandLine 'cmd', '/c', 'afs.bat'
+    } else if (os.isMacOsX() || os.isUnix()) {
+        commandLine 'bash', './afs.sh'  // macOS/Linux bash script
+    } else {
+        throw new GradleException("Unsupported OS")
+    }
+}
+
+
+compileJava.dependsOn(GenerateParserScanner)
+
+repositories {
+    mavenCentral()
+}
+
+test {
+    useJUnitPlatform()
+}

@@ -1,0 +1,16 @@
+#Ignore everything
+*
+
+#Keep CoCo/R, AFS and gradle files
+!/CocoR/**
+!/src/**
+!/gradle/**
+!.gitignore
+!afs.bat
+!afs.sh
+!build.gradle
+!gradle.properties
+!gradlew
+!gradlew.bat
+!README.md
+!settings.gradle
