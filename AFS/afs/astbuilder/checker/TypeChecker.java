@@ -7,14 +7,9 @@ import afs.astbuilder.nodes.stmt.*;
 import afs.astbuilder.nodes.event.*;
 import afs.astbuilder.nodes.type.*;
 import afs.astbuilder.nodes.def.*;
-
-import java.lang.reflect.Type;
 import java.util.List;
 
-
-
-
-public class ExprTypeChecker {
+public class TypeChecker {
 
     private AFSType DeclarationType(DefNode def) {
         switch (def) {
@@ -49,7 +44,7 @@ public class ExprTypeChecker {
                 }
 
                 AFSType stmtType = StmtType(functionNode.getStatement());
-                TypeValidator.validateTypeEquality(identifierType, stmtType);
+                TypeValidator.validateTypeEquality(stmtType, identifierType);
 
                 return type;
             }
@@ -114,31 +109,19 @@ public class ExprTypeChecker {
 
                 return SimpleType.VOID;
             }
-            case StmtAssignmentNode assignmentNode -> { // Ikke færdig
+            case StmtAssignmentNode assignmentNode -> {
                 AFSType leftType = ExprType(assignmentNode.getLeftExpression());
                 
                 if (!(leftType instanceof ListType)) {
-                    boolean validLeft = leftType.equals(SimpleType.INT) || leftType.equals(SimpleType.DOUBLE) || leftType.equals(SimpleType.STRING) || leftType.equals(SimpleType.BOOL);
-                    if (!validLeft) {
-                        throw new TypeCheckException("Invalid type '" + leftType + "': " + "Expected int, double, string or bool");
-                    }
+                    TypeValidator.validatePrimitiveType(leftType);
+                    
                     AFSType rightType = ExprType(assignmentNode.getRightExpression());
-                    boolean validRight = rightType.equals(leftType);;
-                    if (!validRight) {
-                        throw new TypeCheckException("Invalid type '" + rightType + "': " + "Expected same type as left expression: " + leftType);
-                    }
+                    TypeValidator.validateTypeEquality(rightType, leftType);
+                    
                     return leftType;
                 } else {
-                    AFSType rightType = ExprType(assignmentNode.getRightExpression());
-                    if(!(rightType instanceof ListType)) {
-                        throw new TypeCheckException("Invalid type '" + rightType + "': " + "Expected same type as left expression: " + leftType);
-                    }
-                    ListType leftListType = (ListType) leftType;
-                    ListType rightListType = (ListType) rightType;
-                    if(!(leftListType.equals(rightListType))) {
-                        throw new TypeCheckException("Invalid type '" + rightType + "': " + "Expected same type as left expression: " + leftType);
-                    }
-                    return leftListType;
+                   // TODO
+                   return null;
                 }
             }
             case StmtBlockNode blockNode -> {
@@ -147,12 +130,7 @@ public class ExprTypeChecker {
             case StmtCompositionNode compositionNode -> {
                 AFSType leftType = StmtType(compositionNode.getLeftStatement());
                 AFSType rightType = StmtType(compositionNode.getRightStatement());
-
-                boolean validComposition = leftType.equals(rightType);
-
-                if (!validComposition) {
-                    throw new TypeCheckException("Invalid type '" + leftType + "': " + "Expected same type as right statement: " + rightType);
-                }
+                TypeValidator.validateTypeEquality(rightType, leftType);
                 return leftType;
             }
             case StmtDeclarationNode declarationNode -> {
@@ -197,21 +175,14 @@ public class ExprTypeChecker {
                 switch (binOp) {
                     case ADD, SUB, MUL, DIV -> {
                         AFSType leftType = ExprType(binopNode.getLeftExpression());
-                        boolean validLeft = leftType.equals(SimpleType.DOUBLE) ||  leftType.equals(SimpleType.INT);
-
-                        if (!validLeft) {
-                            throw new TypeCheckException("Invalid type '" + leftType + "': " + "Expected int or double");
-                        }
-
+                        TypeValidator.validateBinop(leftType);
+                        
                         AFSType rightType = ExprType(binopNode.getRightExpression());
-                        boolean validRight = rightType.equals(leftType);
-
-                        if (!validRight) {
-                            throw new TypeCheckException("Invalid type '" + rightType + "': " + "Expected int or double");
-                        }
+                        TypeValidator.validateBinop(rightType);
+                        
                         return leftType;
                     }
-                    case CONCAT -> {
+                    case CAT -> { // Tjek denne!
                         AFSType leftType = ExprType(binopNode.getLeftExpression());
                         boolean validLeft = leftType.equals(SimpleType.STRING) || leftType.equals(SimpleType.SHAPE) || leftType instanceof ListType;
 
@@ -220,25 +191,17 @@ public class ExprTypeChecker {
                         }
 
                         AFSType rightType = ExprType(binopNode.getRightExpression());
-                        boolean validRight = rightType.equals(leftType);
-
-                        if (!validRight) {
-                            throw new TypeCheckException("Invalid right type");
-                        }
+                        TypeValidator.validateTypeEquality(rightType, leftType);
+                        
                         return leftType;
                     }
                     case LT, EQ -> {
                         AFSType leftType = ExprType(binopNode.getLeftExpression());
-                        boolean validLeft = leftType.equals(SimpleType.INT) || leftType.equals(SimpleType.DOUBLE);
+                        TypeValidator.validateBinop(leftType);
 
-                        if (!validLeft) {
-                            throw new TypeCheckException("Invalid type '" + leftType + "': " + "Expected int or double");
-                        }
                         AFSType rightType = ExprType(binopNode.getRightExpression());
-                        boolean validRight = rightType.equals(leftType);
-                        if (!validRight) {
-                            throw new TypeCheckException("Invalid type '" + rightType + "': " + "Expected int or double");
-                        }
+                        TypeValidator.validateBinop(rightType);
+                        
                         return SimpleType.BOOL;
                     }
                     case AND -> {
@@ -262,16 +225,11 @@ public class ExprTypeChecker {
                     case NOT -> {
                         AFSType exprType = ExprType(unopNode.getExpr());
                         TypeValidator.validBooleanType(exprType);
-
                         return SimpleType.BOOL;
                     }
                     case NEG -> {
                         AFSType exprType = ExprType(unopNode.getExpr());
-                        boolean validExpr = exprType.equals(SimpleType.INT) || exprType.equals(SimpleType.DOUBLE);
-
-                        if (!validExpr) {
-                            throw new TypeCheckException("Invalid type '" + exprType + "': " + "Expected int or double");
-                        }
+                        TypeValidator.validateBinop(exprType);
                         return exprType;
                     }
                     default -> {
