@@ -1,9 +1,10 @@
-package afs.astbuilder.checker;
+package afs.semantic_analysis;
+
+import afs.semantic_analysis.exceptions.TypeCheckException;
+import afs.semantic_analysis.types.AFSType;
+import afs.semantic_analysis.types.SimpleType;
 
 import java.util.Set;
-import afs.astbuilder.checker.exceptions.TypeCheckException;
-import afs.astbuilder.checker.types.AFSType;
-import afs.astbuilder.checker.types.SimpleType;
 
 public class TypeValidator {
   private static final Set<SimpleType> SIMPLE_TYPES = Set.of(

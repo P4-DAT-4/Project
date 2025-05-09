@@ -1,6 +1,6 @@
-package afs.astbuilder.checker.types;
+package afs.semantic_analysis.types;
 
-import afs.astbuilder.checker.exceptions.TypeCheckException;
+import afs.semantic_analysis.exceptions.TypeCheckException;
 
 public class Param {
     public final String name;

@@ -1,12 +1,13 @@
-package afs.astbuilder.checker;
-
-import afs.astbuilder.checker.exceptions.DeclarationException;
-import afs.astbuilder.checker.exceptions.LookupException;
-import afs.astbuilder.checker.types.AFSType;
+package afs.semantic_analysis;
+import afs.semantic_analysis.exceptions.DeclarationException;
+import afs.semantic_analysis.exceptions.LookupException;
+import afs.semantic_analysis.types.AFSType;
 
 public interface ITypeEnvironment {
     void enterScope();
     void exitScope();
-    void declare(String name, AFSType type) throws DeclarationException;
-    AFSType lookup(String name) throws LookupException;
+    void declareVariable(String identifier, AFSType type) throws DeclarationException;
+    AFSType lookupVariable(String identifier) throws LookupException;
+    void declareFunction(String identifier, AFSType type) throws DeclarationException;
+    AFSType lookupFunction(String identifier) throws LookupException;
 }

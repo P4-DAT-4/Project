@@ -1,4 +1,4 @@
-package afs.astbuilder.checker.exceptions;
+package afs.semantic_analysis.exceptions;
 
 public class TypeCheckException extends RuntimeException {
     public TypeCheckException() {

@@ -1,13 +1,14 @@
-package afs.astbuilder.checker;
+package afs.semantic_analysis;
 
-import afs.astbuilder.checker.exceptions.*;
-import afs.astbuilder.checker.types.*;
-import afs.astbuilder.nodes.expr.*;
-import afs.astbuilder.nodes.stmt.*;
-import afs.astbuilder.nodes.event.*;
-import afs.astbuilder.nodes.type.*;
-import afs.astbuilder.nodes.def.*;
+import afs.semantic_analysis.exceptions.*;
+import afs.semantic_analysis.types.*;
+import afs.nodes.expr.*;
+import afs.nodes.stmt.*;
+import afs.nodes.event.*;
+import afs.nodes.type.*;
+import afs.nodes.def.*;
 import java.util.List;
+
 
 public class TypeChecker {
 

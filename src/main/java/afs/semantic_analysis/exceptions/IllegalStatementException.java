@@ -1,4 +1,4 @@
-package afs.astbuilder.checker.exceptions;
+package afs.semantic_analysis.exceptions;
 
 public class IllegalStatementException extends RuntimeException {
     public IllegalStatementException(String message) {
