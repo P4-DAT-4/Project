@@ -1,16 +1,37 @@
 #Ignore everything
 *
 
-#Keep CoCo/R, AFS and gradle files
-!/CocoR/**
-!/src/**
-!/gradle/**
+# Allow gitignore
 !.gitignore
+
+# Allow source code
+!/src/**
+
+# Allow custom scripts to run AFS
 !afs.bat
 !afs.sh
+
+#ReadMe
+!README.md
+
+# Allow CoCo/R
+!/CocoR/**
+
+# Allow Gradle
+!/gradle/**
 !build.gradle
 !gradle.properties
 !gradlew
 !gradlew.bat
-!README.md
 !settings.gradle
+
+# Workspace settings
+!.idea/misc.xml
+!.idea/compiler.xml
+!.idea/gradle.xml
+!.idea/checkstyle-idea.xml
+!.idea/.name
+
+# Ignore user-specific IntelliJ settings
+.idea/workspace.xml
+.idea/vcs.xml
