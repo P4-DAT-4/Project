@@ -1,34 +1,21 @@
 package afs.astbuilder.nodes.expr;
 
-import afs.astbuilder.checker.types.AFSType;
-import afs.astbuilder.visitor.ExprVisitor;
-
 import java.util.List;
 
 public class ExprFunctionCallNode extends ExprNode {
-    private final ExprIdentifierNode identifier;
-    private final List<ExprNode> expressions;
+    private final String identifier;
+    private final List<ExprNode> arguments;
 
-    public ExprFunctionCallNode(ExprIdentifierNode identifier, List<ExprNode> expressions) {
+    public ExprFunctionCallNode(String identifier, List<ExprNode> arguments) {
         this.identifier = identifier;
-        this.expressions = expressions;
+        this.arguments = arguments;
     }
 
-    public ExprIdentifierNode getIdentifier() {
+    public String getIdentifier() {
         return identifier;
     }
 
-    public List<ExprNode> getExpressions() {
-        return expressions;
-    }
-
-    @Override
-    public AFSType acceptVisit(ExprVisitor visitor) {
-        return visitor.visitExprFunctionCallNode(this);
-    }
-
-    @Override
-    public String toString() {
-        return "x(arrow(e))";
+    public List<ExprNode> getArguments() {
+        return arguments;
     }
 }

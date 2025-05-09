@@ -1,10 +1,8 @@
 package afs.astbuilder.nodes.stmt;
 
-import afs.astbuilder.checker.types.AFSType;
 import afs.astbuilder.nodes.expr.ExprIdentifierNode;
 import afs.astbuilder.nodes.expr.ExprNode;
 import afs.astbuilder.nodes.type.TypeNode;
-import afs.astbuilder.visitor.StmtVisitor;
 
 public class StmtDeclarationNode extends StmtNode {
     private final TypeNode type;
@@ -30,11 +28,6 @@ public class StmtDeclarationNode extends StmtNode {
             System.out.println("Expression is null");
         }
         return expression;
-    }
-
-    @Override
-    public AFSType acceptVisit(StmtVisitor visitor) {
-        return visitor.visitStmtDeclarationNode(this);
     }
 
     @Override

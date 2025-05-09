@@ -1,8 +1,5 @@
 package afs.astbuilder.nodes.expr;
 
-import afs.astbuilder.checker.types.AFSType;
-import afs.astbuilder.visitor.ExprVisitor;
-
 public class ExprRotateNode extends ExprNode {
     private final ExprNode leftExpression;
     private final ExprNode middleExpression;
@@ -24,11 +21,6 @@ public class ExprRotateNode extends ExprNode {
 
     public ExprNode getRightExpression() {
         return rightExpression;
-    }
-
-    @Override
-    public AFSType acceptVisit(ExprVisitor visitor) {
-        return visitor.visitExprRotateNode(this);
     }
 
     @Override

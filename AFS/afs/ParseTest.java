@@ -1,17 +1,16 @@
 package afs;
 
+import afs.astbuilder.nodes.prog.ProgNode;
+import afs.astbuilder.parser.ProgParser;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
-
-import afs.astbuilder.nodes.prog.ProgNode;
-import afs.astbuilder.parser.ProgParser;
-import afs.astprinter.GraphvizVisitor;
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
 
 public class ParseTest {
     public static ProgNode buildASTFromFile(Path filePath) throws IOException {

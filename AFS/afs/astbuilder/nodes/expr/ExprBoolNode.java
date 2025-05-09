@@ -1,8 +1,5 @@
 package afs.astbuilder.nodes.expr;
 
-import afs.astbuilder.checker.types.AFSType;
-import afs.astbuilder.visitor.ExprVisitor;
-
 public class ExprBoolNode extends ExprNode {
     private final boolean value;
 
@@ -12,11 +9,6 @@ public class ExprBoolNode extends ExprNode {
 
     public boolean getValue() {
         return value;
-    }
-
-    @Override
-    public AFSType acceptVisit(ExprVisitor visitor) {
-        return visitor.visitExprBoolNode(this);
     }
 
     @Override

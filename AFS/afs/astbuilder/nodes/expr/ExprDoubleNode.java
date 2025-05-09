@@ -1,8 +1,5 @@
 package afs.astbuilder.nodes.expr;
 
-import afs.astbuilder.checker.types.AFSType;
-import afs.astbuilder.visitor.ExprVisitor;
-
 public class ExprDoubleNode extends ExprNode {
     private final double value;
 
@@ -12,11 +9,6 @@ public class ExprDoubleNode extends ExprNode {
 
     public double getValue() {
         return value;
-    }
-
-    @Override
-    public AFSType acceptVisit(ExprVisitor visitor) {
-        return visitor.visitExprDoubleNode(this);
     }
 
     @Override

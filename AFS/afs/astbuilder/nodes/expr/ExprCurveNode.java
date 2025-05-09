@@ -1,8 +1,5 @@
 package afs.astbuilder.nodes.expr;
 
-import afs.astbuilder.checker.types.AFSType;
-import afs.astbuilder.visitor.ExprVisitor;
-
 import java.util.List;
 
 public class ExprCurveNode extends ExprNode {
@@ -14,11 +11,6 @@ public class ExprCurveNode extends ExprNode {
 
     public List<ExprNode> getExpressions() {
         return expressions;
-    }
-
-    @Override
-    public AFSType acceptVisit(ExprVisitor visitor) {
-        return visitor.visitExprCurveNode(this);
     }
 
     @Override

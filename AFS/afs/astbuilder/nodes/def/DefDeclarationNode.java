@@ -1,11 +1,9 @@
 package afs.astbuilder.nodes.def;
 
 
-import afs.astbuilder.checker.types.AFSType;
 import afs.astbuilder.nodes.expr.ExprIdentifierNode;
 import afs.astbuilder.nodes.expr.ExprNode;
 import afs.astbuilder.nodes.type.TypeNode;
-import afs.astbuilder.visitor.DefVisitor;
 
 public class DefDeclarationNode extends DefNode {
     private final TypeNode type;
@@ -28,11 +26,6 @@ public class DefDeclarationNode extends DefNode {
 
     public ExprNode getExpression() {
         return expression;
-    }
-
-    @Override
-    public AFSType acceptVisit(DefVisitor visitor) {
-        return visitor.visitDefDeclarationNode(this);
     }
 
     @Override

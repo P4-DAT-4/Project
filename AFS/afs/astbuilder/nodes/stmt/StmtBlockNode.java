@@ -1,8 +1,5 @@
 package afs.astbuilder.nodes.stmt;
 
-import afs.astbuilder.checker.types.AFSType;
-import afs.astbuilder.visitor.StmtVisitor;
-
 import java.util.List;
 
 public class StmtBlockNode extends StmtNode {
@@ -20,11 +17,6 @@ public class StmtBlockNode extends StmtNode {
 
     public StmtNode getStatement() {
         return statement;
-    }
-
-    @Override
-    public AFSType acceptVisit(StmtVisitor visitor) {
-        return visitor.visitStmtBlockNode(this);
     }
 
     @Override

@@ -1,16 +1,22 @@
 package afs.astbuilder.nodes.expr;
 
-public class ExprScaleNode extends ExprNode {
+public class ExprBinopNode extends ExprNode {
     private final ExprNode leftExpression;
     private final ExprNode rightExpression;
+    private final BinOp op;
 
-    public ExprScaleNode(ExprNode leftExpression, ExprNode rightExpression) {
+    public ExprBinopNode(ExprNode leftExpression, BinOp op, ExprNode rightExpression) {
         this.leftExpression = leftExpression;
+        this.op = op;
         this.rightExpression = rightExpression;
     }
 
     public ExprNode getLeftExpression() {
         return leftExpression;
+    }
+
+    public BinOp getOp() {
+        return op;
     }
 
     public ExprNode getRightExpression() {
@@ -19,6 +25,6 @@ public class ExprScaleNode extends ExprNode {
 
     @Override
     public String toString() {
-        return "Scale e1 by e2";
+        return op.toString();
     }
 }
