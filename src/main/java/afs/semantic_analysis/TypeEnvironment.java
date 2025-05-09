@@ -1,8 +1,8 @@
-package afs.astbuilder.checker;
+package afs.semantic_analysis;
 
-import afs.astbuilder.checker.exceptions.DeclarationException;
-import afs.astbuilder.checker.exceptions.LookupException;
-import afs.astbuilder.checker.types.AFSType;
+import afs.semantic_analysis.exceptions.DeclarationException;
+import afs.semantic_analysis.exceptions.LookupException;
+import afs.semantic_analysis.types.AFSType;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -12,6 +12,7 @@ import java.util.Map;
 public class TypeEnvironment implements ITypeEnvironment {
     private final Map<String, AFSType> globalEnv = new HashMap<>();
     private final Deque<Map<String, AFSType>> localEnvStack = new ArrayDeque<>();
+    private final Map<String, AFSType> functionEnv = new HashMap<>();
 
     @Override
     public void enterScope() {
@@ -24,40 +25,60 @@ public class TypeEnvironment implements ITypeEnvironment {
     }
 
     @Override
-    public void declare(String name, AFSType type) throws DeclarationException {
+    public void declareVariable(String identifier, AFSType type) throws DeclarationException {
         boolean emptyLocalEnvStack = localEnvStack.isEmpty();
         if (emptyLocalEnvStack) {
-            boolean canDeclareGlobally = globalEnv.containsKey(name);
-            if (!canDeclareGlobally) {
-                String message = String.format("Global variable '%s' is already declared", name);
+            boolean canDeclareGlobal = globalEnv.containsKey(identifier);
+            if (!canDeclareGlobal) {
+                String message = String.format("Global variable '%s' is already declared", identifier);
                 throw new DeclarationException(message);
             }
-            globalEnv.put(name, type);
+            globalEnv.put(identifier, type);
         } else {
             Map<String, AFSType> currentScope = localEnvStack.peek();
-            boolean canDeclareLocal = globalEnv.containsKey(name);
+            boolean canDeclareLocal = globalEnv.containsKey(identifier);
             if (!canDeclareLocal) {
-                String message = String.format("Local variable '%s' is already declared", name);
+                String message = String.format("Local variable '%s' is already declared", identifier);
                 throw new DeclarationException(message);
             }
-            currentScope.put(name, type);
+            currentScope.put(identifier, type);
         }
     }
 
     @Override
-    public AFSType lookup(String name) throws LookupException {
+    public AFSType lookupVariable(String identifier) throws LookupException {
         for (Map<String, AFSType> env : localEnvStack) {
-            boolean found = env.containsKey(name);
+            boolean found = env.containsKey(identifier);
             if (found) {
-                return env.get(name);
+                return env.get(identifier);
             }
         }
-        boolean declaredGlobally = globalEnv.containsKey(name);
-        if (!declaredGlobally) {
-            String message = String.format("Variable '%s' undeclared", name);
+        boolean declaredInGlobal = globalEnv.containsKey(identifier);
+        if (!declaredInGlobal) {
+            String message = String.format("Variable '%s' undeclared", identifier);
             throw new LookupException(message);
         }
 
-        return globalEnv.get(name);
+        return globalEnv.get(identifier);
+    }
+
+    @Override
+    public void declareFunction(String identifier, AFSType type) throws DeclarationException {
+        boolean canDeclare = functionEnv.containsKey(identifier);
+        if (!canDeclare) {
+            String message = String.format("Function '%s' is already declared", identifier);
+            throw new DeclarationException(message);
+        }
+        functionEnv.put(identifier, type);
+    }
+
+    @Override
+    public AFSType lookupFunction(String identifier) throws LookupException {
+        boolean found = functionEnv.containsKey(identifier);
+        if (!found) {
+            String message = String.format("Function '%s' undeclared", identifier);
+            throw new LookupException(message);
+        }
+        return functionEnv.get(identifier);
     }
 }
