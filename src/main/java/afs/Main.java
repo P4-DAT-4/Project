@@ -1,7 +1,7 @@
 package afs;
 
 import afs.astprinter.RecursiveGraphvizPrinter;
-import afs.checker.TypeChecker;
+import afs.semantic_analysis.TypeChecker;
 import afs.nodes.prog.ProgNode;
 import afs.syntactic_analysis.Parser;
 import afs.syntactic_analysis.Scanner;

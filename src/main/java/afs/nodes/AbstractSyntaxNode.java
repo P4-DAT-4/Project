@@ -1,6 +1,6 @@
 package afs.nodes;
 
-import afs.checker.types.AFSType;
+import afs.semantic_analysis.types.AFSType;
 
 public abstract class AbstractSyntaxNode {
     private AFSType type = null;
