@@ -57,7 +57,7 @@ COMPILER Program
 
         if (stmtsReversed.size() == 1) {
             if (left instanceof StmtDeclarationNode) {
-                return new StmtBlockNode((StmtDeclarationNode)left, new StmtSkipNode(), left.getLineNumber(), left.getColumnNumber());
+                return new StmtDeclarationNode(((StmtDeclarationNode) left).getType(), ((StmtDeclarationNode) left).getIdentifier(), ((StmtDeclarationNode) left).getExpression(), new StmtSkipNode(), left.getLineNumber(), left.getColumnNumber());
             } else {
                 return left;
             }
@@ -67,27 +67,10 @@ COMPILER Program
             List<StmtNode> rest = stmtsReversed.subList(1, stmtsReversed.size());
             StmtNode right = toCompStmt(rest);
             if (left instanceof StmtDeclarationNode) {
-                return new StmtBlockNode((StmtDeclarationNode)left, right, line, col);
+                return new StmtDeclarationNode(((StmtDeclarationNode) left).getType(), ((StmtDeclarationNode) left).getIdentifier(), ((StmtDeclarationNode) left).getExpression(), new StmtSkipNode(), line, col);
             } else {
                 return new StmtCompositionNode(left, right, line, col);
             }
-        }
-    }
-
-    private ExprNode toCompListAccess(List<ExprNode> exprsReversed) {
-        if (exprsReversed.isEmpty()) {
-            throw new RuntimeException("Empty exprs list");
-        }
-        ExprNode left = exprsReversed.getFirst();
-
-        if (exprsReversed.size() == 1) {
-            return left;
-        } else {
-            int line = left.getLineNumber();
-            int col = left.getColumnNumber();
-            List<ExprNode> rest = exprsReversed.subList(1, exprsReversed.size());
-            ExprNode right = toCompListAccess(rest);
-            return new ExprListAccessNode(left, right, line, col);
         }
     }
 
@@ -277,9 +260,9 @@ Stmt<out StmtNode stmt> = (. stmt = new StmtSkipNode(); .)
 
 StmtDeclaration<out StmtNode stmt> =
     Type<out TypeNode type>
-    IDENT (. int line = t.line; int col = t.col; ExprIdentifierNode ident = new ExprIdentifierNode(t.val, t.line, t.col); .)
+    IDENT (. int line = t.line; int col = t.col; String ident = t.val; .)
     "="
-    Expr<out ExprNode expr> (. stmt = new StmtDeclarationNode(type, ident, expr, line, col); .)
+    Expr<out ExprNode expr> (. stmt = new StmtDeclarationNode(type, ident, expr, null, line, col); .)
     ";"
 .
 
@@ -292,7 +275,7 @@ StmtAssignment<out StmtNode stmt, String ident, int line, int col> =
 
 StmtListAssignment<out StmtNode stmt, String ident, int line, int col> = (. List<ExprNode> exprList = new ArrayList<>(); .)
     "["
-    Expr<out expr> (. exprList.add(expr); .)
+    Expr<out ExprNode expr> (. exprList.add(expr); .)
     "]"
     {
     "["
@@ -300,7 +283,7 @@ StmtListAssignment<out StmtNode stmt, String ident, int line, int col> = (. List
     "]"
     }
     "="
-    Expr<out ExprNode expr> (. stmt = new StmtListAssignmentNode(ident, exprList, expr, line, col); .)
+    Expr<out expr> (. stmt = new StmtListAssignmentNode(ident, exprList, expr, line, col); .)
     ";"
 .
 
@@ -354,9 +337,9 @@ Decl<out StmtNode decl> = (. decl = new StmtSkipNode(); .)
 
 DeclDecl<out StmtNode decl> =
     DeclType<out TypeNode type>
-    IDENT (. int line = t.line; int col = t.col; ExprIdentifierNode ident = new ExprIdentifierNode(t.val, t.line, t.col); .)
+    IDENT (. int line = t.line; int col = t.col; String ident = t.val; .)
     "="
-    DeclExpr<out ExprNode declExpr> (. decl = new StmtDeclarationNode(type, ident, declExpr, line, col); .)
+    DeclExpr<out ExprNode declExpr> (. decl = new StmtDeclarationNode(type, ident, declExpr, null, line, col); .)
     ";"
 .
 
@@ -387,37 +370,73 @@ Text<out ExprNode declExpr> =
     Expr<out ExprNode expr> (. declExpr = new ExprTextNode(expr, line, col); .)
 .
 
-Line<out ExprNode declExpr> = (. List<ExprListDeclaration> coords = new ArrayList<>(); .)
+Line<out ExprNode declExpr> = (. List<ExprNode> exprList = new ArrayList<>(); .)
     "line" (. int line = t.line; int col = t.col; .)
-    Coord<out ExprListDeclaration firstCoord> (. coords.add(firstCoord); .)
+    "("
+    Expr<out ExprNode expr> (. exprList.add(expr); .)
+    ","
+    Expr<out expr> (. exprList.add(expr); .)
+    ")"
     "to"
-    Coord<out ExprListDeclaration secondCoord> (. coords.add(secondCoord); .)
-    { "to" Coord<out ExprListDeclaration extraCoords> (. coords.add(extraCoords); .)
-    } (. List<ExprNode> exprs = coordsToList(coords); declExpr = new ExprLineNode(exprs, line, col); .)
+    "("
+    Expr<out expr> (. exprList.add(expr); .)
+    ","
+    Expr<out expr> (. exprList.add(expr); .)
+    ")"
+    {
+    "to"
+    "("
+    Expr<out expr> (. exprList.add(expr); .)
+    ","
+    Expr<out expr> (. exprList.add(expr); .)
+    ")"
+    } (. declExpr = new ExprLineNode(exprList, line, col); .)
 .
 
-Curve<out ExprNode declExpr> = (. List<ExprListDeclaration> coords = new ArrayList<>(); .)
-    "curve" (. int line = t.line; int col = t.col; .)
-    Coord<out ExprListDeclaration firstCoord> (. coords.add(firstCoord); .)
+Curve<out ExprNode declExpr> = (. List<ExprNode> exprList = new ArrayList<>(); .)
+    "curve" (. int line = t.line; int col = t.col; .)"("
+    "("
+    Expr<out ExprNode expr> (. exprList.add(expr); .)
+    ","
+    Expr<out expr> (. exprList.add(expr); .)
+    ")"
     "to"
-    Coord<out ExprListDeclaration secondCoord> (. coords.add(secondCoord); .)
-    { "to" Coord<out ExprListDeclaration extraCoords> (. coords.add(extraCoords); .)
-    } (. List<ExprNode> exprs = coordsToList(coords); declExpr = new ExprCurveNode(exprs, line, col); .)
+    "("
+    Expr<out expr> (. exprList.add(expr); .)
+    ","
+    Expr<out expr> (. exprList.add(expr); .)
+    ")"
+    "to"
+    "("
+    Expr<out expr> (. exprList.add(expr); .)
+    ","
+    Expr<out expr> (. exprList.add(expr); .)
+    ")"
+    {
+    "to"
+    "("
+    Expr<out expr> (. exprList.add(expr); .)
+    ","
+    Expr<out expr> (. exprList.add(expr); .)
+    ")"
+    "to"
+    "("
+    Expr<out expr> (. exprList.add(expr); .)
+    ","
+    Expr<out expr> (. exprList.add(expr); .)
+    ")"
+    } (. declExpr = new ExprCurveNode(exprList, line, col); .)
 .
 
 Place<out ExprNode declExpr> =
     "place" (. int line = t.line; int col = t.col; .)
     Expr<out ExprNode lExpr>
     "at"
-    Coord<out ExprNode rExpr> (. declExpr = new ExprPlaceNode(lExpr, rExpr, line, col); .)
-.
-
-Coord<out ExprListDeclaration coord> = (. List<ExprNode> coords = new ArrayList<>(); .)
     "("
-    Expr<out ExprNode x> (. coords.add(x); .)
+    Expr<out ExprNode mExpr>
     ","
-    Expr<out ExprNode y> (. coords.add(y); .)
-    ")" (. coord = new ExprListDeclaration(coords, t.line, t.col); .)
+    Expr<out ExprNode rExpr>
+    ")" (. declExpr = new ExprPlaceNode(lExpr, mExpr, rExpr, line, col); .)
 .
 
 Scale<out ExprNode declExpr> =
@@ -506,13 +525,13 @@ Term<out ExprNode expr> = (. expr = null; .)
 
 ExprFuncCall<out ExprFunctionCallNode funcCall, String ident, int line, int col> = (. List<ExprNode> exprList = new ArrayList<>(); .)
     "("
-    [Expr<out arg> (. exprList.add(arg); .)
+    [Expr<out ExprNode arg> (. exprList.add(arg); .)
     { "," Expr<out arg> (. exprList.add(arg); .)
     }]
     ")" (. funcCall = new ExprFunctionCallNode(ident, exprList, line, col); .)
 .
 
-ExprListAccess<out ExprNode expr, String ident, int line, int col> = (. List<ExprNode> exprList = new ArrayList<>(); exprList.add(ident); .)
+ExprListAccess<out ExprNode expr, String ident, int line, int col> = (. List<ExprNode> exprList = new ArrayList<>(); .)
     "["
     Expr<out expr> (. exprList.add(expr); .)
     "]"
@@ -520,7 +539,7 @@ ExprListAccess<out ExprNode expr, String ident, int line, int col> = (. List<Exp
     "["
     Expr<out expr> (. exprList.add(expr); .)
     "]"
-    } (. expr = new ExprListAccess(ident, exprList, line, col); .)
+    } (. expr = new ExprListAccessNode(ident, exprList, line, col); .)
 .
 
 ExprListDeclaration<out ExprNode expr> = (. List<ExprNode> exprs = new ArrayList<>(); .)
