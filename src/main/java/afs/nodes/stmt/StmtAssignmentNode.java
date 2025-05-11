@@ -3,22 +3,22 @@ package afs.nodes.stmt;
 import afs.nodes.expr.ExprNode;
 
 public final class StmtAssignmentNode extends StmtNode {
-    private final ExprNode leftExpression;
-    private final ExprNode rightExpression;
+    private final String identifier;
+    private final ExprNode expression;
 
-    public StmtAssignmentNode(ExprNode leftExpression, ExprNode rightExpression, int line, int column)
+    public StmtAssignmentNode(String identifier, ExprNode expression, int line, int column)
     {
         super(line, column);
-        this.leftExpression = leftExpression;
-        this.rightExpression = rightExpression;
+        this.expression = expression;
+        this.identifier = identifier;
     }
 
-    public ExprNode getLeftExpression() {
-        return leftExpression;
+    public String getIdentifier() {
+        return identifier;
     }
 
-    public ExprNode getRightExpression() {
-        return rightExpression;
+    public ExprNode getExpression() {
+        return expression;
     }
 
     @Override

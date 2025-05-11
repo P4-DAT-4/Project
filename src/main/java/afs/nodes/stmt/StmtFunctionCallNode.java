@@ -1,21 +1,29 @@
 package afs.nodes.stmt;
 
-import afs.nodes.expr.ExprFunctionCallNode;
+import afs.nodes.expr.ExprNode;
+
+import java.util.List;
 
 public final class StmtFunctionCallNode extends StmtNode {
-    private final ExprFunctionCallNode functionCall;
+    private final String identifier;
+    private final List<ExprNode> arguments;
 
-    public StmtFunctionCallNode(ExprFunctionCallNode functionCall, int line, int column) {
+    public StmtFunctionCallNode(String identifier, List<ExprNode> arguments, int line, int column) {
         super(line, column);
-        this.functionCall = functionCall;
+        this.identifier = identifier;
+        this.arguments = arguments;
     }
 
-    public ExprFunctionCallNode getFunctionCall() {
-        return functionCall;
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public List<ExprNode> getArguments() {
+        return arguments;
     }
 
     @Override
     public String toString() {
-        return functionCall.toString();
+        return String.format("%s(%s);", identifier, arguments.stream().map(ExprNode::toString).collect(java.util.stream.Collectors.joining(", ")));
     }
 }

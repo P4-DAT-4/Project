@@ -21,7 +21,9 @@ public class SimpleType extends AFSType {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof SimpleType)) return false;
+        if (!(obj instanceof SimpleType)) {
+            return false;
+        }
         return ((SimpleType) obj).name.equals(this.name);
     }
 

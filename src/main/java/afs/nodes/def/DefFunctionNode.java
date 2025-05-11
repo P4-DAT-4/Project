@@ -1,6 +1,5 @@
 package afs.nodes.def;
 
-import afs.nodes.expr.ExprIdentifierNode;
 import afs.nodes.stmt.StmtNode;
 import afs.nodes.type.TypeNode;
 
@@ -8,11 +7,11 @@ import java.util.List;
 
 public final class DefFunctionNode extends DefNode {
     private final TypeNode type;
-    private final ExprIdentifierNode identifier;
+    private final String identifier;
     private final List<Param> parameters;
     private final StmtNode statement;
 
-    public DefFunctionNode(TypeNode type, ExprIdentifierNode identifier, List<Param> parameters, StmtNode statement, int line, int column) {
+    public DefFunctionNode(TypeNode type, String identifier, List<Param> parameters, StmtNode statement, int line, int column) {
         super(line, column);
         this.type = type;
         this.identifier = identifier;
@@ -24,7 +23,7 @@ public final class DefFunctionNode extends DefNode {
         return type;
     }
 
-    public ExprIdentifierNode getIdentifier() {
+    public String getIdentifier() {
         return identifier;
     }
 
@@ -37,7 +36,7 @@ public final class DefFunctionNode extends DefNode {
     }
 
     @Override
-    public String toString() {
+    public java.lang.String toString() {
         return "fn T x(arrow(T x))S";
     }
 }
