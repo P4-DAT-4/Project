@@ -28,4 +28,9 @@ public class FunctionType extends AFSType {
     public AFSType getReturnType() {
         return returnType;
     }
+
+    @Override
+    public String toString() {
+        return returnType.toString();
+    }
 }

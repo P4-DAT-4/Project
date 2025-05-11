@@ -29,7 +29,7 @@ public class ListType extends AFSType {
 
     @Override
     public String toString() {
-        return "List<" + type.toString() + ">";
+        return "[" + type.toString() + "]";
     }
 
 }

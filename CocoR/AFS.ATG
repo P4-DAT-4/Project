@@ -49,13 +49,13 @@ COMPILER Program
         }
     }
 
-    private StmtNode toCompStmt(List<StmtNode> stmtsReversed) {
-        if (stmtsReversed.isEmpty()) {
+    private StmtNode toCompStmt(List<StmtNode> stmts) {
+        if (stmts.isEmpty()) {
             return new StmtSkipNode();
         }
-        StmtNode left = stmtsReversed.getFirst();
+        StmtNode left = stmts.getFirst();
 
-        if (stmtsReversed.size() == 1) {
+        if (stmts.size() == 1) {
             if (left instanceof StmtDeclarationNode) {
                 return new StmtDeclarationNode(((StmtDeclarationNode) left).getType(), ((StmtDeclarationNode) left).getIdentifier(), ((StmtDeclarationNode) left).getExpression(), new StmtSkipNode(), left.getLineNumber(), left.getColumnNumber());
             } else {
@@ -64,10 +64,10 @@ COMPILER Program
         } else {
             int line = left.getLineNumber();
             int col = left.getColumnNumber();
-            List<StmtNode> rest = stmtsReversed.subList(1, stmtsReversed.size());
+            List<StmtNode> rest = stmts.subList(1, stmts.size());
             StmtNode right = toCompStmt(rest);
             if (left instanceof StmtDeclarationNode) {
-                return new StmtDeclarationNode(((StmtDeclarationNode) left).getType(), ((StmtDeclarationNode) left).getIdentifier(), ((StmtDeclarationNode) left).getExpression(), new StmtSkipNode(), line, col);
+                return new StmtDeclarationNode(((StmtDeclarationNode) left).getType(), ((StmtDeclarationNode) left).getIdentifier(), ((StmtDeclarationNode) left).getExpression(), right, line, col);
             } else {
                 return new StmtCompositionNode(left, right, line, col);
             }
@@ -560,7 +560,7 @@ DeclType<out TypeNode type> = (. type = null; .)
 Type<out TypeNode type> = (. type = null; .)
     ( "int" (. type = new TypeIntNode(t.line, t.col); .)
     | "double" (. type = new TypeDoubleNode(t.line, t.col); .)
-    | "bool" (. type = new TypeDoubleNode(t.line, t.col); .)
+    | "bool" (. type = new TypeBoolNode(t.line, t.col); .)
     | "string" (. type = new TypeStringNode(t.line, t.col); .)
     | "void" (. type = new TypeVoidNode(t.line, t.col); .)
     | "[" Type<out TypeNode innerType> "]" (. type = new TypeListNode(innerType, t.line, t.col); .) )

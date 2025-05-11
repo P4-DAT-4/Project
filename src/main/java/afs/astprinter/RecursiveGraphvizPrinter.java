@@ -19,9 +19,14 @@ public class RecursiveGraphvizPrinter implements PrinterInterface {
     private StringBuilder nodes = new StringBuilder();
     private StringBuilder edges = new StringBuilder();
     private int counter = 0;
+    private boolean printTypes;
 
     private void addNode(int nodeId, AbstractSyntaxNode node) {
-        nodes.append("    ").append("node").append(nodeId).append(" [label=\"").append(node.toString()).append("\"];\n");
+        if (printTypes && node.getAFSType() != null) {
+            nodes.append("    ").append("node").append(nodeId).append(" [label=\"").append(node.toString()).append(" : ").append(node.getAFSType().toString()).append("\"];\n");
+        } else {
+            nodes.append("    ").append("node").append(nodeId).append(" [label=\"").append(node.toString()).append("\"];\n");
+        }
     }
 
     private void addEdge(int fromNodeId, int toNodeId) {
@@ -32,7 +37,7 @@ public class RecursiveGraphvizPrinter implements PrinterInterface {
         nodes.append("    ").append("node").append(nodeId).append(" [label=\"").append(node).append("\"];\n");
     }
 
-    private java.lang.String getGraphvizCode() {
+    private String getGraphvizCode() {
         StringBuilder graphCode = new StringBuilder();
         graphCode.append("digraph AST {\n"); // Start of the Graphviz DOT format
         graphCode.append("    node [shape=box, style=filled, fillcolor=lightgrey];\n"); // Optional: Styling for nodes
@@ -43,7 +48,8 @@ public class RecursiveGraphvizPrinter implements PrinterInterface {
     }
 
     @Override
-    public void print(ProgNode program, java.lang.String filePath) {
+    public void print(ProgNode program, String filePath, boolean printTypes) {
+        this.printTypes = printTypes;
         int nodeId = counter++;
         addNode(nodeId, program);
         for (var def : program.getDefinitions()) {

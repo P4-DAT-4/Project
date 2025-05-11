@@ -71,7 +71,6 @@ public class TypeChecker {
                     throw new TypeCheckException(String.format("Cannot visualize img '%s' that returns a shape.", identifier));
                 }
 
-
                 checkFunction(identifier, visualizeNode.getArguments(), funType.getParams());
 
                 EventType(visualizeNode.getEvent()); // check all events
@@ -203,7 +202,7 @@ public class TypeChecker {
             case StmtReturnNode returnNode -> {
                 AFSType exprType = ExprType(returnNode.getExpression());
 
-                String funIdentifier = TypeEnvironment.getFunctionName();
+                String funIdentifier = TypeEnvironment.getCurrentFunction();
                 FunctionType function = TypeEnvironment.lookupFun(funIdentifier);
 
                 // Validate against function's declared return type
@@ -399,7 +398,6 @@ public class TypeChecker {
                 List<ExprNode> expressions = ListDeclarationNode.getExpressions();
 
                 AFSType firstExprType = ExprType(expressions.getFirst());
-                TypeValidator.validateBinop(firstExprType);
 
                 for (ExprNode expression : expressions) {
                     AFSType exprType = ExprType(expression);
@@ -479,15 +477,19 @@ public class TypeChecker {
 
             
             case ExprStringNode ignored -> {
+                expr.setType(SimpleType.STRING);
                 return SimpleType.STRING;
             }
             case ExprIntNode ignored -> {
+                expr.setType(SimpleType.INT);
                 return SimpleType.INT;
             }
             case ExprDoubleNode ignored -> {
+                expr.setType(SimpleType.DOUBLE);
                 return SimpleType.DOUBLE;
             }
             case ExprBoolNode ignored -> {
+                expr.setType(SimpleType.BOOL);
                 return SimpleType.BOOL;
             }
             default -> throw new IllegalStateException("Unexpected value: " + expr);
@@ -497,21 +499,27 @@ public class TypeChecker {
     private AFSType TypeType(TypeNode type) {
         switch(type) {
             case TypeBoolNode ignored -> {
+                type.setType(SimpleType.BOOL);
                 return SimpleType.BOOL;
             }
             case TypeIntNode ignored -> {
+                type.setType(SimpleType.INT);
                 return SimpleType.INT;
             }
             case TypeDoubleNode ignored -> {
+                type.setType(SimpleType.DOUBLE);
                 return SimpleType.DOUBLE;
             }
             case TypeStringNode ignored -> {
+                type.setType(SimpleType.STRING);
                 return SimpleType.STRING;
             }
             case TypeShapeNode ignored -> {
+                type.setType(SimpleType.SHAPE);
                 return SimpleType.SHAPE;
             }
             case TypeVoidNode ignored -> {
+                type.setType(SimpleType.VOID);
                 return SimpleType.VOID;
             }
             case TypeListNode listNode -> {

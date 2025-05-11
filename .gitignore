@@ -1,22 +1,19 @@
-# Ignore everything
-*
+# Ignore .dot files, .txt files in top level folder
+*.txt
+*.dot
 
-# Keep CoCo/R, AFS, and gradle files
-!/CocoR/**
-!/src/**
-!/gradle/**
-!.gitignore
-!afs.bat
-!afs.sh
-!build.gradle
-!gradle.properties
-!gradlew
-!gradlew.bat
-!README.md
-!settings.gradle
+# Ignore build
+build/**
 
-# Keep TypeChecker.java
-!/src/main/java/afs/checker/
+# Ignore .gradle folder
+.gradle/**
 
-# Keep typeChecker tests folder
-!/src/test/java/afs/checker/**
+# Ignore user-specific IntelliJ settings
+.idea/codeStyles/**
+.idea/libraries/**
+.idea/modules/**
+.idea/workspace.xml
+.idea/vcs.xml
+
+# Ignore generated .jar files
+*.jar

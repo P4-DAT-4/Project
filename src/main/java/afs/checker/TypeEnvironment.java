@@ -28,7 +28,7 @@ public class TypeEnvironment {
         return Holder.INSTANCE;
     }
 
-    public static String getFunctionName() {
+    public static String getCurrentFunction() {
         return currentFunction;
     }
 
@@ -42,10 +42,6 @@ public class TypeEnvironment {
         currentFunction = null;
     }
 
-    public static String getCurrentFunction() {
-        return currentFunction;
-    }
-
     public static void enterScope() {
         var currentEnv = envVar.peek();
         envVar.push(currentEnv); // tilfoej kopi af det oeverste environment
@@ -56,12 +52,10 @@ public class TypeEnvironment {
     }
 
     public static AFSType lookupVar(String identifier) {
-        var currentEnv = envVar.peek(); // få current environment
-        while (currentEnv != null) { // tjek om env findes
-            if (currentEnv.containsKey(identifier)) { // tjek om identifier findes
-                return currentEnv.get(identifier);  // returner identifier
+        for (Map<String, AFSType> env : envVar) {
+            if (env.containsKey(identifier)) {
+                return env.get(identifier);
             }
-            currentEnv = envVar.peek(); // ellers gå et environment op
         }
         throw new TypeCheckException("Undefined variable '" + identifier + "'");
     }

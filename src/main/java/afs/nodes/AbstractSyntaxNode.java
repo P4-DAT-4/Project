@@ -18,9 +18,10 @@ public abstract class AbstractSyntaxNode {
 
     public void setType(AFSType type) {
         if (this.type != null) {
-            throw new IllegalStateException("Type already set.");
+            System.out.printf("Attempting to set type '%s' for '%s', but type was already set. Line %d, col %d%n", type.toString(), this, getLineNumber(), getColumnNumber());
+        } else {
+            this.type = type;
         }
-        this.type = type;
     }
 
     public int getLineNumber() {
