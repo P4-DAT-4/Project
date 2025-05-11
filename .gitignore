@@ -1,7 +1,7 @@
-#Ignore everything
+# Ignore everything
 *
 
-#Keep CoCo/R, AFS and gradle files
+# Keep CoCo/R, AFS, and gradle files
 !/CocoR/**
 !/src/**
 !/gradle/**
@@ -14,3 +14,9 @@
 !gradlew.bat
 !README.md
 !settings.gradle
+
+# Keep TypeChecker.java
+!/src/main/java/afs/checker/
+
+# Keep typeChecker tests folder
+!/src/test/java/afs/checker/**
