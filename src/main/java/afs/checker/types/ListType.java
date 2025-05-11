@@ -4,6 +4,9 @@ public class ListType extends AFSType {
     private final AFSType type;
 
     public ListType(AFSType type) {
+        if (type.equals(SimpleType.VOID)) {
+            throw new IllegalArgumentException("Void type is not allowed in list.");
+        }
         this.type = type;
     }
 
