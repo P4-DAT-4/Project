@@ -1,37 +1,19 @@
-#Ignore everything
-*
+# Ignore .dot files, .txt files in top level folder
+*.txt
+*.dot
 
-# Allow gitignore
-!.gitignore
+# Ignore build
+build/**
 
-# Allow source code
-!/src/**
-
-# Allow custom scripts to run AFS
-!afs.bat
-!afs.sh
-
-#ReadMe
-!README.md
-
-# Allow CoCo/R
-!/CocoR/**
-
-# Allow Gradle
-!/gradle/**
-!build.gradle
-!gradle.properties
-!gradlew
-!gradlew.bat
-!settings.gradle
-
-# Allow project settings
-!.idea/misc.xml
-!.idea/compiler.xml
-!.idea/gradle.xml
-!.idea/checkstyle-idea.xml
-!.idea/.name
+# Ignore .gradle folder
+.gradle/**
 
 # Ignore user-specific IntelliJ settings
+.idea/codeStyles/**
+.idea/libraries/**
+.idea/modules/**
 .idea/workspace.xml
 .idea/vcs.xml
+
+# Ignore generated .jar files
+*.jar

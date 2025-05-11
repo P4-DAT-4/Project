@@ -19,13 +19,22 @@ public class RecursiveGraphvizPrinter implements PrinterInterface {
     private StringBuilder nodes = new StringBuilder();
     private StringBuilder edges = new StringBuilder();
     private int counter = 0;
+    private boolean printTypes;
 
     private void addNode(int nodeId, AbstractSyntaxNode node) {
-        nodes.append("    ").append("node").append(nodeId).append(" [label=\"").append(node.toString()).append("\"];\n");
+        if (printTypes && node.getAFSType() != null) {
+            nodes.append("    ").append("node").append(nodeId).append(" [label=\"").append(node.toString()).append(" : ").append(node.getAFSType().toString()).append("\"];\n");
+        } else {
+            nodes.append("    ").append("node").append(nodeId).append(" [label=\"").append(node.toString()).append("\"];\n");
+        }
     }
 
     private void addEdge(int fromNodeId, int toNodeId) {
         edges.append("    ").append("node").append(fromNodeId).append(" -> ").append("node").append(toNodeId).append(";\n");
+    }
+
+    private void addNode(int nodeId, String node) {
+        nodes.append("    ").append("node").append(nodeId).append(" [label=\"").append(node).append("\"];\n");
     }
 
     private String getGraphvizCode() {
@@ -39,14 +48,15 @@ public class RecursiveGraphvizPrinter implements PrinterInterface {
     }
 
     @Override
-    public void print(ProgNode program, String filePath) {
+    public void print(ProgNode program, String filePath, boolean printTypes) {
+        this.printTypes = printTypes;
         int nodeId = counter++;
         addNode(nodeId, program);
         for (var def : program.getDefinitions()) {
             int defId = printDef(def);
             addEdge(nodeId, defId);
         }
-        String graphvizCode = getGraphvizCode();
+        java.lang.String graphvizCode = getGraphvizCode();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             writer.write(graphvizCode);
         } catch (IOException e) {
@@ -62,7 +72,9 @@ public class RecursiveGraphvizPrinter implements PrinterInterface {
                 int typeId = printType(node.getType());
                 addEdge(nodeId, typeId);
 
-                int identId = printExpr(node.getIdentifier());
+                String ident = node.getIdentifier();
+                int identId = counter++;
+                addNode(identId, ident);
                 addEdge(nodeId, identId);
 
                 int exprId = printExpr(node.getExpression());
@@ -72,7 +84,9 @@ public class RecursiveGraphvizPrinter implements PrinterInterface {
                 int typeId = printType(node.getType());
                 addEdge(nodeId, typeId);
 
-                int identId = printExpr(node.getIdentifier());
+                String ident = node.getIdentifier();
+                int identId = counter++;
+                addNode(identId, ident);
                 addEdge(nodeId, identId);
 
                 for (var param : node.getParameters()) {
@@ -84,8 +98,15 @@ public class RecursiveGraphvizPrinter implements PrinterInterface {
                 addEdge(nodeId, stmtId);
             }
             case DefVisualizeNode node -> {
-                int funcCallId = printExpr(node.getFunctionCall());
-                addEdge(nodeId, funcCallId);
+                String ident = node.getIdentifier();
+                int identId = counter++;
+                addNode(identId, ident);
+                addEdge(nodeId, identId);
+
+                for (var arg : node.getArguments()) {
+                    int argId = printExpr(arg);
+                    addEdge(nodeId, argId);
+                }
 
                 int eventId = printEvent(node.getEvent());
                 addEdge(nodeId, eventId);
@@ -101,7 +122,9 @@ public class RecursiveGraphvizPrinter implements PrinterInterface {
         int typeId = printType(param.getType());
         addEdge(nodeId, typeId);
 
-        int identId = printExpr(param.getIdentifier());
+        String ident = param.getIdentifier();
+        int identId = counter++;
+        addNode(identId, ident);
         addEdge(nodeId, identId);
         return nodeId;
     }
@@ -121,8 +144,15 @@ public class RecursiveGraphvizPrinter implements PrinterInterface {
                 int exprId = printExpr(node.getExpression());
                 addEdge(nodeId, exprId);
 
-                int funcCallId = printExpr(node.getFunctionCall());
-                addEdge(nodeId, funcCallId);
+                String ident = node.getIdentifier();
+                int identId = counter++;
+                addNode(identId, ident);
+                addEdge(nodeId, identId);
+
+                for (var arg : node.getArguments()) {
+                    int argId = printExpr(arg);
+                    addEdge(nodeId, argId);
+                }
             }
         }
         return nodeId;
@@ -134,26 +164,24 @@ public class RecursiveGraphvizPrinter implements PrinterInterface {
         addNode(nodeId, stmt);
         switch (stmt) {
             case StmtAssignmentNode node -> {
-                int leftId = printExpr(node.getLeftExpression());
-                addEdge(nodeId, leftId);
+                printIdent(node.getIdentifier(), nodeId);
 
-                int rightId = printExpr(node.getRightExpression());
-                addEdge(nodeId, rightId);
-            } case StmtBlockNode node -> {
-                int declId = printStmt(node.getDeclaration());
-                addEdge(nodeId, declId);
-
-                int stmtId = printStmt(node.getStatement());
-                addEdge(nodeId, stmtId);
+                int exprId = printExpr(node.getExpression());
+                addEdge(nodeId, exprId);
             } case StmtDeclarationNode node -> {
                 int typeId = printType(node.getType());
                 addEdge(nodeId, typeId);
 
-                int identId = printExpr(node.getIdentifier());
+                String ident = node.getIdentifier();
+                int identId = counter++;
+                addNode(identId, ident);
                 addEdge(nodeId, identId);
 
                 int exprId = printExpr(node.getExpression());
                 addEdge(nodeId, exprId);
+
+                int stmtId = printStmt(node.getStatement());
+                addEdge(nodeId, stmtId);
             } case StmtCompositionNode node -> {
                 int leftId = printStmt(node.getLeftStatement());
                 addEdge(nodeId, leftId);
@@ -161,8 +189,12 @@ public class RecursiveGraphvizPrinter implements PrinterInterface {
                 int rightId = printStmt(node.getRightStatement());
                 addEdge(nodeId, rightId);
             } case StmtFunctionCallNode node -> {
-                int funcId = printExpr(node.getFunctionCall());
-                addEdge(nodeId, funcId);
+                printIdent(node.getIdentifier(), nodeId);
+
+                for (var arg : node.getArguments()) {
+                    int argId = printExpr(arg);
+                    addEdge(nodeId, argId);
+                }
             } case StmtIfNode node -> {
                 int condId = printExpr(node.getExpression());
                 addEdge(nodeId, condId);
@@ -182,6 +214,20 @@ public class RecursiveGraphvizPrinter implements PrinterInterface {
 
                 int bodyId = printStmt(node.getStatement());
                 addEdge(nodeId, bodyId);
+            }
+            case StmtListAssignmentNode node -> {
+                String ident = node.getIdentifier();
+                int identId = counter++;
+                addNode(identId, ident);
+                addEdge(nodeId, identId);
+
+                for (var expr : node.getExpressions()) {
+                    int exprId = printExpr(expr);
+                    addEdge(nodeId, exprId);
+                }
+
+                int exprId = printExpr(node.getExpression());
+                addEdge(nodeId, exprId);
             }
         }
         return nodeId;
@@ -210,8 +256,7 @@ public class RecursiveGraphvizPrinter implements PrinterInterface {
                 }
             }
             case ExprFunctionCallNode node -> {
-                int identId = printExpr(node.getIdentifier());
-                addEdge(nodeId, identId);
+                printIdent(node.getIdentifier(), nodeId);
 
                 for (var arg : node.getArguments()) {
                     int argId = printExpr(arg);
@@ -225,11 +270,12 @@ public class RecursiveGraphvizPrinter implements PrinterInterface {
                 }
             }
             case ExprListAccessNode node -> {
-                int leftId = printExpr(node.getLeftExpression());
-                addEdge(nodeId, leftId);
+                printIdent(node.getIdentifier(), nodeId);
 
-                int rightId = printExpr(node.getRightExpression());
-                addEdge(nodeId, rightId);
+                for (var arg : node.getExpressions()) {
+                    int argId = printExpr(arg);
+                    addEdge(nodeId, argId);
+                }
             }
             case ExprListDeclaration node -> {
                 for (var exprNode : node.getExpressions()) {
@@ -281,5 +327,11 @@ public class RecursiveGraphvizPrinter implements PrinterInterface {
             addEdge(nodeId, typeId);
         }
         return nodeId;
+    }
+
+    private void printIdent(String ident, int nodeId) {
+        int identId = counter++;
+        addNode(identId, ident);
+        addEdge(nodeId, identId);
     }
 }

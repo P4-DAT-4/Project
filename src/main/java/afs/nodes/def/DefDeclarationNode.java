@@ -1,16 +1,14 @@
 package afs.nodes.def;
 
-
-import afs.nodes.expr.ExprIdentifierNode;
 import afs.nodes.expr.ExprNode;
 import afs.nodes.type.TypeNode;
 
 public final class DefDeclarationNode extends DefNode {
     private final TypeNode type;
-    private final ExprIdentifierNode identifier;
+    private final String identifier;
     private final ExprNode expression;
 
-    public DefDeclarationNode(TypeNode type, ExprIdentifierNode identifier, ExprNode expression, int line, int column) {
+    public DefDeclarationNode(TypeNode type, String identifier, ExprNode expression, int line, int column) {
         super(line, column);
         this.type = type;
         this.identifier = identifier;
@@ -21,7 +19,7 @@ public final class DefDeclarationNode extends DefNode {
         return type;
     }
 
-    public ExprIdentifierNode getIdentifier() {
+    public String getIdentifier() {
         return identifier;
     }
 
@@ -30,7 +28,8 @@ public final class DefDeclarationNode extends DefNode {
     }
 
     @Override
-    public String toString() {
+    public java.lang.String toString() {
         return "T x = e";
     }
 }
+

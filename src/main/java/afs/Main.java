@@ -1,6 +1,7 @@
 package afs;
 
 import afs.astprinter.RecursiveGraphvizPrinter;
+import afs.checker.TypeChecker;
 import afs.nodes.prog.ProgNode;
 import afs.syntactic_analysis.Parser;
 import afs.syntactic_analysis.Scanner;
@@ -37,9 +38,11 @@ public class Main {
                 System.out.println("Error parsing file: " + inputFile);
             } else {
                 ProgNode program = parser.mainNode;
+                TypeChecker typeChecker = new TypeChecker();
+                typeChecker.checkProgram(program);
 
                 if (printFile != null) {
-                    new RecursiveGraphvizPrinter().print(program, printFile);
+                    new RecursiveGraphvizPrinter().print(program, printFile, true);
                     System.out.println("AST printed to: " + printFile);
                 } else {
                     // interpret

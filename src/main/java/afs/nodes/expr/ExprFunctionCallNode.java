@@ -3,16 +3,16 @@ package afs.nodes.expr;
 import java.util.List;
 
 public final class ExprFunctionCallNode extends ExprNode {
-    private final ExprIdentifierNode identifier;
+    private final String identifier;
     private final List<ExprNode> arguments;
 
-    public ExprFunctionCallNode(ExprIdentifierNode identifier, List<ExprNode> arguments, int line, int column) {
+    public ExprFunctionCallNode(String identifier, List<ExprNode> arguments, int line, int column) {
         super(line, column);
         this.identifier = identifier;
         this.arguments = arguments;
     }
 
-    public ExprIdentifierNode getIdentifier() {
+    public String getIdentifier() {
         return identifier;
     }
 
@@ -21,7 +21,7 @@ public final class ExprFunctionCallNode extends ExprNode {
     }
 
     @Override
-    public String toString() {
+    public java.lang.String toString() {
         return "x(arrow(e))";
     }
 }
