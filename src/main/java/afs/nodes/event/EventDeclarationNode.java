@@ -32,5 +32,4 @@ public final class EventDeclarationNode extends EventNode {
     public String toString() {
         return "e do x(arrow(e))";
     }
-
 }

@@ -32,7 +32,6 @@ public final class DefVisualizeNode extends DefNode {
 
     @Override
     public String toString() {
-        String args = arguments.stream().map(ExprNode::toString).collect(Collectors.joining(", "));
-        return String.format("visualize %s(%s)E", identifier, args);
+        return "visualize x(arrow(e))E";
     }
 }

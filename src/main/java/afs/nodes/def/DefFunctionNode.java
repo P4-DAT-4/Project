@@ -37,6 +37,6 @@ public final class DefFunctionNode extends DefNode {
 
     @Override
     public java.lang.String toString() {
-        return "fn T x(arrow(T x))S";
+        return "fn T x(arrow(T x)) S";
     }
 }

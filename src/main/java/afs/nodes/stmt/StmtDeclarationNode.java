@@ -35,6 +35,6 @@ public final class StmtDeclarationNode extends StmtNode {
 
     @Override
     public String toString() {
-        return "{arrow(T x = e); S}";
+        return "T x = e; S";
     }
 }

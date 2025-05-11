@@ -24,6 +24,6 @@ public final class StmtFunctionCallNode extends StmtNode {
 
     @Override
     public String toString() {
-        return String.format("%s(%s);", identifier, arguments.stream().map(ExprNode::toString).collect(java.util.stream.Collectors.joining(", ")));
+        return "x(arrow(e))";
     }
 }
