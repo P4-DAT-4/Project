@@ -3,6 +3,8 @@ package afs.checker.test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -90,6 +92,23 @@ public class TypeCheckerTest extends TypeChecker{
     }
     @Test
     public void FunctionNode() {
+      // Int
+      TypeIntNode typeNode = new TypeIntNode(1, 1);
+      ExprIdentifierNode identifierNode = new ExprIdentifierNode("add", 1, 1);
+      List<Param> parameters = List.of(
+        new Param(new TypeIntNode(1, 1), new ExprIdentifierNode("a", 1, 1), 0, 0),
+        new Param(new TypeIntNode(1, 1), new ExprIdentifierNode("b", 1, 1), 0, 0)
+      );
+
+      StmtDeclarationNode declaration = new StmtDeclarationNode(new TypeIntNode(1, 1), new ExprIdentifierNode("result", 1, 1), new ExprIntNode("0", 1, 1), 1, 1);
+      StmtNode statement = new StmtBlockNode(declaration, null, 1, 1);
+
+      StmtNode funcStmt = new StmtBlockNode(declaration, statement, 1, 1);
+      DefFunctionNode functionNode = new DefFunctionNode(typeNode, identifierNode, parameters, funcStmt, 1, 1);
+      AFSType returnType = typeChecker.processDefNode(functionNode);
+      assertEquals(returnType, SimpleType.INT);
+
+      // Invalid: type mismatch
 
     }
     @Test
@@ -441,6 +460,96 @@ public class TypeCheckerTest extends TypeChecker{
         assertEquals("Invalid type 'STRING': expected int or double", exception.getMessage());
       }
     }
+    @Test
+    public void IdentifierNode() {
+      // Int
+      typeChecker.symbolTable.put("x", SimpleType.INT);
+      ExprIdentifierNode identifier = new ExprIdentifierNode("x", 1, 1);
+      AFSType returnType = typeChecker.processExprNode(identifier);
+      assertEquals(returnType, SimpleType.INT);
+      typeChecker.symbolTable.remove("x");
+
+      // Double
+      typeChecker.symbolTable.put("y", SimpleType.DOUBLE);
+      ExprIdentifierNode identifier2 = new ExprIdentifierNode("y", 1, 1);
+      AFSType returnType2 = typeChecker.processExprNode(identifier2);
+      assertEquals(returnType2, SimpleType.DOUBLE);
+      typeChecker.symbolTable.remove("y");
+
+      // String
+      typeChecker.symbolTable.put("z", SimpleType.STRING);
+      ExprIdentifierNode identifier3 = new ExprIdentifierNode("z", 1, 1);
+      AFSType returnType3 = typeChecker.processExprNode(identifier3);
+      assertEquals(returnType3, SimpleType.STRING);
+      typeChecker.symbolTable.remove("z");
+
+      // Bool
+      typeChecker.symbolTable.put("a", SimpleType.BOOL);
+      ExprIdentifierNode identifier4 = new ExprIdentifierNode("a", 1, 1);
+      AFSType returnType4 = typeChecker.processExprNode(identifier4);
+      assertEquals(returnType4, SimpleType.BOOL);
+      typeChecker.symbolTable.remove("a");
+
+      // Invalid: not declared
+      TypeCheckException exception = assertThrows(TypeCheckException.class, () -> {
+        ExprIdentifierNode identifierInvalid = new ExprIdentifierNode("b", 1, 1);
+        typeChecker.processExprNode(identifierInvalid);
+      });
+      assertEquals("Identifier 'b' not declared", exception.getMessage());
+    }
+    @Test
+    public void ListDeclarationNode() {
+      // Int
+      List<ExprNode> expressions = List.of(
+        new ExprIntNode("1", 1, 1), 
+        new ExprIntNode("2", 1, 2)
+        );
+      ExprListDeclaration listDeclaration = new ExprListDeclaration(expressions, 1, 1);
+      AFSType returnType = typeChecker.processExprNode(listDeclaration);
+      assertEquals(returnType, SimpleType.INT);
+
+      // Double
+      List<ExprNode> expressions2 = List.of(
+        new ExprDoubleNode("1.0", 1, 1), 
+        new ExprDoubleNode("2.0", 1, 2)
+        );
+      ExprListDeclaration listDeclaration2 = new ExprListDeclaration(expressions2, 1, 1);
+      AFSType returnType2 = typeChecker.processExprNode(listDeclaration2);
+      assertEquals(returnType2, SimpleType.DOUBLE);
+
+      // String
+      List<ExprNode> expressions3 = List.of(
+        new ExprStringNode("AFS", 1, 1), 
+        new ExprStringNode("Best", 1, 2)
+        );
+      ExprListDeclaration listDeclaration3 = new ExprListDeclaration(expressions3, 1, 1);
+      AFSType returnType3 = typeChecker.processExprNode(listDeclaration3);
+      assertEquals(returnType3, SimpleType.STRING);
+      // Bool
+      List<ExprNode> expressions4 = List.of(
+        new ExprBoolNode("1", 1, 1), 
+        new ExprBoolNode("0", 1, 2)
+        );
+      ExprListDeclaration listDeclaration4 = new ExprListDeclaration(expressions4, 1, 1);
+      AFSType returnType4 = typeChecker.processExprNode(listDeclaration4);
+      assertEquals(returnType4, SimpleType.BOOL);
+      
+      // Shape
+      // TODO
+
+      // Invalid: type mismatch
+      List<ExprNode> expressionsInvalid = List.of(
+        new ExprIntNode("1", 1, 1), 
+        new ExprStringNode("Best", 1, 2)
+        );
+      ExprListDeclaration listDeclarationInvalid = new ExprListDeclaration(expressionsInvalid, 1, 1);
+      TypeCheckException exception = assertThrows(TypeCheckException.class, () -> {
+        typeChecker.processExprNode(listDeclarationInvalid);
+      });
+      assertEquals("Type mismatch: expected 'INT', but found 'STRING'", exception.getMessage());
+
+    }
+
   }
   @Nested
   class TypeNode {
