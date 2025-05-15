@@ -64,8 +64,33 @@ public class Parser {
         StmtNode left = stmts.getFirst();
 
         if (stmts.size() == 1) {
+            return left;
+        } else {
+            int line = left.getLineNumber();
+            int col = left.getColumnNumber();
+            List<StmtNode> rest = stmts.subList(1, stmts.size());
+            StmtNode right = toCompStmt(rest);
             if (left instanceof StmtDeclarationNode) {
-                return new StmtDeclarationNode(((StmtDeclarationNode) left).getType(), ((StmtDeclarationNode) left).getIdentifier(), ((StmtDeclarationNode) left).getExpression(), new StmtSkipNode(), left.getLineNumber(), left.getColumnNumber());
+                return new StmtDeclarationNode(((StmtDeclarationNode) left).getType(), ((StmtDeclarationNode) left).getIdentifier(), ((StmtDeclarationNode) left).getExpression(), right, line, col);
+            } else {
+                return new StmtCompositionNode(left, right, line, col);
+            }
+        }
+    }
+
+    private StmtNode declToCompStmt(List<StmtNode> stmts) {
+        if (stmts.isEmpty()) {
+            return new StmtSkipNode();
+        }
+        StmtNode left = stmts.getFirst();
+
+        if (stmts.size() == 1) {
+            if (left instanceof StmtDeclarationNode) {
+                int line = left.getLineNumber();
+                int col = left.getColumnNumber();
+                ExprIdentifierNode ident = new ExprIdentifierNode(((StmtDeclarationNode) left).getIdentifier(), line, col);
+                StmtReturnNode ret = new StmtReturnNode(ident, line, col);
+                return new StmtDeclarationNode(((StmtDeclarationNode) left).getType(), ((StmtDeclarationNode) left).getIdentifier(), ((StmtDeclarationNode) left).getExpression(), ret, line, col);
             } else {
                 return left;
             }
@@ -436,7 +461,7 @@ public class Parser {
 			decls.add(decl); 
 		}
 		Expect(16);
-		stmt = toCompStmt(decls); 
+		stmt = declToCompStmt(decls); 
 		return stmt;
 	}
 
@@ -472,7 +497,7 @@ public class Parser {
 		int line = t.line; int col = t.col; String ident = t.val; 
 		Expect(14);
 		ExprNode expr = Expr();
-		stmt = new StmtDeclarationNode(type, ident, expr, null, line, col); 
+		stmt = new StmtDeclarationNode(type, ident, expr, new StmtSkipNode(), line, col); 
 		Expect(11);
 		return stmt;
 	}
