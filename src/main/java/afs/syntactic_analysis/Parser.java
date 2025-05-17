@@ -71,7 +71,10 @@ public class Parser {
             List<StmtNode> rest = stmts.subList(1, stmts.size());
             StmtNode right = toCompStmt(rest);
             if (left instanceof StmtDeclarationNode) {
-                return new StmtDeclarationNode(((StmtDeclarationNode) left).getType(), ((StmtDeclarationNode) left).getIdentifier(), ((StmtDeclarationNode) left).getExpression(), right, line, col);
+                return new StmtDeclarationNode(((StmtDeclarationNode) left).getType(),
+                                               ((StmtDeclarationNode) left).getIdentifier(),
+                                               ((StmtDeclarationNode) left).getExpression(),
+                                               right, line, col);
             } else {
                 return new StmtCompositionNode(left, right, line, col);
             }
@@ -85,25 +88,33 @@ public class Parser {
         StmtNode left = stmts.getFirst();
 
         if (stmts.size() == 1) {
-            if (left instanceof StmtDeclarationNode) {
-                int line = left.getLineNumber();
-                int col = left.getColumnNumber();
-                ExprIdentifierNode ident = new ExprIdentifierNode(((StmtDeclarationNode) left).getIdentifier(), line, col);
-                StmtReturnNode ret = new StmtReturnNode(ident, line, col);
-                return new StmtDeclarationNode(((StmtDeclarationNode) left).getType(), ((StmtDeclarationNode) left).getIdentifier(), ((StmtDeclarationNode) left).getExpression(), ret, line, col);
-            } else {
-                return left;
-            }
+            return addReturnIfDeclaration(left);
         } else {
             int line = left.getLineNumber();
             int col = left.getColumnNumber();
             List<StmtNode> rest = stmts.subList(1, stmts.size());
-            StmtNode right = toCompStmt(rest);
+            StmtNode right = declToCompStmt(rest);
             if (left instanceof StmtDeclarationNode) {
-                return new StmtDeclarationNode(((StmtDeclarationNode) left).getType(), ((StmtDeclarationNode) left).getIdentifier(), ((StmtDeclarationNode) left).getExpression(), right, line, col);
+                return new StmtDeclarationNode(
+                    ((StmtDeclarationNode) left).getType(),
+                    ((StmtDeclarationNode) left).getIdentifier(),
+                    ((StmtDeclarationNode) left).getExpression(),
+                    right, line, col);
             } else {
                 return new StmtCompositionNode(left, right, line, col);
             }
+        }
+    }
+
+    private StmtNode addReturnIfDeclaration(StmtNode stmt) {
+        if (stmt instanceof StmtDeclarationNode) {
+            int line = stmt.getLineNumber();
+            int col = stmt.getColumnNumber();
+            ExprIdentifierNode ident = new ExprIdentifierNode(((StmtDeclarationNode) stmt).getIdentifier(), line, col);
+            StmtReturnNode ret = new StmtReturnNode(ident, line, col);
+            return new StmtDeclarationNode(((StmtDeclarationNode) stmt).getType(), ((StmtDeclarationNode) stmt).getIdentifier(), ((StmtDeclarationNode) stmt).getExpression(), ret, line, col);
+        } else {
+            return stmt;
         }
     }
 
