@@ -319,11 +319,11 @@ public class Scanner {
 		literals.put("true", 48);
 		literals.put("false", 49);
 		literals.put("shape", 50);
-		literals.put("int", 51);
-		literals.put("double", 52);
-		literals.put("bool", 53);
-		literals.put("string", 54);
-		literals.put("void", 55);
+		literals.put("void", 51);
+		literals.put("int", 52);
+		literals.put("double", 53);
+		literals.put("bool", 54);
+		literals.put("string", 55);
 
 	}
 	

@@ -192,7 +192,7 @@ Def<out DefNode def> = (. def = null; .)
 .
 
 FnDef<out DefNode func> = (. List<Param> params = new ArrayList<>(); .)
-    "fn" Type<out TypeNode type>
+    "fn" FunctionType<out TypeNode type>
     IDENT (. int line = t.line; int col = t.col; String ident = t.val; .)
     "("
     [Param<out Param param> (. params.add(param); .)
@@ -585,12 +585,16 @@ DeclType<out TypeNode type> = (. type = null; .)
     | Type<out type> )
 .
 
+FunctionType<out TypeNode type> = (. type = null; .)
+    ( "void" (. type = new TypeVoidNode(t.line, t.col); .)
+    | Type<out type> )
+.
+
 Type<out TypeNode type> = (. type = null; .)
     ( "int" (. type = new TypeIntNode(t.line, t.col); .)
     | "double" (. type = new TypeDoubleNode(t.line, t.col); .)
     | "bool" (. type = new TypeBoolNode(t.line, t.col); .)
     | "string" (. type = new TypeStringNode(t.line, t.col); .)
-    | "void" (. type = new TypeVoidNode(t.line, t.col); .)
     | "[" Type<out TypeNode innerType> "]" (. type = new TypeListNode(innerType, t.line, t.col); .) )
 .
 END Program. // Must refer to the same non-terminal as "COMPILER" at the top.

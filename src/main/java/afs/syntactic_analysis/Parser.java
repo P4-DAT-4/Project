@@ -253,7 +253,7 @@ public class Parser {
 		DefNode  func;
 		List<Param> params = new ArrayList<>(); 
 		Expect(5);
-		TypeNode type = Type();
+		TypeNode type = FunctionType();
 		Expect(4);
 		int line = t.line; int col = t.col; String ident = t.val; 
 		Expect(6);
@@ -333,44 +333,15 @@ public class Parser {
 		return vis;
 	}
 
-	TypeNode  Type() {
+	TypeNode  FunctionType() {
 		TypeNode  type;
 		type = null; 
-		switch (la.kind) {
-		case 51: {
-			Get();
-			type = new TypeIntNode(t.line, t.col); 
-			break;
-		}
-		case 52: {
-			Get();
-			type = new TypeDoubleNode(t.line, t.col); 
-			break;
-		}
-		case 53: {
-			Get();
-			type = new TypeBoolNode(t.line, t.col); 
-			break;
-		}
-		case 54: {
-			Get();
-			type = new TypeStringNode(t.line, t.col); 
-			break;
-		}
-		case 55: {
+		if (la.kind == 51) {
 			Get();
 			type = new TypeVoidNode(t.line, t.col); 
-			break;
-		}
-		case 17: {
-			Get();
-			TypeNode innerType = Type();
-			Expect(18);
-			type = new TypeListNode(innerType, t.line, t.col); 
-			break;
-		}
-		default: SynErr(59); break;
-		}
+		} else if (StartOf(2)) {
+			type = Type();
+		} else SynErr(59);
 		return type;
 	}
 
@@ -407,6 +378,30 @@ public class Parser {
 		Expect(16);
 		stmt = declToCompStmt(decls); 
 		return stmt;
+	}
+
+	TypeNode  Type() {
+		TypeNode  type;
+		type = null; 
+		if (la.kind == 52) {
+			Get();
+			type = new TypeIntNode(t.line, t.col); 
+		} else if (la.kind == 53) {
+			Get();
+			type = new TypeDoubleNode(t.line, t.col); 
+		} else if (la.kind == 54) {
+			Get();
+			type = new TypeBoolNode(t.line, t.col); 
+		} else if (la.kind == 55) {
+			Get();
+			type = new TypeStringNode(t.line, t.col); 
+		} else if (la.kind == 17) {
+			Get();
+			TypeNode innerType = Type();
+			Expect(18);
+			type = new TypeListNode(innerType, t.line, t.col); 
+		} else SynErr(60);
+		return type;
 	}
 
 	ExprNode  Expr() {
@@ -485,8 +480,8 @@ public class Parser {
 				stmt = StmtListAssignment(ident, line, col);
 			} else if (la.kind == 6) {
 				stmt = StmtFuncCall(ident, line, col);
-			} else SynErr(60);
-		} else SynErr(61);
+			} else SynErr(61);
+		} else SynErr(62);
 		return stmt;
 	}
 
@@ -504,7 +499,7 @@ public class Parser {
 
 	StmtNode  StmtIf() {
 		StmtNode  stmt;
-		while (!(la.kind == 0 || la.kind == 19)) {SynErr(62); Get();}
+		while (!(la.kind == 0 || la.kind == 19)) {SynErr(63); Get();}
 		Expect(19);
 		int line = t.line; int col = t.col; 
 		Expect(6);
@@ -523,7 +518,7 @@ public class Parser {
 
 	StmtNode  StmtWhile() {
 		StmtNode  stmt;
-		while (!(la.kind == 0 || la.kind == 22)) {SynErr(63); Get();}
+		while (!(la.kind == 0 || la.kind == 22)) {SynErr(64); Get();}
 		Expect(22);
 		int line = t.line; int col = t.col; 
 		Expect(6);
@@ -600,7 +595,7 @@ public class Parser {
 			decl = DeclDecl();
 		} else if (la.kind == 19) {
 			decl = DeclIf();
-		} else SynErr(64);
+		} else SynErr(65);
 		return decl;
 	}
 
@@ -618,7 +613,7 @@ public class Parser {
 
 	StmtNode  DeclIf() {
 		StmtNode  decl;
-		while (!(la.kind == 0 || la.kind == 19)) {SynErr(65); Get();}
+		while (!(la.kind == 0 || la.kind == 19)) {SynErr(66); Get();}
 		Expect(19);
 		int line = t.line; int col = t.col; 
 		Expect(6);
@@ -643,7 +638,7 @@ public class Parser {
 			type = new TypeShapeNode(t.line, t.col); 
 		} else if (StartOf(2)) {
 			type = Type();
-		} else SynErr(66);
+		} else SynErr(67);
 		return type;
 	}
 
@@ -679,7 +674,7 @@ public class Parser {
 			declExpr = Expr();
 			break;
 		}
-		default: SynErr(67); break;
+		default: SynErr(68); break;
 		}
 		return declExpr;
 	}
@@ -978,7 +973,7 @@ public class Parser {
 			Expect(8);
 			break;
 		}
-		default: SynErr(68); break;
+		default: SynErr(69); break;
 		}
 		return expr;
 	}
@@ -1050,13 +1045,13 @@ public class Parser {
 	}
 
 	private static final boolean[][] set = {
-		{_T,_x,_x,_x, _x,_T,_x,_x, _x,_T,_x,_x, _T,_x,_x,_x, _x,_T,_x,_T, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_T,_T, _x,_x},
-		{_T,_x,_x,_x, _x,_T,_x,_x, _x,_T,_x,_x, _T,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_T,_T, _x,_x},
-		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_T,_T, _x,_x},
+		{_T,_x,_x,_x, _x,_T,_x,_x, _x,_T,_x,_x, _T,_x,_x,_x, _x,_T,_x,_T, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _x,_x},
+		{_T,_x,_x,_x, _x,_T,_x,_x, _x,_T,_x,_x, _T,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _x,_x},
+		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _x,_x},
 		{_x,_T,_T,_T, _T,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x},
-		{_x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_T, _x,_x,_T,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_T,_T, _x,_x},
-		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _x,_x},
-		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _x,_x},
+		{_x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_T, _x,_x,_T,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _x,_x},
+		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _T,_T,_T,_T, _x,_x},
+		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _T,_T,_T,_T, _x,_x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x}
 
 	};
@@ -1133,24 +1128,25 @@ class Errors {
 			case 48: s = "\"true\" expected"; break;
 			case 49: s = "\"false\" expected"; break;
 			case 50: s = "\"shape\" expected"; break;
-			case 51: s = "\"int\" expected"; break;
-			case 52: s = "\"double\" expected"; break;
-			case 53: s = "\"bool\" expected"; break;
-			case 54: s = "\"string\" expected"; break;
-			case 55: s = "\"void\" expected"; break;
+			case 51: s = "\"void\" expected"; break;
+			case 52: s = "\"int\" expected"; break;
+			case 53: s = "\"double\" expected"; break;
+			case 54: s = "\"bool\" expected"; break;
+			case 55: s = "\"string\" expected"; break;
 			case 56: s = "??? expected"; break;
 			case 57: s = "this symbol not expected in Def"; break;
 			case 58: s = "invalid Def"; break;
-			case 59: s = "invalid Type"; break;
-			case 60: s = "invalid Stmt"; break;
+			case 59: s = "invalid FunctionType"; break;
+			case 60: s = "invalid Type"; break;
 			case 61: s = "invalid Stmt"; break;
-			case 62: s = "this symbol not expected in StmtIf"; break;
-			case 63: s = "this symbol not expected in StmtWhile"; break;
-			case 64: s = "invalid Decl"; break;
-			case 65: s = "this symbol not expected in DeclIf"; break;
-			case 66: s = "invalid DeclType"; break;
-			case 67: s = "invalid DeclExpr"; break;
-			case 68: s = "invalid Term"; break;
+			case 62: s = "invalid Stmt"; break;
+			case 63: s = "this symbol not expected in StmtIf"; break;
+			case 64: s = "this symbol not expected in StmtWhile"; break;
+			case 65: s = "invalid Decl"; break;
+			case 66: s = "this symbol not expected in DeclIf"; break;
+			case 67: s = "invalid DeclType"; break;
+			case 68: s = "invalid DeclExpr"; break;
+			case 69: s = "invalid Term"; break;
 			default: s = "error " + n; break;
 		}
 		printMsg(line, col, s);
