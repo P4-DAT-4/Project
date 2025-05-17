@@ -4,7 +4,6 @@ import afs.nodes.event.EventNode;
 import afs.nodes.expr.ExprNode;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public final class DefVisualizeNode extends DefNode {
     private final String identifier;

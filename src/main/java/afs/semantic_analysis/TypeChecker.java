@@ -13,9 +13,7 @@ import java.util.List;
 
 public class TypeChecker {
     public void checkProgram(ProgNode program) {
-        for (var def : program.getDefinitions()) {
-            DeclarationType(def);
-        }
+        DeclarationType(program.getDefinition());
     }
 
     private AFSType DeclarationType(DefNode def) {
@@ -32,6 +30,8 @@ public class TypeChecker {
                 TypeEnvironment.declareVar(identifier, type);
 
                 def.setType(type);
+
+                DeclarationType(declarationNode.getDefinition());
                 return type;
             }
             case DefFunctionNode functionNode -> { // ok
@@ -60,6 +60,9 @@ public class TypeChecker {
                 TypeEnvironment.exitFunction();
 
                 def.setType(type);
+
+
+                DeclarationType(functionNode.getDefinition());
                 return type;
             }
             case DefVisualizeNode visualizeNode -> {

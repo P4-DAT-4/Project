@@ -178,9 +178,56 @@ Program = Prog<out mainNode>
 .
 
 /*------------------------------------------------------------------------*/
-Prog<out ProgNode prog> = (. ArrayList<DefNode> defList = new ArrayList(); .)
-    { Def<out DefNode def> (. defList.add(def); .) }
-    Visualize<out DefNode vis> (. defList.add(vis); prog = new ProgNode(defList); .)
+Prog<out ProgNode prog> =
+    Def<out DefNode def> (. prog = new ProgNode(def); .)
+.
+
+/*-----------------------------------Definitions-----------------------------------*/
+Def<out DefNode def> = (. def = null; .)
+    SYNC
+    ( FnDef<out def>
+    | ImgDef<out def>
+    | VarDef<out def>
+    | Visualize<out def> )
+.
+
+FnDef<out DefNode func> = (. List<Param> params = new ArrayList<>(); .)
+    "fn" Type<out TypeNode type>
+    IDENT (. int line = t.line; int col = t.col; String ident = t.val; .)
+    "("
+    [Param<out Param param> (. params.add(param); .)
+    {"," Param<out param> (. params.add(param); .)
+    }]
+    ")"
+    StmtBlock<out StmtNode stmt>
+    Def<out DefNode def> (. func = new DefFunctionNode(type, ident, params, stmt, def, line, col); .)
+.
+
+ImgDef<out DefNode img> = (. List<Param> params = new ArrayList<>(); .)
+    "img"
+    IDENT (. int line = t.line; int col = t.col; String ident = t.val; .)
+    "("
+    [Param<out Param param> (. params.add(param); .)
+    {"," Param<out param> (. params.add(param); .)
+    }]
+    ")"
+    DeclBlock<out StmtNode decl>
+    Def<out DefNode def> (. img = new DefFunctionNode(new TypeShapeNode(line, col), ident, params, decl, def, line, col); .)
+.
+
+Param<out Param param> =
+    Type<out TypeNode type>
+    IDENT (. int line = t.line; int col = t.col; String ident = t.val; .)
+    (. param = new Param(type, ident, line, col); .)
+.
+
+VarDef<out DefNode var> =
+    Type<out TypeNode type>
+    IDENT (. int line = t.line; int col = t.col; String ident = t.val; .)
+    "="
+    Expr<out ExprNode expr>
+    ";"
+    Def<out DefNode def> (. var = new DefDeclarationNode(type, ident, expr, def, line, col); .)
 .
 
 /*-----------------------------------Visualize-----------------------------------*/
@@ -217,50 +264,6 @@ Events<out EventNode event> = (. List<EventNode> events = new ArrayList<>(); Lis
     ")"
     ";" (. event = new EventDeclarationNode(expr, ident, arguments, line, col); events.add(event); .)
     } (. event = toCompEvent(events); .)
-.
-
-/*-----------------------------------Definitions-----------------------------------*/
-Def<out DefNode def> = (. def = null; .)
-    SYNC
-    ( FnDef<out def>
-    | ImgDef<out def>
-    | VarDef<out def> )
-.
-
-FnDef<out DefNode func> = (. List<Param> params = new ArrayList<>(); .)
-    "fn" Type<out TypeNode type>
-    IDENT (. int line = t.line; int col = t.col; String ident = t.val; .)
-    "("
-    [Param<out Param param> (. params.add(param); .)
-    {"," Param<out param> (. params.add(param); .)
-    }]
-    ")"
-    StmtBlock<out StmtNode stmt> (. func = new DefFunctionNode(type, ident, params, stmt, line, col); .)
-.
-
-ImgDef<out DefNode img> = (. List<Param> params = new ArrayList<>(); .)
-    "img"
-    IDENT (. int line = t.line; int col = t.col; String ident = t.val; .)
-    "("
-    [Param<out Param param> (. params.add(param); .)
-    {"," Param<out param> (. params.add(param); .)
-    }]
-    ")"
-    DeclBlock<out StmtNode decl> (. img = new DefFunctionNode(new TypeShapeNode(line, col), ident, params, decl, line, col); .)
-.
-
-Param<out Param param> =
-    Type<out TypeNode type>
-    IDENT (. int line = t.line; int col = t.col; String ident = t.val; .)
-    (. param = new Param(type, ident, line, col); .)
-.
-
-VarDef<out DefNode def> =
-    Type<out TypeNode type>
-    IDENT (. int line = t.line; int col = t.col; String ident = t.val; .)
-    "="
-    Expr<out ExprNode expr> (. def = new DefDeclarationNode(type, ident, expr, line, col); .)
-    ";"
 .
 
 /*-----------------------------------Statements-----------------------------------*/

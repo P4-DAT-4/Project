@@ -228,119 +228,36 @@ public class Parser {
 
 	ProgNode  Prog() {
 		ProgNode  prog;
-		ArrayList<DefNode> defList = new ArrayList(); 
-		while (StartOf(1)) {
-			DefNode def = Def();
-			defList.add(def); 
-		}
-		DefNode vis = Visualize();
-		defList.add(vis); prog = new ProgNode(defList); 
+		DefNode def = Def();
+		prog = new ProgNode(def); 
 		return prog;
 	}
 
 	DefNode  Def() {
 		DefNode  def;
 		def = null; 
-		while (!(StartOf(2))) {SynErr(57); Get();}
-		if (la.kind == 12) {
+		while (!(StartOf(1))) {SynErr(57); Get();}
+		if (la.kind == 5) {
 			def = FnDef();
-		} else if (la.kind == 13) {
+		} else if (la.kind == 9) {
 			def = ImgDef();
-		} else if (StartOf(3)) {
+		} else if (StartOf(2)) {
 			def = VarDef();
+		} else if (la.kind == 12) {
+			def = Visualize();
 		} else SynErr(58);
 		return def;
-	}
-
-	DefNode  Visualize() {
-		DefNode  vis;
-		List<ExprNode> arguments = new ArrayList<>(); 
-		Expect(5);
-		int line = t.line; int col = t.col; 
-		Expect(4);
-		String ident = t.val; 
-		Expect(6);
-		if (StartOf(4)) {
-			ExprNode arg = Expr();
-			arguments.add(arg); 
-			while (la.kind == 7) {
-				Get();
-				arg = Expr();
-				arguments.add(arg); 
-			}
-		}
-		Expect(8);
-		Expect(9);
-		EventNode event = Events();
-		vis = new DefVisualizeNode(ident, arguments, event, line, col); 
-		return vis;
-	}
-
-	ExprNode  Expr() {
-		ExprNode  expr;
-		expr = AndExpr();
-		while (la.kind == 34) {
-			Get();
-			String op = t.val; int line = t.line; int col = t.col; 
-			ExprNode right = AndExpr();
-			expr = makeBinOpExpr(expr, op, right, line, col); 
-		}
-		return expr;
-	}
-
-	EventNode  Events() {
-		EventNode  event;
-		List<EventNode> events = new ArrayList<>(); List<ExprNode> arguments = new ArrayList<>(); 
-		ExprNode expr = Expr();
-		Expect(10);
-		Expect(4);
-		int line = t.line; int col = t.col; String ident = t.val; 
-		Expect(6);
-		if (StartOf(4)) {
-			ExprNode arg = Expr();
-			arguments.add(arg); 
-			while (la.kind == 7) {
-				Get();
-				arg = Expr();
-				arguments.add(arg); 
-			}
-		}
-		Expect(8);
-		Expect(11);
-		event = new EventDeclarationNode(expr, ident, arguments, line, col); events.add(event); 
-		while (StartOf(4)) {
-			expr = Expr();
-			line = t.line; col = t.col; arguments = new ArrayList<>(); 
-			Expect(10);
-			Expect(4);
-			line = t.line; col = t.col; ident = t.val; 
-			Expect(6);
-			if (StartOf(4)) {
-				ExprNode arg = Expr();
-				arguments.add(arg); 
-				while (la.kind == 7) {
-					Get();
-					arg = Expr();
-					arguments.add(arg); 
-				}
-			}
-			Expect(8);
-			Expect(11);
-			event = new EventDeclarationNode(expr, ident, arguments, line, col); events.add(event); 
-		}
-		event = toCompEvent(events); 
-		return event;
 	}
 
 	DefNode  FnDef() {
 		DefNode  func;
 		List<Param> params = new ArrayList<>(); 
-		Expect(12);
+		Expect(5);
 		TypeNode type = Type();
 		Expect(4);
 		int line = t.line; int col = t.col; String ident = t.val; 
 		Expect(6);
-		if (StartOf(3)) {
+		if (StartOf(2)) {
 			Param param = Param();
 			params.add(param); 
 			while (la.kind == 7) {
@@ -351,18 +268,19 @@ public class Parser {
 		}
 		Expect(8);
 		StmtNode stmt = StmtBlock();
-		func = new DefFunctionNode(type, ident, params, stmt, line, col); 
+		DefNode def = Def();
+		func = new DefFunctionNode(type, ident, params, stmt, def, line, col); 
 		return func;
 	}
 
 	DefNode  ImgDef() {
 		DefNode  img;
 		List<Param> params = new ArrayList<>(); 
-		Expect(13);
+		Expect(9);
 		Expect(4);
 		int line = t.line; int col = t.col; String ident = t.val; 
 		Expect(6);
-		if (StartOf(3)) {
+		if (StartOf(2)) {
 			Param param = Param();
 			params.add(param); 
 			while (la.kind == 7) {
@@ -373,20 +291,46 @@ public class Parser {
 		}
 		Expect(8);
 		StmtNode decl = DeclBlock();
-		img = new DefFunctionNode(new TypeShapeNode(line, col), ident, params, decl, line, col); 
+		DefNode def = Def();
+		img = new DefFunctionNode(new TypeShapeNode(line, col), ident, params, decl, def, line, col); 
 		return img;
 	}
 
 	DefNode  VarDef() {
-		DefNode  def;
+		DefNode  var;
 		TypeNode type = Type();
 		Expect(4);
 		int line = t.line; int col = t.col; String ident = t.val; 
-		Expect(14);
+		Expect(10);
 		ExprNode expr = Expr();
-		def = new DefDeclarationNode(type, ident, expr, line, col); 
 		Expect(11);
-		return def;
+		DefNode def = Def();
+		var = new DefDeclarationNode(type, ident, expr, def, line, col); 
+		return var;
+	}
+
+	DefNode  Visualize() {
+		DefNode  vis;
+		List<ExprNode> arguments = new ArrayList<>(); 
+		Expect(12);
+		int line = t.line; int col = t.col; 
+		Expect(4);
+		String ident = t.val; 
+		Expect(6);
+		if (StartOf(3)) {
+			ExprNode arg = Expr();
+			arguments.add(arg); 
+			while (la.kind == 7) {
+				Get();
+				arg = Expr();
+				arguments.add(arg); 
+			}
+		}
+		Expect(8);
+		Expect(13);
+		EventNode event = Events();
+		vis = new DefVisualizeNode(ident, arguments, event, line, col); 
+		return vis;
 	}
 
 	TypeNode  Type() {
@@ -443,7 +387,7 @@ public class Parser {
 		StmtNode  stmt;
 		List<StmtNode> stmts = new ArrayList<>(); 
 		Expect(15);
-		while (StartOf(5)) {
+		while (StartOf(4)) {
 			StmtNode innerStmt = Stmt();
 			stmts.add(innerStmt); 
 		}
@@ -456,7 +400,7 @@ public class Parser {
 		StmtNode  stmt;
 		List<StmtNode> decls = new ArrayList<>(); 
 		Expect(15);
-		while (StartOf(6)) {
+		while (StartOf(5)) {
 			StmtNode decl = Decl();
 			decls.add(decl); 
 		}
@@ -465,10 +409,66 @@ public class Parser {
 		return stmt;
 	}
 
+	ExprNode  Expr() {
+		ExprNode  expr;
+		expr = AndExpr();
+		while (la.kind == 34) {
+			Get();
+			String op = t.val; int line = t.line; int col = t.col; 
+			ExprNode right = AndExpr();
+			expr = makeBinOpExpr(expr, op, right, line, col); 
+		}
+		return expr;
+	}
+
+	EventNode  Events() {
+		EventNode  event;
+		List<EventNode> events = new ArrayList<>(); List<ExprNode> arguments = new ArrayList<>(); 
+		ExprNode expr = Expr();
+		Expect(14);
+		Expect(4);
+		int line = t.line; int col = t.col; String ident = t.val; 
+		Expect(6);
+		if (StartOf(3)) {
+			ExprNode arg = Expr();
+			arguments.add(arg); 
+			while (la.kind == 7) {
+				Get();
+				arg = Expr();
+				arguments.add(arg); 
+			}
+		}
+		Expect(8);
+		Expect(11);
+		event = new EventDeclarationNode(expr, ident, arguments, line, col); events.add(event); 
+		while (StartOf(3)) {
+			expr = Expr();
+			line = t.line; col = t.col; arguments = new ArrayList<>(); 
+			Expect(14);
+			Expect(4);
+			line = t.line; col = t.col; ident = t.val; 
+			Expect(6);
+			if (StartOf(3)) {
+				ExprNode arg = Expr();
+				arguments.add(arg); 
+				while (la.kind == 7) {
+					Get();
+					arg = Expr();
+					arguments.add(arg); 
+				}
+			}
+			Expect(8);
+			Expect(11);
+			event = new EventDeclarationNode(expr, ident, arguments, line, col); events.add(event); 
+		}
+		event = toCompEvent(events); 
+		return event;
+	}
+
 	StmtNode  Stmt() {
 		StmtNode  stmt;
 		stmt = new StmtSkipNode(); 
-		if (StartOf(3)) {
+		if (StartOf(2)) {
 			stmt = StmtDeclaration();
 		} else if (la.kind == 19) {
 			stmt = StmtIf();
@@ -479,7 +479,7 @@ public class Parser {
 		} else if (la.kind == 4) {
 			Get();
 			int line = t.line; int col = t.col; String ident = t.val; 
-			if (la.kind == 14) {
+			if (la.kind == 10) {
 				stmt = StmtAssignment(ident, line, col);
 			} else if (la.kind == 17) {
 				stmt = StmtListAssignment(ident, line, col);
@@ -495,7 +495,7 @@ public class Parser {
 		TypeNode type = Type();
 		Expect(4);
 		int line = t.line; int col = t.col; String ident = t.val; 
-		Expect(14);
+		Expect(10);
 		ExprNode expr = Expr();
 		stmt = new StmtDeclarationNode(type, ident, expr, new StmtSkipNode(), line, col); 
 		Expect(11);
@@ -529,7 +529,7 @@ public class Parser {
 		Expect(6);
 		ExprNode expr = Expr();
 		Expect(8);
-		Expect(10);
+		Expect(14);
 		StmtNode whlStmt = StmtBlock();
 		stmt = new StmtWhileNode(expr, whlStmt, line, col); 
 		return stmt;
@@ -547,7 +547,7 @@ public class Parser {
 
 	StmtNode  StmtAssignment(String ident, int line, int col) {
 		StmtNode  stmt;
-		Expect(14);
+		Expect(10);
 		ExprNode expr = Expr();
 		stmt = new StmtAssignmentNode(ident, expr, line, col); 
 		Expect(11);
@@ -567,7 +567,7 @@ public class Parser {
 			exprList.add(expr); 
 			Expect(18);
 		}
-		Expect(14);
+		Expect(10);
 		expr = Expr();
 		stmt = new StmtListAssignmentNode(ident, exprList, expr, line, col); 
 		Expect(11);
@@ -578,7 +578,7 @@ public class Parser {
 		StmtNode  stmt;
 		List<ExprNode> arguments = new ArrayList<>(); 
 		Expect(6);
-		if (StartOf(4)) {
+		if (StartOf(3)) {
 			ExprNode arg = Expr();
 			arguments.add(arg); 
 			while (la.kind == 7) {
@@ -596,7 +596,7 @@ public class Parser {
 	StmtNode  Decl() {
 		StmtNode  decl;
 		decl = new StmtSkipNode(); 
-		if (StartOf(7)) {
+		if (StartOf(6)) {
 			decl = DeclDecl();
 		} else if (la.kind == 19) {
 			decl = DeclIf();
@@ -609,7 +609,7 @@ public class Parser {
 		TypeNode type = DeclType();
 		Expect(4);
 		int line = t.line; int col = t.col; String ident = t.val; 
-		Expect(14);
+		Expect(10);
 		ExprNode declExpr = DeclExpr();
 		decl = new StmtDeclarationNode(type, ident, declExpr, null, line, col); 
 		Expect(11);
@@ -641,7 +641,7 @@ public class Parser {
 		if (la.kind == 50) {
 			Get();
 			type = new TypeShapeNode(t.line, t.col); 
-		} else if (StartOf(3)) {
+		} else if (StartOf(2)) {
 			type = Type();
 		} else SynErr(66);
 		return type;
@@ -848,7 +848,7 @@ public class Parser {
 	ExprNode  RelExpr() {
 		ExprNode  expr;
 		expr = ConcatExpr();
-		while (StartOf(8)) {
+		while (StartOf(7)) {
 			if (la.kind == 38) {
 				Get();
 			} else if (la.kind == 39) {
@@ -1004,7 +1004,7 @@ public class Parser {
 		ExprFunctionCallNode  funcCall;
 		List<ExprNode> exprList = new ArrayList<>(); 
 		Expect(6);
-		if (StartOf(4)) {
+		if (StartOf(3)) {
 			ExprNode arg = Expr();
 			exprList.add(arg); 
 			while (la.kind == 7) {
@@ -1023,7 +1023,7 @@ public class Parser {
 		List<ExprNode> exprs = new ArrayList<>(); 
 		Expect(17);
 		int line = t.line; int col = t.col; 
-		if (StartOf(4)) {
+		if (StartOf(3)) {
 			expr = Expr();
 			exprs.add(expr); 
 		}
@@ -1050,9 +1050,8 @@ public class Parser {
 	}
 
 	private static final boolean[][] set = {
-		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_x,_x, _x,_T,_x,_T, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_T,_T, _x,_x},
-		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_T,_T, _x,_x},
-		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_T,_T, _x,_x},
+		{_T,_x,_x,_x, _x,_T,_x,_x, _x,_T,_x,_x, _T,_x,_x,_x, _x,_T,_x,_T, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_T,_T, _x,_x},
+		{_T,_x,_x,_x, _x,_T,_x,_x, _x,_T,_x,_x, _T,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_T,_T, _x,_x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_T,_T, _x,_x},
 		{_x,_T,_T,_T, _T,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x},
 		{_x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_T, _x,_x,_T,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_T,_T, _x,_x},
@@ -1088,16 +1087,16 @@ class Errors {
 			case 2: s = "DOUBLE expected"; break;
 			case 3: s = "STRING expected"; break;
 			case 4: s = "IDENT expected"; break;
-			case 5: s = "\"visualize\" expected"; break;
+			case 5: s = "\"fn\" expected"; break;
 			case 6: s = "\"(\" expected"; break;
 			case 7: s = "\",\" expected"; break;
 			case 8: s = "\")\" expected"; break;
-			case 9: s = "\":\" expected"; break;
-			case 10: s = "\"do\" expected"; break;
+			case 9: s = "\"img\" expected"; break;
+			case 10: s = "\"=\" expected"; break;
 			case 11: s = "\";\" expected"; break;
-			case 12: s = "\"fn\" expected"; break;
-			case 13: s = "\"img\" expected"; break;
-			case 14: s = "\"=\" expected"; break;
+			case 12: s = "\"visualize\" expected"; break;
+			case 13: s = "\":\" expected"; break;
+			case 14: s = "\"do\" expected"; break;
 			case 15: s = "\"{\" expected"; break;
 			case 16: s = "\"}\" expected"; break;
 			case 17: s = "\"[\" expected"; break;

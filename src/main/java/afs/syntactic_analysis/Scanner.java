@@ -280,9 +280,9 @@ public class Scanner {
 		start.set(40, 7); 
 		start.set(44, 8); 
 		start.set(41, 9); 
-		start.set(58, 10); 
-		start.set(59, 11); 
 		start.set(61, 28); 
+		start.set(59, 10); 
+		start.set(58, 11); 
 		start.set(123, 12); 
 		start.set(125, 13); 
 		start.set(91, 14); 
@@ -297,10 +297,10 @@ public class Scanner {
 		start.set(42, 26); 
 		start.set(47, 27); 
 		start.set(Buffer.EOF, -1);
-		literals.put("visualize", 5);
-		literals.put("do", 10);
-		literals.put("fn", 12);
-		literals.put("img", 13);
+		literals.put("fn", 5);
+		literals.put("img", 9);
+		literals.put("visualize", 12);
+		literals.put("do", 14);
 		literals.put("if", 19);
 		literals.put("then", 20);
 		literals.put("else", 21);
@@ -489,9 +489,9 @@ public class Scanner {
 				case 9:
 					{t.kind = 8; break loop;}
 				case 10:
-					{t.kind = 9; break loop;}
-				case 11:
 					{t.kind = 11; break loop;}
+				case 11:
+					{t.kind = 13; break loop;}
 				case 12:
 					{t.kind = 15; break loop;}
 				case 13:
@@ -527,9 +527,9 @@ public class Scanner {
 				case 27:
 					{t.kind = 46; break loop;}
 				case 28:
-					recEnd = pos; recKind = 14;
+					recEnd = pos; recKind = 10;
 					if (ch == '=') {AddCh(); state = 20; break;}
-					else {t.kind = 14; break loop;}
+					else {t.kind = 10; break loop;}
 				case 29:
 					recEnd = pos; recKind = 47;
 					if (ch == '=') {AddCh(); state = 21; break;}
