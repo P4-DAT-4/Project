@@ -36,7 +36,7 @@ public class TypeChecker {
             }
             case DefFunctionNode functionNode -> { // ok
                 AFSType type = TypeType(functionNode.getType());
-                if (!(type instanceof ListType)) {
+                if (!(type instanceof ListType) && !(type.equals(SimpleType.VOID))) {
                     TypeValidator.validatePrimitiveType(type);
                 }
                 
