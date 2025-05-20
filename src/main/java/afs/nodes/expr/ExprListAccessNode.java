@@ -1,25 +1,27 @@
 package afs.nodes.expr;
 
+import java.util.List;
+
 public final class ExprListAccessNode extends ExprNode {
-    private final ExprNode leftExpression;
-    private final ExprNode rightExpression;
+    private final String identifier;
+    private final List<ExprNode> expressions;
 
-    public ExprListAccessNode(ExprNode leftExpression, ExprNode rightExpression, int line, int column) {
+    public ExprListAccessNode(String identifier, List<ExprNode> expressions, int line, int column) {
         super(line, column);
-        this.leftExpression = leftExpression;
-        this.rightExpression = rightExpression;
+        this.identifier = identifier;
+        this.expressions = expressions;
     }
 
-    public ExprNode getLeftExpression() {
-        return leftExpression;
+    public String getIdentifier() {
+        return identifier;
     }
 
-    public ExprNode getRightExpression() {
-        return rightExpression;
+    public List<ExprNode> getExpressions() {
+        return expressions;
     }
 
     @Override
     public String toString() {
-        return "e1[e2]";
+        return "x[arrow(e)]";
     }
 }

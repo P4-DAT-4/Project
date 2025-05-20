@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="antlr-4.13.2-complete (6)">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/AFS/afs/antlr-4.13.2-complete.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

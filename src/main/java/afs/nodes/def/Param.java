@@ -1,14 +1,13 @@
 package afs.nodes.def;
 
 import afs.nodes.AbstractSyntaxNode;
-import afs.nodes.expr.ExprIdentifierNode;
 import afs.nodes.type.TypeNode;
 
 public final class Param extends AbstractSyntaxNode {
     private final TypeNode type;
-    private final ExprIdentifierNode identifier;
+    private final String identifier;
 
-    public Param(TypeNode type, ExprIdentifierNode identifier, int line, int column) {
+    public Param(TypeNode type, String identifier, int line, int column) {
         super(line, column);
         this.type = type;
         this.identifier = identifier;
@@ -18,12 +17,12 @@ public final class Param extends AbstractSyntaxNode {
         return type;
     }
 
-    public ExprIdentifierNode getIdentifier() {
+    public String getIdentifier() {
         return identifier;
     }
 
     @Override
-    public String toString() {
+    public java.lang.String toString() {
         return "T x";
     }
 }
