@@ -52,10 +52,10 @@ public class RecursiveGraphvizPrinter implements PrinterInterface {
         this.printTypes = printTypes;
         int nodeId = counter++;
         addNode(nodeId, program);
-        for (var def : program.getDefinitions()) {
-            int defId = printDef(def);
-            addEdge(nodeId, defId);
-        }
+
+        int defId = printDef(program.getDefinition());
+        addEdge(nodeId, defId);
+
         java.lang.String graphvizCode = getGraphvizCode();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             writer.write(graphvizCode);
@@ -79,6 +79,9 @@ public class RecursiveGraphvizPrinter implements PrinterInterface {
 
                 int exprId = printExpr(node.getExpression());
                 addEdge(nodeId, exprId);
+
+                int defId = printDef(node.getDefinition());
+                addEdge(nodeId, defId);
             }
             case DefFunctionNode node -> {
                 int typeId = printType(node.getType());
@@ -96,6 +99,9 @@ public class RecursiveGraphvizPrinter implements PrinterInterface {
 
                 int stmtId = printStmt(node.getStatement());
                 addEdge(nodeId, stmtId);
+
+                int defId = printDef(node.getDefinition());
+                addEdge(nodeId, defId);
             }
             case DefVisualizeNode node -> {
                 String ident = node.getIdentifier();

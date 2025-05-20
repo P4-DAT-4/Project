@@ -1,4 +1,4 @@
-package afs.checker.types;
+package afs.semantic_analysis.types;
 
 public class SimpleType extends AFSType {
     public static final SimpleType STRING = new SimpleType("STRING");

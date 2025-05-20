@@ -1,4 +1,4 @@
-package afs.checker.types;
+package afs.semantic_analysis.types;
 
 public class ListType extends AFSType {
     private final AFSType type;

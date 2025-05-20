@@ -1,4 +1,4 @@
-package afs.checker.exceptions;
+package afs.semantic_analysis.exceptions;
 
 public class IllegalEventException extends RuntimeException {
   public IllegalEventException() {

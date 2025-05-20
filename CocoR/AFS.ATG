@@ -56,21 +56,57 @@ COMPILER Program
         StmtNode left = stmts.getFirst();
 
         if (stmts.size() == 1) {
-            if (left instanceof StmtDeclarationNode) {
-                return new StmtDeclarationNode(((StmtDeclarationNode) left).getType(), ((StmtDeclarationNode) left).getIdentifier(), ((StmtDeclarationNode) left).getExpression(), new StmtSkipNode(), left.getLineNumber(), left.getColumnNumber());
-            } else {
-                return left;
-            }
+            return left;
         } else {
             int line = left.getLineNumber();
             int col = left.getColumnNumber();
             List<StmtNode> rest = stmts.subList(1, stmts.size());
             StmtNode right = toCompStmt(rest);
             if (left instanceof StmtDeclarationNode) {
-                return new StmtDeclarationNode(((StmtDeclarationNode) left).getType(), ((StmtDeclarationNode) left).getIdentifier(), ((StmtDeclarationNode) left).getExpression(), right, line, col);
+                return new StmtDeclarationNode(((StmtDeclarationNode) left).getType(),
+                                               ((StmtDeclarationNode) left).getIdentifier(),
+                                               ((StmtDeclarationNode) left).getExpression(),
+                                               right, line, col);
             } else {
                 return new StmtCompositionNode(left, right, line, col);
             }
+        }
+    }
+
+    private StmtNode declToCompStmt(List<StmtNode> stmts) {
+        if (stmts.isEmpty()) {
+            return new StmtSkipNode();
+        }
+        StmtNode left = stmts.getFirst();
+
+        if (stmts.size() == 1) {
+            return addReturnIfDeclaration(left);
+        } else {
+            int line = left.getLineNumber();
+            int col = left.getColumnNumber();
+            List<StmtNode> rest = stmts.subList(1, stmts.size());
+            StmtNode right = declToCompStmt(rest);
+            if (left instanceof StmtDeclarationNode) {
+                return new StmtDeclarationNode(
+                    ((StmtDeclarationNode) left).getType(),
+                    ((StmtDeclarationNode) left).getIdentifier(),
+                    ((StmtDeclarationNode) left).getExpression(),
+                    right, line, col);
+            } else {
+                return new StmtCompositionNode(left, right, line, col);
+            }
+        }
+    }
+
+    private StmtNode addReturnIfDeclaration(StmtNode stmt) {
+        if (stmt instanceof StmtDeclarationNode) {
+            int line = stmt.getLineNumber();
+            int col = stmt.getColumnNumber();
+            ExprIdentifierNode ident = new ExprIdentifierNode(((StmtDeclarationNode) stmt).getIdentifier(), line, col);
+            StmtReturnNode ret = new StmtReturnNode(ident, line, col);
+            return new StmtDeclarationNode(((StmtDeclarationNode) stmt).getType(), ((StmtDeclarationNode) stmt).getIdentifier(), ((StmtDeclarationNode) stmt).getExpression(), ret, line, col);
+        } else {
+            return stmt;
         }
     }
 
@@ -153,9 +189,56 @@ Program = Prog<out mainNode>
 .
 
 /*------------------------------------------------------------------------*/
-Prog<out ProgNode prog> = (. ArrayList<DefNode> defList = new ArrayList(); .)
-    { Def<out DefNode def> (. defList.add(def); .) }
-    Visualize<out DefNode vis> (. defList.add(vis); prog = new ProgNode(defList); .)
+Prog<out ProgNode prog> =
+    Def<out DefNode def> (. prog = new ProgNode(def); .)
+.
+
+/*-----------------------------------Definitions-----------------------------------*/
+Def<out DefNode def> = (. def = null; .)
+    SYNC
+    ( FnDef<out def>
+    | ImgDef<out def>
+    | VarDef<out def>
+    | Visualize<out def> )
+.
+
+FnDef<out DefNode func> = (. List<Param> params = new ArrayList<>(); .)
+    "fn" FunctionType<out TypeNode type>
+    IDENT (. int line = t.line; int col = t.col; String ident = t.val; .)
+    "("
+    [Param<out Param param> (. params.add(param); .)
+    {"," Param<out param> (. params.add(param); .)
+    }]
+    ")"
+    StmtBlock<out StmtNode stmt>
+    Def<out DefNode def> (. func = new DefFunctionNode(type, ident, params, stmt, def, line, col); .)
+.
+
+ImgDef<out DefNode img> = (. List<Param> params = new ArrayList<>(); .)
+    "img"
+    IDENT (. int line = t.line; int col = t.col; String ident = t.val; .)
+    "("
+    [Param<out Param param> (. params.add(param); .)
+    {"," Param<out param> (. params.add(param); .)
+    }]
+    ")"
+    DeclBlock<out StmtNode decl>
+    Def<out DefNode def> (. img = new DefFunctionNode(new TypeShapeNode(line, col), ident, params, decl, def, line, col); .)
+.
+
+Param<out Param param> =
+    Type<out TypeNode type>
+    IDENT (. int line = t.line; int col = t.col; String ident = t.val; .)
+    (. param = new Param(type, ident, line, col); .)
+.
+
+VarDef<out DefNode var> =
+    Type<out TypeNode type>
+    IDENT (. int line = t.line; int col = t.col; String ident = t.val; .)
+    "="
+    Expr<out ExprNode expr>
+    ";"
+    Def<out DefNode def> (. var = new DefDeclarationNode(type, ident, expr, def, line, col); .)
 .
 
 /*-----------------------------------Visualize-----------------------------------*/
@@ -194,50 +277,6 @@ Events<out EventNode event> = (. List<EventNode> events = new ArrayList<>(); Lis
     } (. event = toCompEvent(events); .)
 .
 
-/*-----------------------------------Definitions-----------------------------------*/
-Def<out DefNode def> = (. def = null; .)
-    SYNC
-    ( FnDef<out def>
-    | ImgDef<out def>
-    | VarDef<out def> )
-.
-
-FnDef<out DefNode func> = (. List<Param> params = new ArrayList<>(); .)
-    "fn" Type<out TypeNode type>
-    IDENT (. int line = t.line; int col = t.col; String ident = t.val; .)
-    "("
-    [Param<out Param param> (. params.add(param); .)
-    {"," Param<out param> (. params.add(param); .)
-    }]
-    ")"
-    StmtBlock<out StmtNode stmt> (. func = new DefFunctionNode(type, ident, params, stmt, line, col); .)
-.
-
-ImgDef<out DefNode img> = (. List<Param> params = new ArrayList<>(); .)
-    "img"
-    IDENT (. int line = t.line; int col = t.col; String ident = t.val; .)
-    "("
-    [Param<out Param param> (. params.add(param); .)
-    {"," Param<out param> (. params.add(param); .)
-    }]
-    ")"
-    DeclBlock<out StmtNode decl> (. img = new DefFunctionNode(new TypeShapeNode(line, col), ident, params, decl, line, col); .)
-.
-
-Param<out Param param> =
-    Type<out TypeNode type>
-    IDENT (. int line = t.line; int col = t.col; String ident = t.val; .)
-    (. param = new Param(type, ident, line, col); .)
-.
-
-VarDef<out DefNode def> =
-    Type<out TypeNode type>
-    IDENT (. int line = t.line; int col = t.col; String ident = t.val; .)
-    "="
-    Expr<out ExprNode expr> (. def = new DefDeclarationNode(type, ident, expr, line, col); .)
-    ";"
-.
-
 /*-----------------------------------Statements-----------------------------------*/
 StmtBlock<out StmtNode stmt> = (. List<StmtNode> stmts = new ArrayList<>(); .)
     "{"
@@ -262,7 +301,7 @@ StmtDeclaration<out StmtNode stmt> =
     Type<out TypeNode type>
     IDENT (. int line = t.line; int col = t.col; String ident = t.val; .)
     "="
-    Expr<out ExprNode expr> (. stmt = new StmtDeclarationNode(type, ident, expr, null, line, col); .)
+    Expr<out ExprNode expr> (. stmt = new StmtDeclarationNode(type, ident, expr, new StmtSkipNode(), line, col); .)
     ";"
 .
 
@@ -327,7 +366,7 @@ DeclBlock<out StmtNode stmt> = (. List<StmtNode> decls = new ArrayList<>(); .)
     "{"
     { Decl<out StmtNode decl> (. decls.add(decl); .)
     }
-    "}" (. stmt = toCompStmt(decls); .)
+    "}" (. stmt = declToCompStmt(decls); .)
 .
 
 Decl<out StmtNode decl> = (. decl = new StmtSkipNode(); .)
@@ -557,12 +596,16 @@ DeclType<out TypeNode type> = (. type = null; .)
     | Type<out type> )
 .
 
+FunctionType<out TypeNode type> = (. type = null; .)
+    ( "void" (. type = new TypeVoidNode(t.line, t.col); .)
+    | Type<out type> )
+.
+
 Type<out TypeNode type> = (. type = null; .)
     ( "int" (. type = new TypeIntNode(t.line, t.col); .)
     | "double" (. type = new TypeDoubleNode(t.line, t.col); .)
     | "bool" (. type = new TypeBoolNode(t.line, t.col); .)
     | "string" (. type = new TypeStringNode(t.line, t.col); .)
-    | "void" (. type = new TypeVoidNode(t.line, t.col); .)
     | "[" Type<out TypeNode innerType> "]" (. type = new TypeListNode(innerType, t.line, t.col); .) )
 .
 END Program. // Must refer to the same non-terminal as "COMPILER" at the top.

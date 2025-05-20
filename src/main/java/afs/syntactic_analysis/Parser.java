@@ -64,21 +64,57 @@ public class Parser {
         StmtNode left = stmts.getFirst();
 
         if (stmts.size() == 1) {
-            if (left instanceof StmtDeclarationNode) {
-                return new StmtDeclarationNode(((StmtDeclarationNode) left).getType(), ((StmtDeclarationNode) left).getIdentifier(), ((StmtDeclarationNode) left).getExpression(), new StmtSkipNode(), left.getLineNumber(), left.getColumnNumber());
-            } else {
-                return left;
-            }
+            return left;
         } else {
             int line = left.getLineNumber();
             int col = left.getColumnNumber();
             List<StmtNode> rest = stmts.subList(1, stmts.size());
             StmtNode right = toCompStmt(rest);
             if (left instanceof StmtDeclarationNode) {
-                return new StmtDeclarationNode(((StmtDeclarationNode) left).getType(), ((StmtDeclarationNode) left).getIdentifier(), ((StmtDeclarationNode) left).getExpression(), right, line, col);
+                return new StmtDeclarationNode(((StmtDeclarationNode) left).getType(),
+                                               ((StmtDeclarationNode) left).getIdentifier(),
+                                               ((StmtDeclarationNode) left).getExpression(),
+                                               right, line, col);
             } else {
                 return new StmtCompositionNode(left, right, line, col);
             }
+        }
+    }
+
+    private StmtNode declToCompStmt(List<StmtNode> stmts) {
+        if (stmts.isEmpty()) {
+            return new StmtSkipNode();
+        }
+        StmtNode left = stmts.getFirst();
+
+        if (stmts.size() == 1) {
+            return addReturnIfDeclaration(left);
+        } else {
+            int line = left.getLineNumber();
+            int col = left.getColumnNumber();
+            List<StmtNode> rest = stmts.subList(1, stmts.size());
+            StmtNode right = declToCompStmt(rest);
+            if (left instanceof StmtDeclarationNode) {
+                return new StmtDeclarationNode(
+                    ((StmtDeclarationNode) left).getType(),
+                    ((StmtDeclarationNode) left).getIdentifier(),
+                    ((StmtDeclarationNode) left).getExpression(),
+                    right, line, col);
+            } else {
+                return new StmtCompositionNode(left, right, line, col);
+            }
+        }
+    }
+
+    private StmtNode addReturnIfDeclaration(StmtNode stmt) {
+        if (stmt instanceof StmtDeclarationNode) {
+            int line = stmt.getLineNumber();
+            int col = stmt.getColumnNumber();
+            ExprIdentifierNode ident = new ExprIdentifierNode(((StmtDeclarationNode) stmt).getIdentifier(), line, col);
+            StmtReturnNode ret = new StmtReturnNode(ident, line, col);
+            return new StmtDeclarationNode(((StmtDeclarationNode) stmt).getType(), ((StmtDeclarationNode) stmt).getIdentifier(), ((StmtDeclarationNode) stmt).getExpression(), ret, line, col);
+        } else {
+            return stmt;
         }
     }
 
@@ -203,39 +239,96 @@ public class Parser {
 
 	ProgNode  Prog() {
 		ProgNode  prog;
-		ArrayList<DefNode> defList = new ArrayList(); 
-		while (StartOf(1)) {
-			DefNode def = Def();
-			defList.add(def); 
-		}
-		DefNode vis = Visualize();
-		defList.add(vis); prog = new ProgNode(defList); 
+		DefNode def = Def();
+		prog = new ProgNode(def); 
 		return prog;
 	}
 
 	DefNode  Def() {
 		DefNode  def;
 		def = null; 
-		while (!(StartOf(2))) {SynErr(57); Get();}
-		if (la.kind == 12) {
+		while (!(StartOf(1))) {SynErr(57); Get();}
+		if (la.kind == 5) {
 			def = FnDef();
-		} else if (la.kind == 13) {
+		} else if (la.kind == 9) {
 			def = ImgDef();
-		} else if (StartOf(3)) {
+		} else if (StartOf(2)) {
 			def = VarDef();
+		} else if (la.kind == 12) {
+			def = Visualize();
 		} else SynErr(58);
 		return def;
+	}
+
+	DefNode  FnDef() {
+		DefNode  func;
+		List<Param> params = new ArrayList<>(); 
+		Expect(5);
+		TypeNode type = FunctionType();
+		Expect(4);
+		int line = t.line; int col = t.col; String ident = t.val; 
+		Expect(6);
+		if (StartOf(2)) {
+			Param param = Param();
+			params.add(param); 
+			while (la.kind == 7) {
+				Get();
+				param = Param();
+				params.add(param); 
+			}
+		}
+		Expect(8);
+		StmtNode stmt = StmtBlock();
+		DefNode def = Def();
+		func = new DefFunctionNode(type, ident, params, stmt, def, line, col); 
+		return func;
+	}
+
+	DefNode  ImgDef() {
+		DefNode  img;
+		List<Param> params = new ArrayList<>(); 
+		Expect(9);
+		Expect(4);
+		int line = t.line; int col = t.col; String ident = t.val; 
+		Expect(6);
+		if (StartOf(2)) {
+			Param param = Param();
+			params.add(param); 
+			while (la.kind == 7) {
+				Get();
+				param = Param();
+				params.add(param); 
+			}
+		}
+		Expect(8);
+		StmtNode decl = DeclBlock();
+		DefNode def = Def();
+		img = new DefFunctionNode(new TypeShapeNode(line, col), ident, params, decl, def, line, col); 
+		return img;
+	}
+
+	DefNode  VarDef() {
+		DefNode  var;
+		TypeNode type = Type();
+		Expect(4);
+		int line = t.line; int col = t.col; String ident = t.val; 
+		Expect(10);
+		ExprNode expr = Expr();
+		Expect(11);
+		DefNode def = Def();
+		var = new DefDeclarationNode(type, ident, expr, def, line, col); 
+		return var;
 	}
 
 	DefNode  Visualize() {
 		DefNode  vis;
 		List<ExprNode> arguments = new ArrayList<>(); 
-		Expect(5);
+		Expect(12);
 		int line = t.line; int col = t.col; 
 		Expect(4);
 		String ident = t.val; 
 		Expect(6);
-		if (StartOf(4)) {
+		if (StartOf(3)) {
 			ExprNode arg = Expr();
 			arguments.add(arg); 
 			while (la.kind == 7) {
@@ -245,10 +338,81 @@ public class Parser {
 			}
 		}
 		Expect(8);
-		Expect(9);
+		Expect(13);
 		EventNode event = Events();
 		vis = new DefVisualizeNode(ident, arguments, event, line, col); 
 		return vis;
+	}
+
+	TypeNode  FunctionType() {
+		TypeNode  type;
+		type = null; 
+		if (la.kind == 51) {
+			Get();
+			type = new TypeVoidNode(t.line, t.col); 
+		} else if (StartOf(2)) {
+			type = Type();
+		} else SynErr(59);
+		return type;
+	}
+
+	Param  Param() {
+		Param  param;
+		TypeNode type = Type();
+		Expect(4);
+		int line = t.line; int col = t.col; String ident = t.val; 
+		param = new Param(type, ident, line, col); 
+		return param;
+	}
+
+	StmtNode  StmtBlock() {
+		StmtNode  stmt;
+		List<StmtNode> stmts = new ArrayList<>(); 
+		Expect(15);
+		while (StartOf(4)) {
+			StmtNode innerStmt = Stmt();
+			stmts.add(innerStmt); 
+		}
+		Expect(16);
+		stmt = toCompStmt(stmts); 
+		return stmt;
+	}
+
+	StmtNode  DeclBlock() {
+		StmtNode  stmt;
+		List<StmtNode> decls = new ArrayList<>(); 
+		Expect(15);
+		while (StartOf(5)) {
+			StmtNode decl = Decl();
+			decls.add(decl); 
+		}
+		Expect(16);
+		stmt = declToCompStmt(decls); 
+		return stmt;
+	}
+
+	TypeNode  Type() {
+		TypeNode  type;
+		type = null; 
+		if (la.kind == 52) {
+			Get();
+			type = new TypeIntNode(t.line, t.col); 
+		} else if (la.kind == 53) {
+			Get();
+			type = new TypeDoubleNode(t.line, t.col); 
+		} else if (la.kind == 54) {
+			Get();
+			type = new TypeBoolNode(t.line, t.col); 
+		} else if (la.kind == 55) {
+			Get();
+			type = new TypeStringNode(t.line, t.col); 
+		} else if (la.kind == 17) {
+			Get();
+			TypeNode innerType = Type();
+			Expect(18);
+			type = new TypeListNode(innerType, t.line, t.col); 
+		} else SynErr(60);
+		return type;
 	}
 
 	ExprNode  Expr() {
@@ -267,11 +431,11 @@ public class Parser {
 		EventNode  event;
 		List<EventNode> events = new ArrayList<>(); List<ExprNode> arguments = new ArrayList<>(); 
 		ExprNode expr = Expr();
-		Expect(10);
+		Expect(14);
 		Expect(4);
 		int line = t.line; int col = t.col; String ident = t.val; 
 		Expect(6);
-		if (StartOf(4)) {
+		if (StartOf(3)) {
 			ExprNode arg = Expr();
 			arguments.add(arg); 
 			while (la.kind == 7) {
@@ -283,14 +447,14 @@ public class Parser {
 		Expect(8);
 		Expect(11);
 		event = new EventDeclarationNode(expr, ident, arguments, line, col); events.add(event); 
-		while (StartOf(4)) {
+		while (StartOf(3)) {
 			expr = Expr();
 			line = t.line; col = t.col; arguments = new ArrayList<>(); 
-			Expect(10);
+			Expect(14);
 			Expect(4);
 			line = t.line; col = t.col; ident = t.val; 
 			Expect(6);
-			if (StartOf(4)) {
+			if (StartOf(3)) {
 				ExprNode arg = Expr();
 				arguments.add(arg); 
 				while (la.kind == 7) {
@@ -307,143 +471,10 @@ public class Parser {
 		return event;
 	}
 
-	DefNode  FnDef() {
-		DefNode  func;
-		List<Param> params = new ArrayList<>(); 
-		Expect(12);
-		TypeNode type = Type();
-		Expect(4);
-		int line = t.line; int col = t.col; String ident = t.val; 
-		Expect(6);
-		if (StartOf(3)) {
-			Param param = Param();
-			params.add(param); 
-			while (la.kind == 7) {
-				Get();
-				param = Param();
-				params.add(param); 
-			}
-		}
-		Expect(8);
-		StmtNode stmt = StmtBlock();
-		func = new DefFunctionNode(type, ident, params, stmt, line, col); 
-		return func;
-	}
-
-	DefNode  ImgDef() {
-		DefNode  img;
-		List<Param> params = new ArrayList<>(); 
-		Expect(13);
-		Expect(4);
-		int line = t.line; int col = t.col; String ident = t.val; 
-		Expect(6);
-		if (StartOf(3)) {
-			Param param = Param();
-			params.add(param); 
-			while (la.kind == 7) {
-				Get();
-				param = Param();
-				params.add(param); 
-			}
-		}
-		Expect(8);
-		StmtNode decl = DeclBlock();
-		img = new DefFunctionNode(new TypeShapeNode(line, col), ident, params, decl, line, col); 
-		return img;
-	}
-
-	DefNode  VarDef() {
-		DefNode  def;
-		TypeNode type = Type();
-		Expect(4);
-		int line = t.line; int col = t.col; String ident = t.val; 
-		Expect(14);
-		ExprNode expr = Expr();
-		def = new DefDeclarationNode(type, ident, expr, line, col); 
-		Expect(11);
-		return def;
-	}
-
-	TypeNode  Type() {
-		TypeNode  type;
-		type = null; 
-		switch (la.kind) {
-		case 51: {
-			Get();
-			type = new TypeIntNode(t.line, t.col); 
-			break;
-		}
-		case 52: {
-			Get();
-			type = new TypeDoubleNode(t.line, t.col); 
-			break;
-		}
-		case 53: {
-			Get();
-			type = new TypeBoolNode(t.line, t.col); 
-			break;
-		}
-		case 54: {
-			Get();
-			type = new TypeStringNode(t.line, t.col); 
-			break;
-		}
-		case 55: {
-			Get();
-			type = new TypeVoidNode(t.line, t.col); 
-			break;
-		}
-		case 17: {
-			Get();
-			TypeNode innerType = Type();
-			Expect(18);
-			type = new TypeListNode(innerType, t.line, t.col); 
-			break;
-		}
-		default: SynErr(59); break;
-		}
-		return type;
-	}
-
-	Param  Param() {
-		Param  param;
-		TypeNode type = Type();
-		Expect(4);
-		int line = t.line; int col = t.col; String ident = t.val; 
-		param = new Param(type, ident, line, col); 
-		return param;
-	}
-
-	StmtNode  StmtBlock() {
-		StmtNode  stmt;
-		List<StmtNode> stmts = new ArrayList<>(); 
-		Expect(15);
-		while (StartOf(5)) {
-			StmtNode innerStmt = Stmt();
-			stmts.add(innerStmt); 
-		}
-		Expect(16);
-		stmt = toCompStmt(stmts); 
-		return stmt;
-	}
-
-	StmtNode  DeclBlock() {
-		StmtNode  stmt;
-		List<StmtNode> decls = new ArrayList<>(); 
-		Expect(15);
-		while (StartOf(6)) {
-			StmtNode decl = Decl();
-			decls.add(decl); 
-		}
-		Expect(16);
-		stmt = toCompStmt(decls); 
-		return stmt;
-	}
-
 	StmtNode  Stmt() {
 		StmtNode  stmt;
 		stmt = new StmtSkipNode(); 
-		if (StartOf(3)) {
+		if (StartOf(2)) {
 			stmt = StmtDeclaration();
 		} else if (la.kind == 19) {
 			stmt = StmtIf();
@@ -454,14 +485,14 @@ public class Parser {
 		} else if (la.kind == 4) {
 			Get();
 			int line = t.line; int col = t.col; String ident = t.val; 
-			if (la.kind == 14) {
+			if (la.kind == 10) {
 				stmt = StmtAssignment(ident, line, col);
 			} else if (la.kind == 17) {
 				stmt = StmtListAssignment(ident, line, col);
 			} else if (la.kind == 6) {
 				stmt = StmtFuncCall(ident, line, col);
-			} else SynErr(60);
-		} else SynErr(61);
+			} else SynErr(61);
+		} else SynErr(62);
 		return stmt;
 	}
 
@@ -470,16 +501,16 @@ public class Parser {
 		TypeNode type = Type();
 		Expect(4);
 		int line = t.line; int col = t.col; String ident = t.val; 
-		Expect(14);
+		Expect(10);
 		ExprNode expr = Expr();
-		stmt = new StmtDeclarationNode(type, ident, expr, null, line, col); 
+		stmt = new StmtDeclarationNode(type, ident, expr, new StmtSkipNode(), line, col); 
 		Expect(11);
 		return stmt;
 	}
 
 	StmtNode  StmtIf() {
 		StmtNode  stmt;
-		while (!(la.kind == 0 || la.kind == 19)) {SynErr(62); Get();}
+		while (!(la.kind == 0 || la.kind == 19)) {SynErr(63); Get();}
 		Expect(19);
 		int line = t.line; int col = t.col; 
 		Expect(6);
@@ -498,13 +529,13 @@ public class Parser {
 
 	StmtNode  StmtWhile() {
 		StmtNode  stmt;
-		while (!(la.kind == 0 || la.kind == 22)) {SynErr(63); Get();}
+		while (!(la.kind == 0 || la.kind == 22)) {SynErr(64); Get();}
 		Expect(22);
 		int line = t.line; int col = t.col; 
 		Expect(6);
 		ExprNode expr = Expr();
 		Expect(8);
-		Expect(10);
+		Expect(14);
 		StmtNode whlStmt = StmtBlock();
 		stmt = new StmtWhileNode(expr, whlStmt, line, col); 
 		return stmt;
@@ -522,7 +553,7 @@ public class Parser {
 
 	StmtNode  StmtAssignment(String ident, int line, int col) {
 		StmtNode  stmt;
-		Expect(14);
+		Expect(10);
 		ExprNode expr = Expr();
 		stmt = new StmtAssignmentNode(ident, expr, line, col); 
 		Expect(11);
@@ -542,7 +573,7 @@ public class Parser {
 			exprList.add(expr); 
 			Expect(18);
 		}
-		Expect(14);
+		Expect(10);
 		expr = Expr();
 		stmt = new StmtListAssignmentNode(ident, exprList, expr, line, col); 
 		Expect(11);
@@ -553,7 +584,7 @@ public class Parser {
 		StmtNode  stmt;
 		List<ExprNode> arguments = new ArrayList<>(); 
 		Expect(6);
-		if (StartOf(4)) {
+		if (StartOf(3)) {
 			ExprNode arg = Expr();
 			arguments.add(arg); 
 			while (la.kind == 7) {
@@ -571,11 +602,11 @@ public class Parser {
 	StmtNode  Decl() {
 		StmtNode  decl;
 		decl = new StmtSkipNode(); 
-		if (StartOf(7)) {
+		if (StartOf(6)) {
 			decl = DeclDecl();
 		} else if (la.kind == 19) {
 			decl = DeclIf();
-		} else SynErr(64);
+		} else SynErr(65);
 		return decl;
 	}
 
@@ -584,7 +615,7 @@ public class Parser {
 		TypeNode type = DeclType();
 		Expect(4);
 		int line = t.line; int col = t.col; String ident = t.val; 
-		Expect(14);
+		Expect(10);
 		ExprNode declExpr = DeclExpr();
 		decl = new StmtDeclarationNode(type, ident, declExpr, null, line, col); 
 		Expect(11);
@@ -593,7 +624,7 @@ public class Parser {
 
 	StmtNode  DeclIf() {
 		StmtNode  decl;
-		while (!(la.kind == 0 || la.kind == 19)) {SynErr(65); Get();}
+		while (!(la.kind == 0 || la.kind == 19)) {SynErr(66); Get();}
 		Expect(19);
 		int line = t.line; int col = t.col; 
 		Expect(6);
@@ -616,9 +647,9 @@ public class Parser {
 		if (la.kind == 50) {
 			Get();
 			type = new TypeShapeNode(t.line, t.col); 
-		} else if (StartOf(3)) {
+		} else if (StartOf(2)) {
 			type = Type();
-		} else SynErr(66);
+		} else SynErr(67);
 		return type;
 	}
 
@@ -654,7 +685,7 @@ public class Parser {
 			declExpr = Expr();
 			break;
 		}
-		default: SynErr(67); break;
+		default: SynErr(68); break;
 		}
 		return declExpr;
 	}
@@ -823,7 +854,7 @@ public class Parser {
 	ExprNode  RelExpr() {
 		ExprNode  expr;
 		expr = ConcatExpr();
-		while (StartOf(8)) {
+		while (StartOf(7)) {
 			if (la.kind == 38) {
 				Get();
 			} else if (la.kind == 39) {
@@ -953,7 +984,7 @@ public class Parser {
 			Expect(8);
 			break;
 		}
-		default: SynErr(68); break;
+		default: SynErr(69); break;
 		}
 		return expr;
 	}
@@ -979,7 +1010,7 @@ public class Parser {
 		ExprFunctionCallNode  funcCall;
 		List<ExprNode> exprList = new ArrayList<>(); 
 		Expect(6);
-		if (StartOf(4)) {
+		if (StartOf(3)) {
 			ExprNode arg = Expr();
 			exprList.add(arg); 
 			while (la.kind == 7) {
@@ -998,7 +1029,7 @@ public class Parser {
 		List<ExprNode> exprs = new ArrayList<>(); 
 		Expect(17);
 		int line = t.line; int col = t.col; 
-		if (StartOf(4)) {
+		if (StartOf(3)) {
 			expr = Expr();
 			exprs.add(expr); 
 		}
@@ -1025,14 +1056,13 @@ public class Parser {
 	}
 
 	private static final boolean[][] set = {
-		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_x,_x, _x,_T,_x,_T, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_T,_T, _x,_x},
-		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_T,_T, _x,_x},
-		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_T,_T, _x,_x},
-		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_T,_T, _x,_x},
+		{_T,_x,_x,_x, _x,_T,_x,_x, _x,_T,_x,_x, _T,_x,_x,_x, _x,_T,_x,_T, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _x,_x},
+		{_T,_x,_x,_x, _x,_T,_x,_x, _x,_T,_x,_x, _T,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _x,_x},
+		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _x,_x},
 		{_x,_T,_T,_T, _T,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x},
-		{_x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_T, _x,_x,_T,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_T,_T, _x,_x},
-		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _x,_x},
-		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _x,_x},
+		{_x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_T, _x,_x,_T,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _x,_x},
+		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _T,_T,_T,_T, _x,_x},
+		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _T,_T,_T,_T, _x,_x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x}
 
 	};
@@ -1063,16 +1093,16 @@ class Errors {
 			case 2: s = "DOUBLE expected"; break;
 			case 3: s = "STRING expected"; break;
 			case 4: s = "IDENT expected"; break;
-			case 5: s = "\"visualize\" expected"; break;
+			case 5: s = "\"fn\" expected"; break;
 			case 6: s = "\"(\" expected"; break;
 			case 7: s = "\",\" expected"; break;
 			case 8: s = "\")\" expected"; break;
-			case 9: s = "\":\" expected"; break;
-			case 10: s = "\"do\" expected"; break;
+			case 9: s = "\"img\" expected"; break;
+			case 10: s = "\"=\" expected"; break;
 			case 11: s = "\";\" expected"; break;
-			case 12: s = "\"fn\" expected"; break;
-			case 13: s = "\"img\" expected"; break;
-			case 14: s = "\"=\" expected"; break;
+			case 12: s = "\"visualize\" expected"; break;
+			case 13: s = "\":\" expected"; break;
+			case 14: s = "\"do\" expected"; break;
 			case 15: s = "\"{\" expected"; break;
 			case 16: s = "\"}\" expected"; break;
 			case 17: s = "\"[\" expected"; break;
@@ -1109,24 +1139,25 @@ class Errors {
 			case 48: s = "\"true\" expected"; break;
 			case 49: s = "\"false\" expected"; break;
 			case 50: s = "\"shape\" expected"; break;
-			case 51: s = "\"int\" expected"; break;
-			case 52: s = "\"double\" expected"; break;
-			case 53: s = "\"bool\" expected"; break;
-			case 54: s = "\"string\" expected"; break;
-			case 55: s = "\"void\" expected"; break;
+			case 51: s = "\"void\" expected"; break;
+			case 52: s = "\"int\" expected"; break;
+			case 53: s = "\"double\" expected"; break;
+			case 54: s = "\"bool\" expected"; break;
+			case 55: s = "\"string\" expected"; break;
 			case 56: s = "??? expected"; break;
 			case 57: s = "this symbol not expected in Def"; break;
 			case 58: s = "invalid Def"; break;
-			case 59: s = "invalid Type"; break;
-			case 60: s = "invalid Stmt"; break;
+			case 59: s = "invalid FunctionType"; break;
+			case 60: s = "invalid Type"; break;
 			case 61: s = "invalid Stmt"; break;
-			case 62: s = "this symbol not expected in StmtIf"; break;
-			case 63: s = "this symbol not expected in StmtWhile"; break;
-			case 64: s = "invalid Decl"; break;
-			case 65: s = "this symbol not expected in DeclIf"; break;
-			case 66: s = "invalid DeclType"; break;
-			case 67: s = "invalid DeclExpr"; break;
-			case 68: s = "invalid Term"; break;
+			case 62: s = "invalid Stmt"; break;
+			case 63: s = "this symbol not expected in StmtIf"; break;
+			case 64: s = "this symbol not expected in StmtWhile"; break;
+			case 65: s = "invalid Decl"; break;
+			case 66: s = "this symbol not expected in DeclIf"; break;
+			case 67: s = "invalid DeclType"; break;
+			case 68: s = "invalid DeclExpr"; break;
+			case 69: s = "invalid Term"; break;
 			default: s = "error " + n; break;
 		}
 		printMsg(line, col, s);

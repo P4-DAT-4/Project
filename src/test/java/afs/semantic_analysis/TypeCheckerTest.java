@@ -1,4 +1,4 @@
-//package afs.checker.test;
+//package afs.semantic_analysis;
 //
 //import static org.junit.jupiter.api.Assertions.assertEquals;
 //import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -9,9 +9,8 @@
 //import org.junit.jupiter.api.Nested;
 //import org.junit.jupiter.api.Test;
 //
-//import afs.checker.TypeChecker;
-//import afs.checker.exceptions.TypeCheckException;
-//import afs.checker.types.*;
+//import afs.semantic_analysis.exceptions.TypeCheckException;
+//import afs.semantic_analysis.types.*;
 //import afs.nodes.def.*;
 //import afs.nodes.expr.*;
 //import afs.nodes.stmt.*;

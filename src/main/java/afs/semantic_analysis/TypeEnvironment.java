@@ -1,8 +1,8 @@
-package afs.checker;
+package afs.semantic_analysis;
 
-import afs.checker.exceptions.TypeCheckException;
-import afs.checker.types.AFSType;
-import afs.checker.types.FunctionType;
+import afs.semantic_analysis.exceptions.TypeCheckException;
+import afs.semantic_analysis.types.AFSType;
+import afs.semantic_analysis.types.FunctionType;
 
 import java.util.ArrayDeque;
 import java.util.HashMap;

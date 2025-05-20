@@ -1,10 +1,10 @@
-package afs.checker;
+package afs.semantic_analysis;
+
+import afs.semantic_analysis.exceptions.TypeCheckException;
+import afs.semantic_analysis.types.AFSType;
+import afs.semantic_analysis.types.SimpleType;
 
 import java.util.Set;
-import afs.checker.exceptions.TypeCheckException;
-import afs.checker.types.AFSType;
-import afs.checker.types.SimpleType;
-
 
 public class TypeValidator {
   private static final Set<SimpleType> SIMPLE_TYPES = Set.of(
@@ -30,13 +30,6 @@ public class TypeValidator {
   public static void validBooleanType(AFSType type) {
     if (!type.equals(SimpleType.BOOL)) {
       throw new TypeCheckException("Invalid type '" + type + "': expected bool");
-    }
-  }
-
-  // Checks for void
-  public static void validateVoidType(AFSType type) {
-    if (type.equals(SimpleType.VOID)) {
-      throw new TypeCheckException("Invalid type '" + type + "': expected non-void");
     }
   }
 

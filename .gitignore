@@ -1,6 +1,8 @@
-# Ignore .dot files, .txt files in top level folder
+# Ignore .dot files, .txt, .svg, .png files in top level folder
 *.txt
 *.dot
+*.svg
+*.png
 
 # Ignore build
 build/**

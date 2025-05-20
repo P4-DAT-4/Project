@@ -1,4 +1,4 @@
-package afs.checker.types;
+package afs.semantic_analysis.types;
 
 import afs.nodes.def.Param;
 

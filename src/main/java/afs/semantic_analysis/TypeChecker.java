@@ -1,7 +1,7 @@
-package afs.checker;
+package afs.semantic_analysis;
 
-import afs.checker.exceptions.*;
-import afs.checker.types.*;
+import afs.semantic_analysis.exceptions.*;
+import afs.semantic_analysis.types.*;
 import afs.nodes.expr.*;
 import afs.nodes.prog.ProgNode;
 import afs.nodes.stmt.*;
@@ -13,9 +13,7 @@ import java.util.List;
 
 public class TypeChecker {
     public void checkProgram(ProgNode program) {
-        for (var def : program.getDefinitions()) {
-            DeclarationType(def);
-        }
+        DeclarationType(program.getDefinition());
     }
 
     private AFSType DeclarationType(DefNode def) {
@@ -32,11 +30,13 @@ public class TypeChecker {
                 TypeEnvironment.declareVar(identifier, type);
 
                 def.setType(type);
+
+                DeclarationType(declarationNode.getDefinition());
                 return type;
             }
             case DefFunctionNode functionNode -> { // ok
                 AFSType type = TypeType(functionNode.getType());
-                if (!(type instanceof ListType)) {
+                if (!(type instanceof ListType) && !(type.equals(SimpleType.VOID)) && !(type.equals(SimpleType.SHAPE))) {
                     TypeValidator.validatePrimitiveType(type);
                 }
                 
@@ -60,6 +60,9 @@ public class TypeChecker {
                 TypeEnvironment.exitFunction();
 
                 def.setType(type);
+
+
+                DeclarationType(functionNode.getDefinition());
                 return type;
             }
             case DefVisualizeNode visualizeNode -> {

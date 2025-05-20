@@ -10,13 +10,15 @@ public final class DefFunctionNode extends DefNode {
     private final String identifier;
     private final List<Param> parameters;
     private final StmtNode statement;
+    private final DefNode definition;
 
-    public DefFunctionNode(TypeNode type, String identifier, List<Param> parameters, StmtNode statement, int line, int column) {
+    public DefFunctionNode(TypeNode type, String identifier, List<Param> parameters, StmtNode statement, DefNode definition, int line, int column) {
         super(line, column);
         this.type = type;
         this.identifier = identifier;
         this.parameters = parameters;
         this.statement = statement;
+        this.definition = definition;
     }
 
     public TypeNode getType() {
@@ -33,6 +35,10 @@ public final class DefFunctionNode extends DefNode {
 
     public StmtNode getStatement() {
         return statement;
+    }
+
+    public DefNode getDefinition() {
+        return definition;
     }
 
     @Override
