@@ -22,7 +22,7 @@ public class StackImgStore implements ImgStore {
     public AFSType pop() {
         boolean isEmpty = _images.isEmpty();
         if (isEmpty) {
-            throw new RuntimeException("")
+            throw new RuntimeException("ImgStore is empty");
         }
         return _images.pop();
     }
