@@ -18,6 +18,7 @@ public class TypeChecker {
         }
     }
 
+
     private AFSType DeclarationType(DefNode def) {
         switch (def) {
             case DefDeclarationNode declarationNode -> { 

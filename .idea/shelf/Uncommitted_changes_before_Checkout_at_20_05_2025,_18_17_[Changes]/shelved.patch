@@ -1,0 +1,36 @@
+Index: .idea/modules.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"ProjectModuleManager\">\n    <modules>\n      <module fileurl=\"file://$PROJECT_DIR$/.idea/modules/AFS.iml\" filepath=\"$PROJECT_DIR$/.idea/modules/AFS.iml\" />\n      <module fileurl=\"file://$PROJECT_DIR$/.idea/modules/AFS.main.iml\" filepath=\"$PROJECT_DIR$/.idea/modules/AFS.main.iml\" />\n      <module fileurl=\"file://$PROJECT_DIR$/.idea/modules/AFS.test.iml\" filepath=\"$PROJECT_DIR$/.idea/modules/AFS.test.iml\" />\n      <module fileurl=\"file://$PROJECT_DIR$/.idea/modules/CoCoR.AFS.iml\" filepath=\"$PROJECT_DIR$/.idea/modules/CoCoR.AFS.iml\" />\n      <module fileurl=\"file://$PROJECT_DIR$/.idea/modules/CoCoR.AFS.main.iml\" filepath=\"$PROJECT_DIR$/.idea/modules/CoCoR.AFS.main.iml\" />\n      <module fileurl=\"file://$PROJECT_DIR$/.idea/modules/CoCoR.AFS.test.iml\" filepath=\"$PROJECT_DIR$/.idea/modules/CoCoR.AFS.test.iml\" />\n    </modules>\n  </component>\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/modules.xml b/.idea/modules.xml
+--- a/.idea/modules.xml	(revision 4626df0b57a334d0554efbe7f728a580f14ba99f)
++++ b/.idea/modules.xml	(date 1747757791074)
+@@ -8,6 +8,9 @@
+       <module fileurl="file://$PROJECT_DIR$/.idea/modules/CoCoR.AFS.iml" filepath="$PROJECT_DIR$/.idea/modules/CoCoR.AFS.iml" />
+       <module fileurl="file://$PROJECT_DIR$/.idea/modules/CoCoR.AFS.main.iml" filepath="$PROJECT_DIR$/.idea/modules/CoCoR.AFS.main.iml" />
+       <module fileurl="file://$PROJECT_DIR$/.idea/modules/CoCoR.AFS.test.iml" filepath="$PROJECT_DIR$/.idea/modules/CoCoR.AFS.test.iml" />
++      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Project.AFS.iml" filepath="$PROJECT_DIR$/.idea/modules/Project.AFS.iml" />
++      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Project.AFS.main.iml" filepath="$PROJECT_DIR$/.idea/modules/Project.AFS.main.iml" />
++      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Project.AFS.test.iml" filepath="$PROJECT_DIR$/.idea/modules/Project.AFS.test.iml" />
+     </modules>
+   </component>
+ </project>
+\ No newline at end of file
+Index: .idea/misc.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"FrameworkDetectionExcludesConfiguration\">\n    <file type=\"web\" url=\"file://$PROJECT_DIR$\" />\n  </component>\n  <component name=\"ProjectRootManager\" version=\"2\" languageLevel=\"JDK_21\" project-jdk-name=\"21\" project-jdk-type=\"JavaSDK\">\n    <output url=\"file://$PROJECT_DIR$/out\" />\n  </component>\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/misc.xml b/.idea/misc.xml
+--- a/.idea/misc.xml	(revision 4626df0b57a334d0554efbe7f728a580f14ba99f)
++++ b/.idea/misc.xml	(date 1747757755049)
+@@ -1,4 +1,3 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
+   <component name="FrameworkDetectionExcludesConfiguration">
+     <file type="web" url="file://$PROJECT_DIR$" />
