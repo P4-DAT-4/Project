@@ -1,7 +1,12 @@
 package afs.interpreter;
 
+import afs.interpreter.expressions.BoolVal;
+import afs.interpreter.expressions.DoubleVal;
+import afs.interpreter.expressions.IntVal;
 import afs.nodes.expr.*;
 import org.javatuples.Triplet;
+
+import java.util.List;
 
 public class ExprInterpreter {
     public Triplet<Object, Store, ImgStore> evalExpr(VarEnvironment envV,
@@ -27,14 +32,41 @@ public class ExprInterpreter {
                 yield new Triplet<>(val, r2.getValue1(), r2.getValue2());
             }
             case ExprBoolNode exprBoolNode -> {
-                var e1 = exprBoolNode.getValue();
+                // Extract boolean value from the node
+                boolean val = exprBoolNode.getValue();
+                BoolVal result = new BoolVal(val);
+                yield new Triplet<>(result, store, imgStore);
 
             }
             case ExprCurveNode exprCurveNode -> null;
-            case ExprDoubleNode exprDoubleNode -> null;
-            case ExprFunctionCallNode exprFunctionCallNode -> null;
-            case ExprIdentifierNode exprIdentifierNode -> null;
-            case ExprIntNode exprIntNode -> null;
+            case ExprDoubleNode exprDoubleNode -> {
+                // Extract double value from the node
+                double val = exprDoubleNode.getValue();
+                DoubleVal result = new DoubleVal(val);
+                yield new Triplet<>(result, store, imgStore);
+            }
+            case ExprFunctionCallNode exprFunctionCallNode -> {
+                String funName = exprFunctionCallNode.getIdentifier();
+                List<ExprNode> args = exprFunctionCallNode.getArguments();
+
+                //Look up function definition
+
+            }
+            case ExprIdentifierNode exprIdentifierNode -> {
+                // Get variable name
+                String varName = exprIdentifierNode.getIdentifier();
+                // Get memory location
+                int varLocation = envV.lookup(varName);
+                // Look up the actual
+                Object value = store.lookup(varLocation);
+                yield new Triplet<>(value, store, imgStore);
+            }
+            case ExprIntNode exprIntNode -> {
+                // Extract integer value from the node
+                int val = exprIntNode.getValue();
+                IntVal result = new IntVal(val);
+                yield new Triplet<>(result, store, imgStore);
+            }
             case ExprLineNode exprLineNode -> null;
             case ExprListAccessNode exprListAccessNode -> null;
             case ExprListDeclaration exprListDeclaration -> null;
