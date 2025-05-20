@@ -1,4 +1,4 @@
-package afs.interpreter;
+package afs.interpreter.interfaces;
 
 public interface VarEnvironment {
     void declare(String ident, int location);

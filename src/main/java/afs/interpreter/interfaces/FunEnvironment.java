@@ -1,4 +1,4 @@
-package afs.interpreter;
+package afs.interpreter.interfaces;
 
 import afs.nodes.stmt.StmtNode;
 import org.javatuples.Triplet;
