@@ -41,10 +41,16 @@ public class StmtInterpreter {
 
                 // Evaluate the first statement
                 var r1 = evalStmt(envV, envF, envE, location, s1, store, imgStore);
+                Object value = r1.getValue0();
                 var store2 = r1.getValue1();
                 var imgStore2 = r1.getValue2();
 
-                // Evaluate the second statement and return
+                // Comp-2: s1 is a non-epsilon value
+                if (value != null) {
+                    yield new Triplet<>(value, store2, imgStore2);
+                }
+
+                // Comp-1: Do s2 as s1 evaluated to epsilon
                 yield evalStmt(envV, envF, envE, location, s2, store2, imgStore2);
             }
             case StmtDeclarationNode stmtDeclarationNode -> {
