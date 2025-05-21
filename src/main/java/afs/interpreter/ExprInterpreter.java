@@ -697,26 +697,22 @@ public class ExprInterpreter {
                 var r1 = evalExpr(envV, envF, envE, location, e1, store, imgStore);
 
                 var val1 = r1.getValue0();
-                var store2 = r1.getValue1();
-                var imgStore2 = r1.getValue2();
-
                 var op = exprUnopNode.getUnOp();
 
                 // Evaluate unary operation
-                Object result = evalUnopExpr(op, val1);  // <- you will implement this function
+                Object result = evalUnopExpr(op, val1);
 
-                yield new Triplet<>(result, store2, imgStore2);
+                yield new Triplet<>(result, store, imgStore);
             }
         };
     }
-/*
-hjælper funktion forslag, jka, evalunopexpr
-    private Object evalUnopExpr(UnOp op, Object val) {
+
+    private static Object evalUnopExpr(UnOp op, Object val) {
         return switch (op) {
             case NEG -> {
-                if (val instanceof Integer) {
+                if (val instanceof IntVal) {
                     yield -(int) val;
-                } else if (val instanceof Double) {
+                } else if (val instanceof DoubleVal) {
                     yield -(double) val;
                 } else {
                     throw new RuntimeException();
@@ -725,7 +721,8 @@ hjælper funktion forslag, jka, evalunopexpr
             case NOT -> !(boolean) val;
         };
     }
-*/
+
+    /*
     private static Object evalBinopExpr(Object v1, BinOp op, Object v2) {
         return switch(op) {
             case ADD -> (int)v1 + (int)v2;
@@ -738,38 +735,35 @@ hjælper funktion forslag, jka, evalunopexpr
             case CONCAT -> null;
         };
     }
+    */
+     */
 
-    private static Object evalUnopExpr(UnOp op, Object val) {
-    return switch (op) {
-        case NEG -> -(double) val;
-    };
 
-    }
-/* JKA forslag evalbiopExpr
-    private Object evalBinopExpr(Object v1, BinOp op, Object v2) {
+
+    private static Object evalBinopExpr(Object v1, BinOp op, Object v2) {
         return switch (op) {
             case ADD -> {
-                if (v1 instanceof Integer && v2 instanceof Integer) {
+                if (v1 instanceof IntVal && v2 instanceof IntVal) {
                     yield (int) v1 + (int) v2;
-                } else if (v1 instanceof Double && v2 instanceof Double) {
+                } else if (v1 instanceof DoubleVal && v2 instanceof DoubleVal) {
                     yield (double) v1 + (double) v2;
                 } else {
                     throw new RuntimeException();
                 }
             }
             case SUB -> {
-                if (v1 instanceof Integer && v2 instanceof Integer) {
+                if (v1 instanceof IntVal && v2 instanceof IntVal) {
                     yield (int) v1 - (int) v2;
-                } else if (v1 instanceof Double && v2 instanceof Double) {
+                } else if (v1 instanceof DoubleVal && v2 instanceof DoubleVal) {
                     yield (double) v1 - (double) v2;
                 } else {
                     throw new RuntimeException();
                 }
             }
             case MUL -> {
-                if (v1 instanceof Integer && v2 instanceof Integer) {
+                if (v1 instanceof IntVal && v2 instanceof IntVal) {
                     yield (int) v1 * (int) v2;
-                } else if (v1 instanceof Double && v2 instanceof Double) {
+                } else if (v1 instanceof DoubleVal && v2 instanceof DoubleVal) {
                     yield (double) v1 * (double) v2;
                 } else {
                     throw new RuntimeException();
@@ -777,9 +771,9 @@ hjælper funktion forslag, jka, evalunopexpr
             }
 
             case DIV -> {
-                if (v1 instanceof Integer && v2 instanceof Integer) {
+                if (v1 instanceof IntVal && v2 instanceof IntVal) {
                     yield (int) v1 / (int) v2;
-                } else if (v1 instanceof Double && v2 instanceof Double) {
+                } else if (v1 instanceof DoubleVal && v2 instanceof DoubleVal) {
                     yield (double) v1 / (double) v2;
                 } else {
                     throw new RuntimeException();
@@ -787,9 +781,9 @@ hjælper funktion forslag, jka, evalunopexpr
             }
 
             case LT -> {
-                if (v1 instanceof Integer && v2 instanceof Integer) {
+                if (v1 instanceof IntVal && v2 instanceof IntVal) {
                     yield (int) v1 < (int) v2;
-                } else if (v1 instanceof Double && v2 instanceof Double) {
+                } else if (v1 instanceof DoubleVal && v2 instanceof DoubleVal) {
                     yield (double) v1 < (double) v2;
                 } else {
                     throw new RuntimeException();
@@ -797,13 +791,13 @@ hjælper funktion forslag, jka, evalunopexpr
             }
 
             case EQ -> {
-                if (v1 instanceof Integer && v2 instanceof Integer) {
+                if (v1 instanceof IntVal && v2 instanceof IntVal) {
                     yield (int) v1 == (int) v2;
-                } else if (v1 instanceof Double && v2 instanceof Double) {
+                } else if (v1 instanceof DoubleVal && v2 instanceof DoubleVal) {
                     yield (double) v1 == (double) v2;
-                } else if (v1 instanceof Boolean && v2 instanceof Boolean) {
+                } else if (v1 instanceof BoolVal && v2 instanceof BoolVal) {
                     yield (boolean) v1 == (boolean) v2;
-                } else if (v1 instanceof String && v2 instanceof String) {
+                } else if (v1 instanceof StringVal && v2 instanceof StringVal) {
                     yield ((String) v1).equals((String) v2);
                 } else {
                     yield false;
@@ -814,13 +808,13 @@ hjælper funktion forslag, jka, evalunopexpr
             }
 
             case CONCAT -> {
-                if (v1 instanceof String && v2 instanceof String) {
+                if (v1 instanceof StringVal && v2 instanceof StringVal) {
                     yield (String) v1 + (String) v2;
                 } else if (v1 instanceof Shape && v2 instanceof Shape) {
                     Shape shape1 = (Shape) v1;
                     Shape shape2 = (Shape) v2;
                     yield shape1.concat(shape2);
-                } else if (v1 instanceof List && v2 instanceof List) {
+                } else if (v1 instanceof ListVal && v2 instanceof ListVal) {
                     List<Object> result = new ArrayList<>((List<?>) v1);
                     result.addAll((List<?>) v2);
                     yield result;
@@ -831,7 +825,7 @@ hjælper funktion forslag, jka, evalunopexpr
         };
     }
 
- */
+
     private static Pair<Point, Pair<Store, ImgStore>> evalPoint(
             ExprNode xExpr, ExprNode yExpr,
             VarEnvironment envV, FunEnvironment envF, EventEnvironment envE,
