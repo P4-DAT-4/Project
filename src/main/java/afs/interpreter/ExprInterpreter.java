@@ -129,7 +129,7 @@ public class ExprInterpreter {
 
 
 
-                        Shape.Segment firstSegment = new Shape.Segment(Shape.Segment.SegmentType.CURVE);
+                Shape.Segment firstSegment = new Shape.Segment(Shape.Segment.SegmentType.CURVE);
                 firstSegment.addPoint(start.getX(), start.getY());
                 firstSegment.addPoint(control.getX(), control.getY());
                 firstSegment.addPoint(end.getX(), end.getY());

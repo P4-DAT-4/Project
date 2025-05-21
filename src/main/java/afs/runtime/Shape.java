@@ -44,7 +44,7 @@ public class Shape extends AFSType {
             //points.add(point);
         }
 
-        public List<Point> getPoints() {
+        public List<Point> getCoordinates() {
             return new ArrayList<>(points);
         }
 
@@ -126,7 +126,7 @@ public class Shape extends AFSType {
 
         for (Segment segment : segments) {
             sb.append(segment.getType().name()).append("(");
-            sb.append(segment.getPoints().size()).append(" points), ");
+            sb.append(segment.getCoordinates().size()).append(" points), ");
         }
 
         return sb.toString();
