@@ -24,10 +24,7 @@ public class ExprInterpreter {
                 var e2 = exprBinopNode.getRightExpression();
 
                 var r1 = evalExpr(envV, envF, envE, location, e1, store, imgStore);
-                var store2 = r1.getValue1();
-                var imgStore2 = r1.getValue2();
-
-                var r2 = evalExpr(envV, envF, envE, location, e2, store2, imgStore2);
+                var r2 = evalExpr(envV, envF, envE, location, e2, store, imgStore);
 
                 var op = exprBinopNode.getOp();
                 var val = evalBinopExpr(r1.getValue0(), op, r2.getValue0());
@@ -111,35 +108,23 @@ public class ExprInterpreter {
                 ImgStore currentImgStore = imgStore;
 
                 // Evaluate start point
-                Pair <Point, Pair <Store, ImgStore>> startPointRes = evalPoint(
+                Point start = (Point) evalPoint(
                         exprs.get(0), exprs.get(1),
                         envV, envF, envE, location,
-                        currentStore, currentImgStore );
-
-                Point start = (Point) startPointRes.getValue0();
-                currentStore = startPointRes.getValue1().getValue0();
-                currentImgStore = startPointRes.getValue1().getValue1();
+                        currentStore, currentImgStore ).getValue0();
 
                 // Evaluate control point
-                Pair <Point, Pair <Store, ImgStore>> controlPointRes = evalPoint(
+                Point control = (Point) evalPoint(
                         exprs.get(2), exprs.get(3),
                         envV, envF, envE, location,
-                        currentStore, currentImgStore );
-
-                Point control = (Point) controlPointRes.getValue0();
-                currentStore = controlPointRes.getValue1().getValue0();
-                currentImgStore = controlPointRes.getValue1().getValue1();
-
+                        currentStore, currentImgStore ).getValue0();
 
                 // Evaluate end point
-                Pair <Point, Pair <Store, ImgStore>> endPointRes = evalPoint(
+                Point end = (Point) evalPoint(
                         exprs.get(4), exprs.get(5),
                         envV, envF, envE, location,
-                        currentStore, currentImgStore );
+                        currentStore, currentImgStore ).getValue0();
 
-                Point end = (Point) endPointRes.getValue0();
-                currentStore = endPointRes.getValue1().getValue0();
-                currentImgStore = endPointRes.getValue1().getValue1();
 
                 segments.add(new BezierSegment(start, control, end));
 
@@ -148,24 +133,18 @@ public class ExprInterpreter {
 
                 for(int i = 6; i <exprs.size(); i += 4){
                     // Evaluate next control point
-                    Pair <Point, Pair <Store, ImgStore>> nextControlRes = evalPoint(
-                            exprs.get(i), exprs.get(i+1),
+                    Point nextControl = (Point) evalPoint(
+                            exprs.get(i), exprs.get(i + 1),
                             envV, envF, envE, location,
-                            currentStore, currentImgStore );
+                            currentStore, currentImgStore ).getValue0();
 
-                    Point nextControl = (Point) nextControlRes.getValue0();
-                    currentStore = nextControlRes.getValue1().getValue0();
-                    currentImgStore = nextControlRes.getValue1().getValue1();
 
                     // Evaluate next end point
-                    Pair <Point, Pair <Store, ImgStore>> nextEndRes = evalPoint(
-                            exprs.get(i+2), exprs.get(i+3),
+                    Point nextEnd = (Point) evalPoint(
+                            exprs.get(i + 2), exprs.get(i + 3),
                             envV, envF, envE, location,
-                            currentStore, currentImgStore );
+                            currentStore, currentImgStore ).getValue0();
 
-                    Point nextEnd = (Point) nextEndRes.getValue0();
-                    currentStore = nextEndRes.getValue1().getValue0();
-                    currentImgStore = nextEndRes.getValue1().getValue1();
 
                    segments.add(new BezierSegment(prevEnd, nextControl, nextEnd));
                    prevEnd = nextEnd;
@@ -309,25 +288,17 @@ public class ExprInterpreter {
 
 
                 // Evaluate start point
-                Pair <Point, Pair <Store, ImgStore>> startPointRes = evalPoint(
+                Point start = (Point) evalPoint(
                         exprs.get(0), exprs.get(1),
                         envV, envF, envE, location,
-                        currentStore, currentImgStore );
-
-                Point start = (Point) startPointRes.getValue0();
-                currentStore = startPointRes.getValue1().getValue0();
-                currentImgStore = startPointRes.getValue1().getValue1();
+                        currentStore, currentImgStore ).getValue0();
 
                 // Evaluate end point
-                Pair <Point, Pair <Store, ImgStore>> endPointRes = evalPoint(
+                Point end = (Point) evalPoint(
                         exprs.get(2), exprs.get(3),
                         envV, envF, envE, location,
-                        currentStore, currentImgStore );
+                        currentStore, currentImgStore ).getValue0();
 
-
-                Point end = (Point) endPointRes.getValue0();
-                currentStore = endPointRes.getValue1().getValue0();
-                currentImgStore = endPointRes.getValue1().getValue1();
 
                 segments.add(new LineSegment(start, end));
 
@@ -336,14 +307,10 @@ public class ExprInterpreter {
 
                 for (int i = 4; i <exprs.size(); i += 2){
                     // Evaluate next end point
-                    Pair <Point, Pair <Store, ImgStore>> nextPointRes = evalPoint(
+                    Point nextEnd = (Point) evalPoint(
                             exprs.get(i), exprs.get(i+1),
                             envV, envF, envE, location,
-                            currentStore, currentImgStore );
-
-                    Point nextEnd = (Point) nextPointRes.getValue0();
-                    currentStore = nextPointRes.getValue1().getValue0();
-                    currentImgStore = nextPointRes.getValue1().getValue1();
+                            currentStore, currentImgStore ).getValue0();
 
                     segments.add(new LineSegment(prevEnd, nextEnd));
                     prevEnd = nextEnd;
@@ -354,8 +321,66 @@ public class ExprInterpreter {
 
             }
             case ExprListAccessNode exprListAccessNode -> {
+                String varName = exprListAccessNode.getIdentifier();
+                List<ExprNode> indexExprs = exprListAccessNode.getExpressions();
 
+                // Look up identifer memory location
+                int arrlocation = envV.lookup(varName);
 
+                // fecth actual list from store
+                Object listObj = store.lookup(arrlocation);
+
+                if(!(listObj instanceof ListVal)) {
+                    throw new RuntimeException("Variable " + varName + " is not a list");
+                }
+
+                ListVal listVal = (ListVal) listObj;
+                List<Object> currentList = listVal.getElments();
+
+                // evalaute each index expression and access nestet list
+                Object currentValue = null;
+
+                for(int i = 0; i < indexExprs.size(); i++){
+                    ExprNode indexExpr = indexExprs.get(i);
+
+                    // Evaluate index expression
+                    var evalResult = evalExpr(
+                            envV, envF, envE,
+                            location, indexExpr,
+                            store, imgStore);
+                    Object indexVal = evalResult.getValue0();
+
+                    if (!(indexVal instanceof IntVal)){
+                        throw new RuntimeException("List index must be a number, got " + indexVal);
+                    }
+
+                    int index = ((IntVal) indexVal).getValue();
+
+                    if (index < 0 || index >= currentList.size()){
+                        throw new RuntimeException("List index out of bounds. Got" + index + "For" + varName);
+                    }
+
+                    currentValue = currentList.get(index);
+
+                    // if not on the last index, the value must be another list
+                    if(i < indexExprs.size() - 1){
+                        if(currentValue instanceof ListVal){
+                            currentList = ((ListVal) currentList).getElments();
+                        } else {
+                            throw new RuntimeException("Nested access on non-list element at index" + index);
+                        }
+                    }
+                }
+
+                Object resultValue;
+
+                // return the final value accessed
+                if (currentValue instanceof ListVal){
+                    resultValue = ((ListVal) currentList).getElments().get(0);
+                } else {
+                    resultValue = currentValue;
+                }
+                yield new Triplet<>(resultValue, store, imgStore);
             }
             case ExprListDeclaration exprListDeclaration -> {
                 List<ExprNode> exprs = exprListDeclaration.getExpressions();
@@ -802,11 +827,9 @@ hjælper funktion forslag, jka, evalunopexpr
             throw new RuntimeException("Expected DoubleVal for x-coordinate, but got: " + xRes.getValue0());
         }
 
-        Store updateStore = xRes.getValue1();
-        ImgStore updateImgStore = xRes.getValue2();
 
         // Evaluate y expression
-        var yRes = evalExpr(envV, envF, envE, location, yExpr, updateStore, updateImgStore );
+        var yRes = evalExpr(envV, envF, envE, location, yExpr, store, imgStore );
         if(!(yRes.getValue0() instanceof DoubleVal yVal)) {
             throw new RuntimeException("Expected DoubleVal for y-coordinate, but got: " + yRes.getValue0());
         }
