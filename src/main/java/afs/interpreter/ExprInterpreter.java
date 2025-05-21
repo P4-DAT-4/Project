@@ -207,8 +207,66 @@ public class ExprInterpreter {
 
             }
             case ExprListAccessNode exprListAccessNode -> {
+                String varName = exprListAccessNode.getIdentifier();
+                List<ExprNode> indexExprs = exprListAccessNode.getExpressions();
 
+                // Look up identifer memory location
+                int arrlocation = envV.lookup(varName);
 
+                // fecth actual list from store
+                Object listObj = store.lookup(arrlocation);
+
+                if(!(listObj instanceof ListVal)) {
+                    throw new RuntimeException("Variable " + varName + " is not a list");
+                }
+
+                ListVal listVal = (ListVal) listObj;
+                List<Object> currentList = listVal.getElments();
+
+                // evalaute each index expression and access nestet list
+                Object currentValue = null;
+
+                for(int i = 0; i < indexExprs.size(); i++){
+                    ExprNode indexExpr = indexExprs.get(i);
+
+                    // Evaluate index expression
+                    var evalResult = evalExpr(
+                            envV, envF, envE,
+                            location, indexExpr,
+                            store, imgStore);
+                    Object indexVal = evalResult.getValue0();
+
+                    if (!(indexVal instanceof IntVal)){
+                        throw new RuntimeException("List index must be a number, got " + indexVal);
+                    }
+
+                    int index = ((IntVal) indexVal).getValue();
+
+                    if (index < 0 || index >= currentList.size()){
+                        throw new RuntimeException("List index out of bounds. Got" + index + "For" + varName);
+                    }
+
+                    currentValue = currentList.get(index);
+
+                    // if not on the last index, the value must be another list
+                    if(i < indexExprs.size() - 1){
+                        if(currentValue instanceof ListVal){
+                            currentList = ((ListVal) currentList).getElments();
+                        } else {
+                            throw new RuntimeException("Nested access on non-list element at index" + index);
+                        }
+                    }
+                }
+
+                Object resultValue;
+
+                // return the final value accessed
+                if (currentValue instanceof ListVal){
+                    resultValue = ((ListVal) currentList).getElments().get(0);
+                } else {
+                    resultValue = currentValue;
+                }
+                yield new Triplet<>(resultValue, store, imgStore);
             }
             case ExprListDeclaration exprListDeclaration -> {
                 List<ExprNode> exprs = exprListDeclaration.getExpressions();
