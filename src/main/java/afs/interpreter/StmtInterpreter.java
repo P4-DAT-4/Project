@@ -70,7 +70,49 @@ public class StmtInterpreter {
                 // Evaluate the statement and return
                 yield evalStmt(envV, envF, envE, nextLocation, nextStmt, store2, imgStore2);
             }
-            case StmtFunctionCallNode stmtFunctionCallNode -> null;
+            case StmtFunctionCallNode stmtFunctionCallNode -> {
+                String funcName = stmtFunctionCallNode.getIdentifier();
+                List<ExprNode> args = stmtFunctionCallNode.getArguments();
+
+                //Look up function definition
+                var funcData = envF.lookup(funcName);
+                if (funcData == null) {
+                    throw new RuntimeException("Undefined function: " + funcName);
+                }
+
+                // Extract function components
+                StmtNode funcBody = funcData.getValue0();
+                List<String> paramNames = funcData.getValue1();
+                VarEnvironment funcDeclEnv = funcData.getValue2();
+
+                // Evaluate each argument
+                List<Object> evaluatedArgs = new ArrayList<>();
+                Store currentStore = store;
+                ImgStore currentImgStore = imgStore;
+
+                for (ExprNode arg : args) {
+                    var argResult = new ExprInterpreter().evalExpr(funcDeclEnv, envF, envE, location, arg, currentStore, currentImgStore);
+                    evaluatedArgs.add(argResult.getValue0());
+                    currentStore = argResult.getValue1();
+                    currentImgStore = argResult.getValue2();
+                }
+
+                // Create a new scope from function declaration environment
+                VarEnvironment newEnvV = funcDeclEnv.newScope();
+
+                // Bind parameter to new location
+                for (int i = 0; i < paramNames.size(); i++) {
+                    String param = paramNames.get(i);
+                    Object argVal = evaluatedArgs.get(i);
+
+                    int newLoc = currentStore.nextLocation();
+                    newEnvV.declare(param, newLoc); // declare variable in environment
+                    currentStore.store(newLoc, argVal);
+                }
+
+                // Interpret the function body
+                yield evalStmt(newEnvV, envF, envE, location, funcBody, currentStore, currentImgStore);
+            }
             case StmtIfNode stmtIfNode -> {
                 var exprNode = stmtIfNode.getExpression();
                 var thenStmt = stmtIfNode.getLeftStatement();
