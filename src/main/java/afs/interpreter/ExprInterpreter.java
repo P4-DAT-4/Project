@@ -239,8 +239,28 @@ public class ExprInterpreter {
                 yield new Triplet<>(result, currentStore, currentImgStore);
 
             }
-            case ExprListAccessNode exprListAccessNode -> null;
-            case ExprListDeclaration exprListDeclaration -> null;
+            case ExprListAccessNode exprListAccessNode -> {
+
+
+            }
+            case ExprListDeclaration exprListDeclaration -> {
+                List<ExprNode> exprs = exprListDeclaration.getExpressions();
+                List<Object> results = new ArrayList<>();
+                Store currentStore = store;
+                ImgStore currentImgStore = imgStore;
+
+                for(ExprNode e: exprs){
+                    var res = evalExpr(envV, envF, envE, location, e, currentStore, currentImgStore);
+                    results.add(res.getValue0());
+                    currentStore = res.getValue1();
+                    currentImgStore = res.getValue2();
+                }
+
+                ListVal result = new ListVal(results);
+
+                yield new Triplet<>(result, currentStore, currentImgStore);
+
+            }
             case ExprPlaceNode exprPlaceNode -> null;
             case ExprRotateNode exprRotateNode -> null;
             case ExprScaleNode exprScaleNode -> null;
