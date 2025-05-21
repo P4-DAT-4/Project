@@ -1,5 +1,6 @@
 package afs.runtime;
 
+import afs.interpreter.expressions.Point;
 import afs.semantic_analysis.types.AFSType;
 
 import java.util.ArrayList;
@@ -22,7 +23,7 @@ public class Shape extends AFSType {
         }
 
         private final SegmentType type;
-        private final List<List<Double>> points;
+        private final List<Point> points;
         private String textContent; // Only used for TEXT segments
 
         public Segment(SegmentType type) {
@@ -30,19 +31,20 @@ public class Shape extends AFSType {
             this.points = new ArrayList<>();
         }
 
-        public Segment(SegmentType type, List<List<Double>> points) {
+        public Segment(SegmentType type, List<Point> points) {
             this.type = type;
-            this.points = new ArrayList<>(points);
+            this.points = new ArrayList<>();
         }
 
         public void addPoint(double x, double y) {
-            List<Double> point = new ArrayList<>(2);
-            point.add(x);
-            point.add(y);
-            points.add(point);
+            points.add(new Point(x, y));
+            //List<Double> point = new ArrayList<>(2);
+            //point.add(x);
+            //point.add(y);
+            //points.add(point);
         }
 
-        public List<List<Double>> getPoints() {
+        public List<Point> getPoints() {
             return new ArrayList<>(points);
         }
 

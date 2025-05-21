@@ -3,6 +3,7 @@ package afs.interpreter;
 import afs.interpreter.expressions.*;
 import afs.nodes.expr.*;
 import afs.nodes.stmt.StmtNode;
+import afs.runtime.Shape;
 import com.sun.jdi.DoubleValue;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
@@ -103,56 +104,66 @@ public class ExprInterpreter {
                     throw new RuntimeException("Invalid number of expressions in cruve. Found" + exprs.size());
                 }
 
-                List<BezierSegment> segments = new ArrayList<>();
+
                 Store currentStore = store;
                 ImgStore currentImgStore = imgStore;
+                Shape curveShape = new Shape();
 
                 // Evaluate start point
-                Point start = (Point) evalPoint(
-                        exprs.get(0), exprs.get(1),
-                        envV, envF, envE, location,
-                        currentStore, currentImgStore ).getValue0();
+                var startR = evalPoint(exprs.get(0), exprs.get(1), envV, envF, envE, location, currentStore, currentImgStore );
+                Point start = startR.getValue0();
+                currentStore = startR.getValue1().getValue0();
+                currentImgStore = startR.getValue1().getValue1();
 
                 // Evaluate control point
-                Point control = (Point) evalPoint(
-                        exprs.get(2), exprs.get(3),
-                        envV, envF, envE, location,
-                        currentStore, currentImgStore ).getValue0();
+                var controlR = evalPoint(exprs.get(2), exprs.get(3), envV, envF, envE, location, currentStore, currentImgStore );
+                Point control = controlR.getValue0();
+                currentStore = controlR.getValue1().getValue0();
+                currentImgStore = controlR.getValue1().getValue1();
 
-                // Evaluate end point
-                Point end = (Point) evalPoint(
-                        exprs.get(4), exprs.get(5),
-                        envV, envF, envE, location,
-                        currentStore, currentImgStore ).getValue0();
+                        // Evaluate end point
+                var endR = evalPoint(exprs.get(4), exprs.get(5), envV, envF, envE, location, currentStore, currentImgStore );
+                Point end = endR.getValue0();
+                currentStore = endR.getValue1().getValue0();
+                currentImgStore = endR.getValue1().getValue1();
 
 
-                segments.add(new BezierSegment(start, control, end));
+
+                        Shape.Segment firstSegment = new Shape.Segment(Shape.Segment.SegmentType.CURVE);
+                firstSegment.addPoint(start.getX(), start.getY());
+                firstSegment.addPoint(control.getX(), control.getY());
+                firstSegment.addPoint(end.getX(), end.getY());
+
+                curveShape.addSegment(firstSegment);
+
+
 
                 // Handle extended segment
                 Point prevEnd = end;
 
                 for(int i = 6; i <exprs.size(); i += 4){
                     // Evaluate next control point
-                    Point nextControl = (Point) evalPoint(
-                            exprs.get(i), exprs.get(i + 1),
-                            envV, envF, envE, location,
-                            currentStore, currentImgStore ).getValue0();
+                    var nextControlR = evalPoint(exprs.get(i), exprs.get(i + 1), envV, envF, envE, location, currentStore, currentImgStore );
+                    Point nextControl = nextControlR.getValue0();
+                    currentStore = nextControlR.getValue1().getValue0();
+                    currentImgStore = nextControlR.getValue1().getValue1();
 
 
                     // Evaluate next end point
-                    Point nextEnd = (Point) evalPoint(
-                            exprs.get(i + 2), exprs.get(i + 3),
-                            envV, envF, envE, location,
-                            currentStore, currentImgStore ).getValue0();
+                    var nextEndR = evalPoint(exprs.get(i + 2), exprs.get(i + 3), envV, envF, envE, location, currentStore, currentImgStore );
+                    Point nextEnd = nextEndR.getValue0();
+                    currentStore = nextEndR.getValue1().getValue0();
+                    currentImgStore = nextEndR.getValue1().getValue1();
 
+                    Shape.Segment segment = new Shape.Segment(Shape.Segment.SegmentType.CURVE);
+                    segment.addPoint(prevEnd.getX(), prevEnd.getY());
+                    segment.addPoint(nextControl.getX(), nextControl.getY());
+                    segment.addPoint(nextEnd.getX(), nextEnd.getY());
 
-                   segments.add(new BezierSegment(prevEnd, nextControl, nextEnd));
                    prevEnd = nextEnd;
                 }
 
-                CurveVal result = new CurveVal(segments);
-                yield new Triplet<>(result, currentStore, currentImgStore);
-
+                yield new Triplet<>(curveShape, currentStore, currentImgStore);
 
             }
             case ExprDoubleNode exprDoubleNode -> {
@@ -282,42 +293,46 @@ public class ExprInterpreter {
                     throw new RuntimeException("Invalid number of expressions in line. Found" + exprs.size());
                 }
 
-                List<LineSegment> segments = new ArrayList<>();
                 Store currentStore = store;
                 ImgStore currentImgStore = imgStore;
-
+                Shape lineShape = new Shape();
 
                 // Evaluate start point
-                Point start = (Point) evalPoint(
-                        exprs.get(0), exprs.get(1),
-                        envV, envF, envE, location,
-                        currentStore, currentImgStore ).getValue0();
+                var startR = evalPoint(exprs.get(0), exprs.get(1), envV, envF, envE, location, currentStore, currentImgStore );
+                Point start = startR.getValue0();
+                currentStore = startR.getValue1().getValue0();
+                currentImgStore = startR.getValue1().getValue1();
 
                 // Evaluate end point
-                Point end = (Point) evalPoint(
-                        exprs.get(2), exprs.get(3),
-                        envV, envF, envE, location,
-                        currentStore, currentImgStore ).getValue0();
+                var endR = evalPoint(exprs.get(2), exprs.get(3), envV, envF, envE, location, currentStore, currentImgStore );
+                Point end = endR.getValue0();
+                currentStore = endR.getValue1().getValue0();
+                currentImgStore = endR.getValue1().getValue1();
 
+                Shape.Segment firstSegment = new Shape.Segment(Shape.Segment.SegmentType.LINE);
+                firstSegment.addPoint(start.getX(), start.getY());
+                firstSegment.addPoint(end.getX(), end.getY());
+                lineShape.addSegment(firstSegment);
 
-                segments.add(new LineSegment(start, end));
 
                 // Handle extended segment
                 Point prevEnd = end;
 
                 for (int i = 4; i <exprs.size(); i += 2){
                     // Evaluate next end point
-                    Point nextEnd = (Point) evalPoint(
-                            exprs.get(i), exprs.get(i+1),
-                            envV, envF, envE, location,
-                            currentStore, currentImgStore ).getValue0();
+                    var nextEndR  = evalPoint(exprs.get(i), exprs.get(i+1), envV, envF, envE, location, currentStore, currentImgStore );
+                    Point nextEnd = nextEndR.getValue0();
+                    currentStore = nextEndR.getValue1().getValue0();
+                    currentImgStore = nextEndR.getValue1().getValue1();
 
-                    segments.add(new LineSegment(prevEnd, nextEnd));
+                    Shape.Segment segment = new Shape.Segment(Shape.Segment.SegmentType.LINE);
+                    segment.addPoint(prevEnd.getX(), prevEnd.getY());
+                    segment.addPoint(nextEnd.getX(), nextEnd.getY());
+                    lineShape.addSegment(segment);
                     prevEnd = nextEnd;
                 }
 
-                LineVal result = new LineVal(segments);
-                yield new Triplet<>(result, currentStore, currentImgStore);
+                yield new Triplet<>(lineShape, currentStore, currentImgStore);
 
             }
             case ExprListAccessNode exprListAccessNode -> {
@@ -339,16 +354,17 @@ public class ExprInterpreter {
 
                 // evalaute each index expression and access nestet list
                 Object currentValue = null;
+                Store currentStore = store;
+                ImgStore currentImgStore = imgStore;
 
                 for(int i = 0; i < indexExprs.size(); i++){
                     ExprNode indexExpr = indexExprs.get(i);
 
                     // Evaluate index expression
-                    var evalResult = evalExpr(
-                            envV, envF, envE,
-                            location, indexExpr,
-                            store, imgStore);
+                    var evalResult = evalExpr(envV, envF, envE, location, indexExpr, store, imgStore);
                     Object indexVal = evalResult.getValue0();
+                    currentStore = evalResult.getValue1();
+                    currentImgStore = evalResult.getValue2();
 
                     if (!(indexVal instanceof IntVal)){
                         throw new RuntimeException("List index must be a number, got " + indexVal);
@@ -380,7 +396,7 @@ public class ExprInterpreter {
                 } else {
                     resultValue = currentValue;
                 }
-                yield new Triplet<>(resultValue, store, imgStore);
+                yield new Triplet<>(resultValue, currentStore, currentImgStore);
             }
             case ExprListDeclaration exprListDeclaration -> {
                 List<ExprNode> exprs = exprListDeclaration.getExpressions();
@@ -827,9 +843,12 @@ hjælper funktion forslag, jka, evalunopexpr
             throw new RuntimeException("Expected DoubleVal for x-coordinate, but got: " + xRes.getValue0());
         }
 
+        Store currentStore = xRes.getValue1();
+        ImgStore currentImgStore = xRes.getValue2();
+
 
         // Evaluate y expression
-        var yRes = evalExpr(envV, envF, envE, location, yExpr, store, imgStore );
+        var yRes = evalExpr(envV, envF, envE, location, yExpr, currentStore, currentImgStore );
         if(!(yRes.getValue0() instanceof DoubleVal yVal)) {
             throw new RuntimeException("Expected DoubleVal for y-coordinate, but got: " + yRes.getValue0());
         }
