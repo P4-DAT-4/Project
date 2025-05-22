@@ -2,14 +2,14 @@ package afs.interpreter.expressions;
 
 import java.util.List;
 
-public class ListVal {
-    private final List<Object> elements;
+public class ListVal implements Val {
+    private final List<Val> elements;
 
-    public ListVal(List<Object> elements) {
+    public ListVal(List<Val> elements) {
         this.elements = elements;
     }
 
-    public List<Object> getElements() {
+    public List<Val> getElements() {
         return elements;
     }
 

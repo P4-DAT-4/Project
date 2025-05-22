@@ -233,7 +233,7 @@ public class ExprInterpreter {
                 }
 
                 ListVal listVal = (ListVal) listObj;
-                List<Object> currentList = listVal.getElements();
+                List<Val> currentList = listVal.getElements();
 
                 // evalaute each index expression and access nestet list
                 Object currentValue = null;
@@ -271,30 +271,33 @@ public class ExprInterpreter {
                     }
                 }
 
-                Object resultValue;
+                Val resultValue;
 
                 // return the final value accessed
                 if (currentValue instanceof ListVal){
                     resultValue = ((ListVal) currentList).getElements().get(0);
                 } else {
-                    resultValue = currentValue;
+                    resultValue = (Val) currentValue;
                 }
                 yield new Triplet<>(resultValue, currentStore, currentImgStore);
             }
             case ExprListDeclaration exprListDeclaration -> {
                 List<ExprNode> exprs = exprListDeclaration.getExpressions();
-                List<Object> results = new ArrayList<>();
+                List<Val> results = new ArrayList<>();
                 Store currentStore = store;
                 ImgStore currentImgStore = imgStore;
 
                 for(ExprNode e: exprs){
                     var res = evalExpr(envV, envF, envE, location, e, currentStore, currentImgStore);
-                    results.add(res.getValue0());
+                    results.add((Val) res.getValue0());
                     currentStore = res.getValue1();
                     currentImgStore = res.getValue2();
                 }
 
                 ListVal result = new ListVal(results);
+
+                // store result
+                currentStore.store(location, result);
 
                 yield new Triplet<>(result, currentStore, currentImgStore);
             }
@@ -648,10 +651,11 @@ public class ExprInterpreter {
                     yield new StringVal(s1.getValue() + s2.getValue());
 //                } else if (v1 instanceof Shape shape1 && v2 instanceof Shape shape2) {
 //                    yield shape1.concat(shape2);
-//                } else if (v1 instanceof ListVal list1 && v2 instanceof ListVal list2) {
-//                    List<Object> result = new ArrayList<>(list1.getElements());
-//                    result.addAll(list2.getElements());
-//                    yield new ListVal(result);
+
+                } else if (v1 instanceof ListVal list1 && v2 instanceof ListVal list2) {
+                    List<Val> result = new ArrayList<>(list1.getElements());
+                    result.addAll(list2.getElements());
+                    yield new ListVal(result);
                 } else {
                     throw new RuntimeException("Unsupported CONCAT operand types");
                 }
