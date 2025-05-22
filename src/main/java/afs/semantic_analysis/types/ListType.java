@@ -11,6 +11,7 @@ public class ListType extends AFSType {
         this.type = type;
     }
 
+
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof ListType)) {

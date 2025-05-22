@@ -217,7 +217,7 @@ public class ExprInterpreter {
                 // Look up identifer memory location
                 int arrlocation = envV.lookup(varName);
 
-                // fecth actual list from store
+                // fetch actual list from store
                 Object listObj = store.lookup(arrlocation);
 
                 if(!(listObj instanceof ListVal)) {
