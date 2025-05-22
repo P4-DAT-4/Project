@@ -1,5 +1,6 @@
 package afs.interpreter;
 
+import afs.interpreter.interfaces.*;
 import afs.nodes.expr.ExprNode;
 import afs.nodes.stmt.*;
 import org.javatuples.Triplet;
@@ -104,20 +105,21 @@ public class StmtInterpreter {
                 }
 
                 // Create a new scope from function declaration environment
-                VarEnvironment newEnvV = funcDeclEnv.newScope();
-
-                // Bind parameter to new location
-                for (int i = 0; i < paramNames.size(); i++) {
-                    String param = paramNames.get(i);
-                    Object argVal = evaluatedArgs.get(i);
-
-                    int newLoc = currentStore.nextLocation();
-                    newEnvV.declare(param, newLoc); // declare variable in environment
-                    currentStore.store(newLoc, argVal);
-                }
+//                VarEnvironment newEnvV = funcDeclEnv.newScope();
+//
+//                // Bind parameter to new location
+//                for (int i = 0; i < paramNames.size(); i++) {
+//                    String param = paramNames.get(i);
+//                    Object argVal = evaluatedArgs.get(i);
+//
+//                    int newLoc = currentStore.nextLocation();
+//                    newEnvV.declare(param, newLoc); // declare variable in environment
+//                    currentStore.store(newLoc, argVal);
+//                }
 
                 // Interpret the function body
-                yield evalStmt(newEnvV, envF, envE, location, funcBody, currentStore, currentImgStore);
+                //yield evalStmt(newEnvV, envF, envE, location, funcBody, currentStore, currentImgStore);
+                yield evalStmt(null, envF, envE, location, funcBody, currentStore, currentImgStore);
             }
             case StmtIfNode stmtIfNode -> {
                 var exprNode = stmtIfNode.getExpression();

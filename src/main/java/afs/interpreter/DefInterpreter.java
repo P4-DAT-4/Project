@@ -1,5 +1,6 @@
 package afs.interpreter;
 
+import afs.interpreter.interfaces.*;
 import afs.nodes.def.*;
 import afs.nodes.stmt.StmtFunctionCallNode;
 import org.javatuples.Pair;

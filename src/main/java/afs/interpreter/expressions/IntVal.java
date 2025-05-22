@@ -15,4 +15,12 @@ public class IntVal implements Val {
     public String toString(){
         return Integer.toString(value);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;  // same reference
+        if (o == null || getClass() != o.getClass()) return false; // null or different type
+        IntVal intVal = (IntVal) o;
+        return value == intVal.value; // compare values
+    }
 }

@@ -25,4 +25,11 @@ public class MapStore implements Store {
         }
         return _environment.get(location);
     }
+
+    @Override
+    public int nextLocation() {
+        return 0;
+    }
+
+
 }

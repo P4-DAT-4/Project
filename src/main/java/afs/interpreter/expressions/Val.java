@@ -1,5 +1,7 @@
 package afs.interpreter.expressions;
 
+import afs.runtime.Shape;
+
 public interface Val {
     default int asInt(){
         if (this instanceof IntVal) {
@@ -29,6 +31,9 @@ public interface Val {
         }
         throw new UnsupportedOperationException("Not an BoolVal");
     }
+
+
+
 
 }
 

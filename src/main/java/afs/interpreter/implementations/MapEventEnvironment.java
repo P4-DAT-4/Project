@@ -19,6 +19,9 @@ public class MapEventEnvironment implements EventEnvironment {
         _environment.put(expr, call);
     }
 
+
+
+
     @Override
     public ExprFunctionCallNode lookup(ExprNode expr) {
         boolean found = _environment.containsKey(expr);

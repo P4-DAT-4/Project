@@ -1,5 +1,6 @@
 package afs.interpreter;
 
+import afs.interpreter.interfaces.EventEnvironment;
 import afs.nodes.event.EventCompositionNode;
 import afs.nodes.event.EventDeclarationNode;
 import afs.nodes.event.EventNode;
@@ -22,15 +23,15 @@ public class EventInterpreter {
                 yield evalEvent(e2, updatedEnvE);
             }
             case EventDeclarationNode eventDeclarationNode -> {
-                String varName = eventDeclarationNode.getIdent();
-                String funcName = eventDeclarationNode.getFunIdent();
-                List<ExprNode> args = eventDeclarationNode.getArguments();
-
-                // create function call
-                var functionCallAsExpr = new ExprFunctionCallNode(funcName, args, -1, -1);
-
-                // Declare the environment
-                envE.declare(varName, functionCallAsExpr);
+//                String varName = eventDeclarationNode.getIdent();
+//                String funcName = eventDeclarationNode.getFunIdent();
+//                List<ExprNode> args = eventDeclarationNode.getArguments();
+//
+//                // create function call
+//                var functionCallAsExpr = new ExprFunctionCallNode(funcName, args, -1, -1);
+//
+//                // Declare the environment
+//                envE.declare(varName, functionCallAsExpr);
 
                 // Return the updated environment
                 yield envE;

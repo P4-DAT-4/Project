@@ -255,17 +255,17 @@ Visualize<out DefNode vis> = (. List<ExprNode> arguments = new ArrayList<>(); .)
 .
 
 /*-----------------------------------Events-----------------------------------*/
-Events<out EventNode event> = (. List<EventNode> events = new ArrayList<>(); List<ExprNode> arguments = new ArrayList<>(); .)
-    Expr<out ExprNode expr>
+Events<out EventNode event> = (. List<EventNode> events = new ArrayList<>(); List<ExprNode> arguments = new ArrayList<>(); String ident, fname; .)
+    IDENT (. ident = t.val; .)
     "do"
-    IDENT (. int line = t.line; int col = t.col; String ident = t.val; .)
+    IDENT (. int line = t.line; int col = t.col; fname = t.val; .)
     "("
     [Expr<out ExprNode arg> (. arguments.add(arg); .)
     { "," Expr<out arg> (. arguments.add(arg); .)
     }]
     ")"
-    ";" (. event = new EventDeclarationNode(expr, ident, arguments, line, col); events.add(event); .)
-    { Expr<out expr> (. line = t.line; col = t.col; arguments = new ArrayList<>(); .)
+    ";" (. event = new EventDeclarationNode(ident, fname, arguments, line, col); events.add(event); .)
+    { (. line = t.line; col = t.col; arguments = new ArrayList<>(); .)
     "do"
     IDENT (. line = t.line; col = t.col; ident = t.val; .)
     "("
@@ -273,7 +273,7 @@ Events<out EventNode event> = (. List<EventNode> events = new ArrayList<>(); Lis
     { "," Expr<out arg> (. arguments.add(arg); .)
     }]
     ")"
-    ";" (. event = new EventDeclarationNode(expr, ident, arguments, line, col); events.add(event); .)
+    ";" (. event = new EventDeclarationNode(ident, fname, arguments, line, col); events.add(event); .)
     } (. event = toCompEvent(events); .)
 .
 

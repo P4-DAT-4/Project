@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ExprInterpreter {
-    public static Triplet<Object, Store, ImgStore> evalExpr(VarEnvironment envV,
+    public Triplet<Object, Store, ImgStore> evalExpr(VarEnvironment envV,
                                                             FunEnvironment envF,
                                                             EventEnvironment envE,
                                                             int location,
@@ -29,7 +29,7 @@ public class ExprInterpreter {
                 var r2 = evalExpr(envV, envF, envE, location, e2, store, imgStore);
 
                 var op = exprBinopNode.getOp();
-                var val = evalBinopExpr(r1.getValue0(), op, r2.getValue0());
+                var val = evalBinopExpr((Val) r1.getValue0(), op, (Val) r2.getValue0());
                 yield new Triplet<>(val, r2.getValue1(), r2.getValue2());
             }
             case ExprBoolNode exprBoolNode -> {
@@ -536,106 +536,18 @@ public class ExprInterpreter {
                 var e1 = exprUnopNode.getExpression();
                 var r1 = evalExpr(envV, envF, envE, location, e1, store, imgStore);
 
-                var val1 = r1.getValue0();
+                Val val1 = (Val) r1.getValue0();
                 var op = exprUnopNode.getUnOp();
 
                 // Evaluate unary operation
-                Object result = evalUnopExpr(op, val1);
+                Val result = evalUnopExpr(op, val1);
 
                 yield new Triplet<>(result, store, imgStore);
             }
         };
     }
 
-
-
-//
-//    private static Object evalBinopExpr(Object v1, BinOp op, Object v2) {
-//        return switch (op) {
-//            case ADD -> {
-//                if (v1 instanceof IntVal && v2 instanceof IntVal) {
-//                    yield (int) v1 + (int) v2;
-//                } else if (v1 instanceof DoubleVal && v2 instanceof DoubleVal) {
-//                    yield (double) v1 + (double) v2;
-//                } else {
-//                    throw new RuntimeException();
-//                }
-//            }
-//            case SUB -> {
-//                if (v1 instanceof IntVal && v2 instanceof IntVal) {
-//                    yield (int) v1 - (int) v2;
-//                } else if (v1 instanceof DoubleVal && v2 instanceof DoubleVal) {
-//                    yield (double) v1 - (double) v2;
-//                } else {
-//                    throw new RuntimeException();
-//                }
-//            }
-//            case MUL -> {
-//                if (v1 instanceof IntVal && v2 instanceof IntVal) {
-//                    yield (int) v1 * (int) v2;
-//                } else if (v1 instanceof DoubleVal && v2 instanceof DoubleVal) {
-//                    yield (double) v1 * (double) v2;
-//                } else {
-//                    throw new RuntimeException();
-//                }
-//            }
-//
-//            case DIV -> {
-//                if (v1 instanceof IntVal && v2 instanceof IntVal) {
-//                    yield (int) v1 / (int) v2;
-//                } else if (v1 instanceof DoubleVal && v2 instanceof DoubleVal) {
-//                    yield (double) v1 / (double) v2;
-//                } else {
-//                    throw new RuntimeException();
-//                }
-//            }
-//
-//            case LT -> {
-//                if (v1 instanceof IntVal && v2 instanceof IntVal) {
-//                    yield (int) v1 < (int) v2;
-//                } else if (v1 instanceof DoubleVal && v2 instanceof DoubleVal) {
-//                    yield (double) v1 < (double) v2;
-//                } else {
-//                    throw new RuntimeException();
-//                }
-//            }
-//
-//            case EQ -> {
-//                if (v1 instanceof IntVal && v2 instanceof IntVal) {
-//                    yield (int) v1 == (int) v2;
-//                } else if (v1 instanceof DoubleVal && v2 instanceof DoubleVal) {
-//                    yield (double) v1 == (double) v2;
-//                } else if (v1 instanceof BoolVal && v2 instanceof BoolVal) {
-//                    yield (boolean) v1 == (boolean) v2;
-//                } else if (v1 instanceof StringVal && v2 instanceof StringVal) {
-//                    yield ((String) v1).equals((String) v2);
-//                } else {
-//                    yield false;
-//                }
-//            }
-//            case AND -> {
-//                yield (boolean) v1 && (boolean) v2;
-//            }
-//
-//            case CONCAT -> {
-//                if (v1 instanceof StringVal && v2 instanceof StringVal) {
-//                    yield (String) v1 + (String) v2;
-//                } else if (v1 instanceof Shape && v2 instanceof Shape) {
-//                    Shape shape1 = (Shape) v1;
-//                    Shape shape2 = (Shape) v2;
-//                    yield shape1.concat(shape2);
-//                } else if (v1 instanceof ListVal && v2 instanceof ListVal) {
-//                    List<Object> result = new ArrayList<>((List<?>) v1);
-//                    result.addAll((List<?>) v2);
-//                    yield result;
-//                } else {
-//                    throw new RuntimeException();
-//                }
-//            }
-//        };
-//    }
-//
-    private static Object evalUnopExpr(UnOp op, Object val) {
+    private Val evalUnopExpr(UnOp op, Val val) {
         return switch (op) {
             case NEG -> {
                 if (val instanceof IntVal intVal) {
@@ -649,19 +561,14 @@ public class ExprInterpreter {
             case NOT -> {
                 if (val instanceof BoolVal boolVal) {
                     yield new BoolVal(!boolVal.getValue());
-                } else if (val instanceof Boolean) {
-                    yield !(Boolean) val;
                 } else {
-                    throw new RuntimeException("NOT operator requires BoolVal or Boolean");
+                    throw new RuntimeException("NOT operator requires BoolVal");
                 }
             }
         };
     }
 
-
-
-
-    private static Object evalBinopExpr(Object v1, BinOp op, Object v2) {
+    private Val evalBinopExpr(Val v1, BinOp op, Val v2) {
         return switch (op) {
             case ADD -> {
                 if (v1 instanceof IntVal i1 && v2 instanceof IntVal i2) {
@@ -731,12 +638,12 @@ public class ExprInterpreter {
             case CONCAT -> {
                 if (v1 instanceof StringVal s1 && v2 instanceof StringVal s2) {
                     yield new StringVal(s1.getValue() + s2.getValue());
-                } else if (v1 instanceof Shape shape1 && v2 instanceof Shape shape2) {
-                    yield shape1.concat(shape2);
-                } else if (v1 instanceof ListVal list1 && v2 instanceof ListVal list2) {
-                    List<Object> result = new ArrayList<>(list1.getElements());
-                    result.addAll(list2.getElements());
-                    yield new ListVal(result);
+//                } else if (v1 instanceof Shape shape1 && v2 instanceof Shape shape2) {
+//                    yield shape1.concat(shape2);
+//                } else if (v1 instanceof ListVal list1 && v2 instanceof ListVal list2) {
+//                    List<Object> result = new ArrayList<>(list1.getElements());
+//                    result.addAll(list2.getElements());
+//                    yield new ListVal(result);
                 } else {
                     throw new RuntimeException("Unsupported CONCAT operand types");
                 }
@@ -745,9 +652,7 @@ public class ExprInterpreter {
         };
     }
 
-
-
-    private static Pair<Point, Pair<Store, ImgStore>> evalPoint(
+    private Pair<Point, Pair<Store, ImgStore>> evalPoint(
             ExprNode xExpr, ExprNode yExpr,
             VarEnvironment envV, FunEnvironment envF, EventEnvironment envE,
             int location, Store store, ImgStore imgStore
