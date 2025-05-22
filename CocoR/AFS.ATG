@@ -487,11 +487,12 @@ Scale<out ExprNode declExpr> =
 
 Rotate<out ExprNode declExpr> =
     "rotate" (. int line = t.line; int col = t.col; .)
-    Expr<out ExprNode lExpr>
+    Expr<out ExprNode fExpr>
     "around"
-    Expr<out ExprNode mExpr>
+    "("Expr<out ExprNode sExpr> ","
+    Expr<out ExprNode tExpr>")"
     "by"
-    Expr<out ExprNode rExpr> (. declExpr = new ExprRotateNode(lExpr, mExpr, rExpr, line, col); .)
+    Expr<out ExprNode lExpr> (. declExpr = new ExprRotateNode(fExpr, sExpr, tExpr, lExpr, line, col); .)
 .
 
 /*-----------------------------------Expressions-----------------------------------*/

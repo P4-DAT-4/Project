@@ -814,12 +814,14 @@ public class Parser {
 		ExprNode  declExpr;
 		Expect(32);
 		int line = t.line; int col = t.col; 
-		ExprNode lExpr = Expr();
+		ExprNode fExpr = Expr();
 		Expect(33);
-		ExprNode mExpr = Expr();
+		ExprNode sExpr = Expr();
 		Expect(31);
-		ExprNode rExpr = Expr();
-		declExpr = new ExprRotateNode(lExpr, mExpr, rExpr, line, col); 
+		ExprNode tExpr = Expr();
+		Expect(30);
+		ExprNode lExpr = Expr();
+		declExpr = new ExprRotateNode(fExpr, sExpr, tExpr, lExpr, line, col);
 		return declExpr;
 	}
 
