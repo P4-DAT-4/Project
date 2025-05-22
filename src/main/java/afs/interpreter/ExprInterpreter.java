@@ -98,6 +98,69 @@ public class ExprInterpreter {
                 yield new Triplet<>(curveShape, currentStore, currentImgStore);
             }
              */
+            /*
+            jka version a curve
+             case ExprCurveNode exprCurveNode -> {
+                List<ExprNode> pointExprs = exprCurveNode.getExpressions();
+
+                List<List<Double>> points = new ArrayList<>();
+                Store currentStore = store;
+                ImgStore currentImgStore = imgStore;
+
+                // Process coordinates in pairs to form points
+                for (int i = 0; i < pointExprs.size(); i += 2) {
+
+                    // Evaluate x-coordinate
+                    var xResult = evalExpr(envV, envF, envE, location, pointExprs.get(i), currentStore, currentImgStore);
+                    Object xValue = xResult.getValue0();
+                    currentStore = xResult.getValue1();
+                    currentImgStore = xResult.getValue2();
+
+                    double x = ((Number) xValue).doubleValue();
+
+                    // Evaluate y-coordinate
+                    var yResult = evalExpr(envV, envF, envE, location, pointExprs.get(i + 1), currentStore, currentImgStore);
+                    Object yValue = yResult.getValue0();
+                    currentStore = yResult.getValue1();
+                    currentImgStore = yResult.getValue2();
+
+                    double y = ((Number) yValue).doubleValue();
+
+                    // Create a new point and add it to our list
+                    List<Double> point = new ArrayList<>(2);
+                    point.add(x);
+                    point.add(y);
+                    points.add(point);
+                }
+
+                // Create a curve shape from the points
+                Shape curveShape = new Shape();
+
+                Shape.Segment firstSegment = new Shape.Segment(Shape.Segment.SegmentType.CURVE);
+                firstSegment.addPoint(points.get(0).get(0), points.get(0).get(1)); // Start point
+                firstSegment.addPoint(points.get(1).get(0), points.get(1).get(1)); // Control point
+                firstSegment.addPoint(points.get(2).get(0), points.get(2).get(1)); // End point
+                curveShape.addSegment(firstSegment);
+
+                // Additional segments
+                for (int i = 2; i < points.size() - 2; i += 2) {
+
+                    if (i + 2 < points.size()) { // Makes sure there is enough points for this segment
+                        Shape.Segment segment = new Shape.Segment(Shape.Segment.SegmentType.CURVE);
+
+                        segment.addPoint(points.get(i).get(0), points.get(i).get(1)); // Start (end of prev)
+                        segment.addPoint(points.get(i + 1).get(0), points.get(i + 1).get(1)); // Control
+                        segment.addPoint(points.get(i + 2).get(0), points.get(i + 2).get(1)); // End
+
+                        curveShape.addSegment(segment);
+                    }
+                }
+
+                yield new Triplet<>(curveShape, currentStore, currentImgStore);
+            }
+
+
+             */
             case ExprCurveNode exprCurveNode -> {
                 List<ExprNode> exprs = exprCurveNode.getExpressions();
                 if(exprs.size() % 4 != 2 || exprs.size() < 6) {
@@ -245,6 +308,60 @@ public class ExprInterpreter {
 
                 // Process coordinates in pairs to form points
                 for (int i = 0; i < pointExprs.size(); i += 2) {
+                    // Evaluate x-coordinate
+                    var xResult = evalExpr(envV, envF, envE, location, pointExprs.get(i), currentStore, currentImgStore);
+                    Object xValue = xResult.getValue0();
+                    currentStore = xResult.getValue1();
+                    currentImgStore = xResult.getValue2();
+
+                    double x = ((Number) xValue).doubleValue();
+
+                    // Evaluate y-coordinate
+                    var yResult = evalExpr(envV, envF, envE, location, pointExprs.get(i + 1), currentStore, currentImgStore);
+                    Object yValue = yResult.getValue0();
+                    currentStore = yResult.getValue1();
+                    currentImgStore = yResult.getValue2();
+
+                    double y = ((Number) yValue).doubleValue();
+
+                    // Create a new point and add it to the list points list
+                    List<Double> point = new ArrayList<>(2);
+                    point.add(x);
+                    point.add(y);
+                    points.add(point);
+                }
+
+                Shape lineShape = new Shape();
+
+                // Create line segments
+                for (int i = 0; i < points.size() - 1; i++) {
+                    Shape.Segment lineSegment = new Shape.Segment(Shape.Segment.SegmentType.LINE);
+
+                    // Add the start and end points of this line segment
+                    List<Double> startPoint = points.get(i);
+                    List<Double> endPoint = points.get(i + 1);
+
+                    lineSegment.addPoint(startPoint.get(0), startPoint.get(1));
+                    lineSegment.addPoint(endPoint.get(0), endPoint.get(1));
+
+                    lineShape.addSegment(lineSegment);
+                }
+
+                yield new Triplet<>(lineShape, currentStore, currentImgStore);
+            }
+             */
+            /*
+            jka version - line
+               case ExprLineNode exprLineNode -> {
+                List<ExprNode> pointExprs = exprLineNode.getExpressions();
+
+                List<List<Double>> points = new ArrayList<>();
+                Store currentStore = store;
+                ImgStore currentImgStore = imgStore;
+
+                // Process coordinates in pairs to form points
+                for (int i = 0; i < pointExprs.size(); i += 2) {
+
                     // Evaluate x-coordinate
                     var xResult = evalExpr(envV, envF, envE, location, pointExprs.get(i), currentStore, currentImgStore);
                     Object xValue = xResult.getValue0();
