@@ -13,6 +13,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ExprInterpreter {
+    private final StmtInterpreter stmtInterpreter;
+
+    public ExprInterpreter(StmtInterpreter stmtInterpreter) {
+        this.stmtInterpreter = stmtInterpreter;
+    }
+
+
     public Triplet<Object, Store, ImgStore> evalExpr(VarEnvironment envV,
                                                             FunEnvironment envF,
                                                             EventEnvironment envE,
@@ -20,6 +27,8 @@ public class ExprInterpreter {
                                                             ExprNode expr,
                                                             Store store,
                                                             ImgStore imgStore) {
+
+
         return switch (expr) {
             case ExprBinopNode exprBinopNode -> {
                 var e1 = exprBinopNode.getLeftExpression();
@@ -134,24 +143,24 @@ public class ExprInterpreter {
                     currentImgStore = argResult.getValue2();
                 }
 
-                // Create a new scope from function declaration enviroment
-//                VarEnvironment newEnvV = funcDeclEnv.newScope();
-//
-//                // Bind parameterr to new location
-//                for (int i = 0; i < paramName.size(); i++) {
-//                    String param = paramName.get(i);
-//                    Object argVal = evaluatedArgs.get(i);
-//
-//                    int newLoc = location + i + 1;
-//                    newEnvV.declare(param, newLoc); // declare variable in evironnment
-//                    currentStore.store(newLoc, argVal);
-//
-//                }
-                // Interpret the function body
-                //evalStmt(funcBody, newEnvV, envF, envE, location, currentStore, currentImgStore);
+                 //Create a new scope from function declaration enviroment
+                VarEnvironment newEnvV = funcDeclEnv.newScope();
 
-                // lige nu returnere funktionen null - skal fikses
-                yield new Triplet<>(null, currentStore, currentImgStore);
+                // Bind parameterr to new location
+                for (int i = 0; i < paramName.size(); i++) {
+                    String param = paramName.get(i);
+                    Object argVal = evaluatedArgs.get(i);
+
+                    int newLoc = currentStore.nextLocation();
+                    newEnvV.declare(param, newLoc); // declare variable in evironnment
+                    currentStore.store(newLoc, argVal);
+
+                }
+                // Evaluate function body with new enviroment and updates stores
+                var funcResult = stmtInterpreter.evalStmt(newEnvV, envF, envE, location, funcBody, currentStore, currentImgStore);
+
+
+                yield new Triplet<>(funcResult.getValue0(), currentStore, currentImgStore);
 
 
             }
@@ -264,7 +273,7 @@ public class ExprInterpreter {
                     // if not on the last index, the value must be another list
                     if(i < indexExprs.size() - 1){
                         if(currentValue instanceof ListVal){
-                            currentList = ((ListVal) currentList).getElements();
+                            currentList = ((ListVal) currentValue).getElements();
                         } else {
                             throw new RuntimeException("Nested access on non-list element at index" + index);
                         }
