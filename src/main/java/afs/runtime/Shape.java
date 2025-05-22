@@ -13,6 +13,7 @@ public class Shape extends AFSType<List<Shape.Segment>> {
     /**
      * Represents a segment in a shape with its type and points.
      */
+
     public static class Segment {
         public enum SegmentType {
             LINE,
