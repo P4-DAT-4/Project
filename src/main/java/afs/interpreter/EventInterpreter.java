@@ -8,6 +8,8 @@ import afs.nodes.expr.ExprNode;
 
 import java.util.List;
 
+import afs.interpreter.interfaces.*;
+
 public class EventInterpreter {
     public EventEnvironment evalEvent(EventNode event, EventEnvironment envE) {
         return switch (event) {

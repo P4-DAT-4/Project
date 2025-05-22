@@ -23,7 +23,6 @@ public class ScopedVarEnvironment implements VarEnvironment {
     public void declare(String ident, int location) {
         if(bindings.containsKey(ident)) {
             throw new RuntimeException("Variable" + ident + " already defined in scope");
-
         }
         bindings.put(ident, location);
     }

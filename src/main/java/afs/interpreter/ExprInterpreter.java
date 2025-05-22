@@ -7,6 +7,8 @@ import com.sun.jdi.DoubleValue;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
+import afs.interpreter.interfaces.*;
+
 import java.util.ArrayList;
 import java.util.List;
 

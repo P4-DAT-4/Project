@@ -4,6 +4,8 @@ import afs.nodes.expr.ExprNode;
 import afs.nodes.stmt.*;
 import org.javatuples.Triplet;
 
+import afs.interpreter.interfaces.*;
+
 import java.util.ArrayList;
 import java.util.List;
 

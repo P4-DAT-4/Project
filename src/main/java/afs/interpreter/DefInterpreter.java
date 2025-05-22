@@ -5,6 +5,7 @@ import afs.nodes.stmt.StmtFunctionCallNode;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
+import afs.interpreter.interfaces.*;
 import java.util.List;
 
 public class DefInterpreter {
