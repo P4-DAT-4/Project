@@ -481,8 +481,11 @@ Place<out ExprNode declExpr> =
 Scale<out ExprNode declExpr> =
     "scale" (. int line = t.line; int col = t.col; .)
     Expr<out ExprNode lExpr>
-    "by"
-    Expr<out ExprNode rExpr> (. declExpr = new ExprScaleNode(lExpr, rExpr, line, col); .)
+    "by" "(" Expr<out ExprNode mExpr> ","
+    Expr<out ExprNode rExpr> ","
+
+    ")"
+     (. declExpr = new ExprScaleNode(lExpr, mExpr, rExpr, line, col); .)
 .
 
 Rotate<out ExprNode declExpr> =

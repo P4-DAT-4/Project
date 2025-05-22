@@ -805,8 +805,13 @@ public class Parser {
 		int line = t.line; int col = t.col; 
 		ExprNode lExpr = Expr();
 		Expect(31);
+		Expect(6);
+		ExprNode mExpr = Expr();
+		Expect(7);
 		ExprNode rExpr = Expr();
-		declExpr = new ExprScaleNode(lExpr, rExpr, line, col); 
+		Expect(7);
+		Expect(8);
+		declExpr = new ExprScaleNode(lExpr, mExpr, rExpr, line, col); 
 		return declExpr;
 	}
 
@@ -816,12 +821,14 @@ public class Parser {
 		int line = t.line; int col = t.col; 
 		ExprNode fExpr = Expr();
 		Expect(33);
+		Expect(6);
 		ExprNode sExpr = Expr();
-		Expect(31);
+		Expect(7);
 		ExprNode tExpr = Expr();
-		Expect(30);
+		Expect(8);
+		Expect(31);
 		ExprNode lExpr = Expr();
-		declExpr = new ExprRotateNode(fExpr, sExpr, tExpr, lExpr, line, col);
+		declExpr = new ExprRotateNode(fExpr, sExpr, tExpr, lExpr, line, col); 
 		return declExpr;
 	}
 
