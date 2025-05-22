@@ -103,8 +103,9 @@ public class TypeCheckerTest extends TypeChecker {
         }
 
         @Test
-        public void FunctionNode() { // TODO
+        public void FunctionNode() {
 
+            // Valid function
             StmtNode stmt = new StmtAssignmentNode("x", new ExprIntNode("1", 1, 1), 1, 2);
 
             env.declare("z", new FunctionType(SimpleType.INT));
@@ -116,6 +117,50 @@ public class TypeCheckerTest extends TypeChecker {
             typeChecker.processDefNode(env, functionNode);
             assertEquals(functionNode.getAFSType(), SimpleType.INT);
 
+            // Invalid: function already declared
+            String identifier = "fn";
+            Param param1 = new Param(new TypeIntNode(1, 1), "x", 1, 1);
+            param1.setType(SimpleType.INT);
+            Param param2 = new Param(new TypeDoubleNode(1, 1), "y", 1, 2);
+            param2.setType(SimpleType.DOUBLE);
+            FunctionType functionType = new FunctionType(SimpleType.INT);
+            functionType.addParamType(param1.getAFSType());
+            functionType.addParamType(param2.getAFSType());
+            env.declare(identifier, functionType);
+            DefNode functionDef = new DefFunctionNode(new TypeIntNode(1, 1), identifier, List.of(param1, param2), stmt, null, 1, 1);
+            TypeCheckException functionAlreadyDeclaredException = assertThrows(TypeCheckException.class, () -> {
+                typeChecker.processDefNode(env, functionDef);
+            });
+            assertEquals("Function 'fn' already declared", functionAlreadyDeclaredException.getMessage());
+
+            // Invalid: function type mismatch
+            String identifier2 = "fn2";
+            StmtNode invalidStmt = new StmtAssignmentNode("x", new ExprStringNode("Hello", 1, 1), 1, 2);
+            DefNode invalidFunctionDef = new DefFunctionNode(new TypeIntNode(1, 1), identifier2, List.of(param1, param2), invalidStmt, null, 1, 1);
+            TypeCheckException functionTypeMismatchException = assertThrows(TypeCheckException.class, () -> {
+                typeChecker.processDefNode(env, invalidFunctionDef);
+            });
+            assertEquals("Type mismatch: expected 'INT', but found 'STRING'", functionTypeMismatchException.getMessage());
+
+            // Invalid: function parameter type mismatch
+            String identifier3 = "fn3";
+            Param invalidParam = new Param(new TypeStringNode(1, 1), "x", 1, 1);
+            invalidParam.setType(SimpleType.STRING);
+            DefNode invalidFunctionDef2 = new DefFunctionNode(new TypeIntNode(1, 1), identifier3, List.of(invalidParam, param2), stmt, null, 1, 1);
+            TypeCheckException functionParamTypeMismatchException = assertThrows(TypeCheckException.class, () -> {
+                typeChecker.processDefNode(env, invalidFunctionDef2);
+            });
+            assertEquals("Type mismatch: expected 'STRING', but found 'INT'", functionParamTypeMismatchException.getMessage());
+
+
+            // Invalid: function return type mismatch
+            String identifier4 = "fn4";
+            StmtNode invalidReturnStmt = new StmtAssignmentNode("x", new ExprStringNode("Hello", 1, 1), 1, 2);
+            DefNode invalidFunctionDef3 = new DefFunctionNode(new TypeDoubleNode(1, 1), identifier4, List.of(param1, param2), invalidReturnStmt, null, 1, 1);
+            TypeCheckException functionReturnTypeMismatchException = assertThrows(TypeCheckException.class, () -> {
+                typeChecker.processDefNode(env, invalidFunctionDef3);
+            });
+            assertEquals("Type mismatch: expected 'INT', but found 'STRING'", functionReturnTypeMismatchException.getMessage());
         }
         @Test
         public void VisualizeNode() {
@@ -158,13 +203,92 @@ public class TypeCheckerTest extends TypeChecker {
     @Nested
     class EventType {
         @Test
-        public void CompositionNode() { // TODO
+        public void CompositionNode() {
+            // Valid
+            String identifier = "event";
+            FunctionType fun = new FunctionType(SimpleType.INT);
+            fun.addParamType(SimpleType.INT);
+            fun.addParamType(SimpleType.DOUBLE);
 
+            env.declare(identifier, fun);
+            List<ExprNode> args = List.of(new ExprIntNode("1", 1, 1), new ExprDoubleNode("2.0", 1, 1));
+            EventNode event = new EventDeclarationNode(identifier, identifier, args, 1, 1);
+            AFSType returnType = typeChecker.processEventNode(env, event);
+            assertNull(returnType);
+
+            // Invalid: wrong number of arguments
+            List<ExprNode> invalidArgs = List.of(new ExprIntNode("1", 1, 1));
+            EventNode invalidEvent = new EventDeclarationNode(identifier, identifier, invalidArgs, 1, 1);
+            TypeCheckException exception = assertThrows(TypeCheckException.class, () -> {
+                typeChecker.processEventNode(env, invalidEvent);
+            });
+            assertEquals("Function 'event' expected 2 arguments, but got 1", exception.getMessage());
+
+            // Invalid: wrong argument type
+            List<ExprNode> invalidArgs2 = List.of(new ExprIntNode("1", 1, 1), new ExprStringNode("Hello", 1, 1));
+            EventNode invalidEvent2 = new EventDeclarationNode(identifier, identifier, invalidArgs2, 1, 1);
+            TypeCheckException exception2 = assertThrows(TypeCheckException.class, () -> {
+                typeChecker.processEventNode(env, invalidEvent2);
+            });
+            assertEquals("Type mismatch: expected 'DOUBLE', but found 'STRING'", exception2.getMessage());
+
+            // Invalid: function not declared
+            String invalidIdentifier = "invalidEvent";
+            List<ExprNode> invalidArgs3 = List.of(new ExprIntNode("1", 1, 1), new ExprDoubleNode("2.0", 1, 1));
+            EventNode invalidEvent3 = new EventDeclarationNode(invalidIdentifier, invalidIdentifier, invalidArgs3, 1, 1);
+            TypeCheckException exception3 = assertThrows(TypeCheckException.class, () -> {
+                typeChecker.processEventNode(env, invalidEvent3);
+            });
+            assertEquals("Variable 'invalidEvent' not found", exception3.getMessage());
+
+            // Invalid: event not declared
+            String invalidEventIdentifier = "invalidEvent";
+            List<ExprNode> invalidEventArgs = List.of(new ExprIntNode("1", 1, 1), new ExprDoubleNode("2.0", 1, 1));
+            EventNode invalidEvent4 = new EventDeclarationNode(invalidEventIdentifier, invalidEventIdentifier, invalidEventArgs, 1, 1);
+            TypeCheckException exception4 = assertThrows(TypeCheckException.class, () -> {
+                typeChecker.processEventNode(env, invalidEvent4);
+            });
+            assertEquals("Variable 'invalidEvent' not found", exception4.getMessage());
         }
 
         @Test
-        public void DeclarationNode() { // TODO
+        public void DeclarationNode() {
+            // Valid
+            String identifier = "event";
+            FunctionType fun = new FunctionType(SimpleType.INT);
+            fun.addParamType(SimpleType.INT);
+            fun.addParamType(SimpleType.DOUBLE);
 
+            env.declare(identifier, fun);
+            List<ExprNode> args = List.of(new ExprIntNode("1", 1, 1), new ExprDoubleNode("2.0", 1, 1));
+            EventNode event = new EventDeclarationNode(identifier, identifier, args, 1, 1);
+            AFSType returnType = typeChecker.processEventNode(env, event);
+            assertNull(returnType);
+
+            // Invalid: wrong number of arguments
+            List<ExprNode> invalidArgs = List.of(new ExprIntNode("1", 1, 1));
+            EventNode invalidEvent = new EventDeclarationNode(identifier, identifier, invalidArgs, 1, 1);
+            TypeCheckException exception = assertThrows(TypeCheckException.class, () -> {
+                typeChecker.processEventNode(env, invalidEvent);
+            });
+            assertEquals("Function 'event' expected 2 arguments, but got 1", exception.getMessage());
+
+            // Invalid: wrong argument type
+            List<ExprNode> invalidArgs2 = List.of(new ExprIntNode("1", 1, 1), new ExprStringNode("Hello", 1, 1));
+            EventNode invalidEvent2 = new EventDeclarationNode(identifier, identifier, invalidArgs2, 1, 1);
+            TypeCheckException exception2 = assertThrows(TypeCheckException.class, () -> {
+                typeChecker.processEventNode(env, invalidEvent2);
+            });
+            assertEquals("Type mismatch: expected 'DOUBLE', but found 'STRING'", exception2.getMessage());
+
+            // Invalid: function not declared
+            String invalidIdentifier = "invalidEvent";
+            List<ExprNode> invalidArgs3 = List.of(new ExprIntNode("1", 1, 1), new ExprDoubleNode("2.0", 1, 1));
+            EventNode invalidEvent3 = new EventDeclarationNode(invalidIdentifier, invalidIdentifier, invalidArgs3, 1, 1);
+            TypeCheckException exception3 = assertThrows(TypeCheckException.class, () -> {
+                typeChecker.processEventNode(env, invalidEvent3);
+            });
+            assertEquals("Variable 'invalidEvent' not found", exception3.getMessage());
         }
     }
 
@@ -184,7 +308,7 @@ public class TypeCheckerTest extends TypeChecker {
 
             StmtNode ifStmt = new StmtIfNode(condition, leftStmt, rightStmt, 1, 1);
             AFSType returnType = typeChecker.processStmtNode(env, ifStmt);
-            assertEquals(returnType, null);
+            assertNull(returnType);
 
             // Invalid type
             ExprNode invalidCondition = new ExprIntNode("1", 1, 1);
@@ -202,7 +326,7 @@ public class TypeCheckerTest extends TypeChecker {
             StmtNode stmt = new StmtAssignmentNode("x", new ExprIntNode("1", 1, 1), 1, 2);
             StmtNode whileStmt = new StmtWhileNode(expr, stmt, 1, 1);
             AFSType returnType = typeChecker.processStmtNode(env, whileStmt);
-            assertEquals(returnType, null);
+            assertNull(returnType);
 
             // Invalid type
             ExprNode invalidExpr = new ExprIntNode("1", 1, 1);
@@ -503,6 +627,7 @@ public class TypeCheckerTest extends TypeChecker {
                 assertEquals(resultType, SimpleType.STRING);
 
                 // Shape TODO
+
 
                 // List
                 ExprNode leftExpr2 = new ExprListDeclaration(List.of(

@@ -416,7 +416,7 @@ public class TypeChecker {
                 ListDeclarationNode.setType(listType);
                 return listType;
             }
-            case ExprPlaceNode PlaceNode -> { // TODO
+            case ExprPlaceNode PlaceNode -> {
                 AFSType leftType = ExprType(env, PlaceNode.getLeftExpression());
                 TypeValidator.validateShapeType(leftType);
 
