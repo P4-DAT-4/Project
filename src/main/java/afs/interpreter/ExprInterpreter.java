@@ -225,7 +225,7 @@ public class ExprInterpreter {
                 }
 
                 ListVal listVal = (ListVal) listObj;
-                List<Object> currentList = listVal.getElments();
+                List<Object> currentList = listVal.getElements();
 
                 // evalaute each index expression and access nestet list
                 Object currentValue = null;
@@ -256,7 +256,7 @@ public class ExprInterpreter {
                     // if not on the last index, the value must be another list
                     if(i < indexExprs.size() - 1){
                         if(currentValue instanceof ListVal){
-                            currentList = ((ListVal) currentList).getElments();
+                            currentList = ((ListVal) currentList).getElements();
                         } else {
                             throw new RuntimeException("Nested access on non-list element at index" + index);
                         }
@@ -267,7 +267,7 @@ public class ExprInterpreter {
 
                 // return the final value accessed
                 if (currentValue instanceof ListVal){
-                    resultValue = ((ListVal) currentList).getElments().get(0);
+                    resultValue = ((ListVal) currentList).getElements().get(0);
                 } else {
                     resultValue = currentValue;
                 }
@@ -562,91 +562,202 @@ public class ExprInterpreter {
         };
     }
 
+//
+//    private static Object evalBinopExpr(Object v1, BinOp op, Object v2) {
+//        return switch (op) {
+//            case ADD -> {
+//                if (v1 instanceof IntVal && v2 instanceof IntVal) {
+//                    yield (int) v1 + (int) v2;
+//                } else if (v1 instanceof DoubleVal && v2 instanceof DoubleVal) {
+//                    yield (double) v1 + (double) v2;
+//                } else {
+//                    throw new RuntimeException();
+//                }
+//            }
+//            case SUB -> {
+//                if (v1 instanceof IntVal && v2 instanceof IntVal) {
+//                    yield (int) v1 - (int) v2;
+//                } else if (v1 instanceof DoubleVal && v2 instanceof DoubleVal) {
+//                    yield (double) v1 - (double) v2;
+//                } else {
+//                    throw new RuntimeException();
+//                }
+//            }
+//            case MUL -> {
+//                if (v1 instanceof IntVal && v2 instanceof IntVal) {
+//                    yield (int) v1 * (int) v2;
+//                } else if (v1 instanceof DoubleVal && v2 instanceof DoubleVal) {
+//                    yield (double) v1 * (double) v2;
+//                } else {
+//                    throw new RuntimeException();
+//                }
+//            }
+//
+//            case DIV -> {
+//                if (v1 instanceof IntVal && v2 instanceof IntVal) {
+//                    yield (int) v1 / (int) v2;
+//                } else if (v1 instanceof DoubleVal && v2 instanceof DoubleVal) {
+//                    yield (double) v1 / (double) v2;
+//                } else {
+//                    throw new RuntimeException();
+//                }
+//            }
+//
+//            case LT -> {
+//                if (v1 instanceof IntVal && v2 instanceof IntVal) {
+//                    yield (int) v1 < (int) v2;
+//                } else if (v1 instanceof DoubleVal && v2 instanceof DoubleVal) {
+//                    yield (double) v1 < (double) v2;
+//                } else {
+//                    throw new RuntimeException();
+//                }
+//            }
+//
+//            case EQ -> {
+//                if (v1 instanceof IntVal && v2 instanceof IntVal) {
+//                    yield (int) v1 == (int) v2;
+//                } else if (v1 instanceof DoubleVal && v2 instanceof DoubleVal) {
+//                    yield (double) v1 == (double) v2;
+//                } else if (v1 instanceof BoolVal && v2 instanceof BoolVal) {
+//                    yield (boolean) v1 == (boolean) v2;
+//                } else if (v1 instanceof StringVal && v2 instanceof StringVal) {
+//                    yield ((String) v1).equals((String) v2);
+//                } else {
+//                    yield false;
+//                }
+//            }
+//            case AND -> {
+//                yield (boolean) v1 && (boolean) v2;
+//            }
+//
+//            case CONCAT -> {
+//                if (v1 instanceof StringVal && v2 instanceof StringVal) {
+//                    yield (String) v1 + (String) v2;
+//                } else if (v1 instanceof Shape && v2 instanceof Shape) {
+//                    Shape shape1 = (Shape) v1;
+//                    Shape shape2 = (Shape) v2;
+//                    yield shape1.concat(shape2);
+//                } else if (v1 instanceof ListVal && v2 instanceof ListVal) {
+//                    List<Object> result = new ArrayList<>((List<?>) v1);
+//                    result.addAll((List<?>) v2);
+//                    yield result;
+//                } else {
+//                    throw new RuntimeException();
+//                }
+//            }
+//        };
+//    }
+//
+//    private static Object evalUnopExpr(UnOp op, Object val) {
+//        return switch (op) {
+//            case NEG -> {
+//                if (val instanceof IntVal intVal) {
+//                    yield new IntVal(-intVal.getValue());
+//                } else if (val instanceof DoubleVal doubleVal) {
+//                    yield new DoubleVal(-doubleVal.getValue());
+//                } else {
+//                    throw new RuntimeException("NEG operator requires IntVal or DoubleVal");
+//                }
+//            }
+//            case NOT -> {
+//                if (val instanceof BoolVal boolVal) {
+//                    yield new BoolVal(!boolVal.getValue());
+//                } else if (val instanceof Boolean) {
+//                    yield !(Boolean) val;
+//                } else {
+//                    throw new RuntimeException("NOT operator requires BoolVal or Boolean");
+//                }
+//            }
+//        };
+//    }
+
+
+
 
     private static Object evalBinopExpr(Object v1, BinOp op, Object v2) {
         return switch (op) {
             case ADD -> {
-                if (v1 instanceof IntVal && v2 instanceof IntVal) {
-                    yield (int) v1 + (int) v2;
-                } else if (v1 instanceof DoubleVal && v2 instanceof DoubleVal) {
-                    yield (double) v1 + (double) v2;
+                if (v1 instanceof IntVal i1 && v2 instanceof IntVal i2) {
+                    yield new IntVal(i1.getValue() + i2.getValue());
+                } else if (v1 instanceof DoubleVal d1 && v2 instanceof DoubleVal d2) {
+                    yield new DoubleVal(d1.getValue() + d2.getValue());
                 } else {
-                    throw new RuntimeException();
+                    throw new RuntimeException("Unsupported ADD operand types");
                 }
             }
             case SUB -> {
-                if (v1 instanceof IntVal && v2 instanceof IntVal) {
-                    yield (int) v1 - (int) v2;
-                } else if (v1 instanceof DoubleVal && v2 instanceof DoubleVal) {
-                    yield (double) v1 - (double) v2;
+                if (v1 instanceof IntVal i1 && v2 instanceof IntVal i2) {
+                    yield new IntVal(i1.getValue() - i2.getValue());
+                } else if (v1 instanceof DoubleVal d1 && v2 instanceof DoubleVal d2) {
+                    yield new DoubleVal(d1.getValue() - d2.getValue());
                 } else {
-                    throw new RuntimeException();
+                    throw new RuntimeException("Unsupported SUB operand types");
                 }
             }
             case MUL -> {
-                if (v1 instanceof IntVal && v2 instanceof IntVal) {
-                    yield (int) v1 * (int) v2;
-                } else if (v1 instanceof DoubleVal && v2 instanceof DoubleVal) {
-                    yield (double) v1 * (double) v2;
+                if (v1 instanceof IntVal i1 && v2 instanceof IntVal i2) {
+                    yield new IntVal(i1.getValue() * i2.getValue());
+                } else if (v1 instanceof DoubleVal d1 && v2 instanceof DoubleVal d2) {
+                    yield new DoubleVal(d1.getValue() * d2.getValue());
                 } else {
-                    throw new RuntimeException();
+                    throw new RuntimeException("Unsupported MUL operand types");
                 }
             }
-
             case DIV -> {
-                if (v1 instanceof IntVal && v2 instanceof IntVal) {
-                    yield (int) v1 / (int) v2;
-                } else if (v1 instanceof DoubleVal && v2 instanceof DoubleVal) {
-                    yield (double) v1 / (double) v2;
+                if (v1 instanceof IntVal i1 && v2 instanceof IntVal i2) {
+                    yield new IntVal(i1.getValue() / i2.getValue());
+                } else if (v1 instanceof DoubleVal d1 && v2 instanceof DoubleVal d2) {
+                    yield new DoubleVal(d1.getValue() / d2.getValue());
                 } else {
-                    throw new RuntimeException();
+                    throw new RuntimeException("Unsupported DIV operand types");
                 }
             }
-
             case LT -> {
-                if (v1 instanceof IntVal && v2 instanceof IntVal) {
-                    yield (int) v1 < (int) v2;
-                } else if (v1 instanceof DoubleVal && v2 instanceof DoubleVal) {
-                    yield (double) v1 < (double) v2;
+                if (v1 instanceof IntVal i1 && v2 instanceof IntVal i2) {
+                    yield i1.getValue() < i2.getValue();
+                } else if (v1 instanceof DoubleVal d1 && v2 instanceof DoubleVal d2) {
+                    yield d1.getValue() < d2.getValue();
                 } else {
-                    throw new RuntimeException();
+                    throw new RuntimeException("Unsupported LT operand types");
                 }
             }
-
             case EQ -> {
-                if (v1 instanceof IntVal && v2 instanceof IntVal) {
-                    yield (int) v1 == (int) v2;
-                } else if (v1 instanceof DoubleVal && v2 instanceof DoubleVal) {
-                    yield (double) v1 == (double) v2;
-                } else if (v1 instanceof BoolVal && v2 instanceof BoolVal) {
-                    yield (boolean) v1 == (boolean) v2;
-                } else if (v1 instanceof StringVal && v2 instanceof StringVal) {
-                    yield ((String) v1).equals((String) v2);
+                if (v1 instanceof IntVal i1 && v2 instanceof IntVal i2) {
+                    yield i1.getValue() == i2.getValue();
+                } else if (v1 instanceof DoubleVal d1 && v2 instanceof DoubleVal d2) {
+                    yield d1.getValue() == d2.getValue();
+                } else if (v1 instanceof BoolVal b1 && v2 instanceof BoolVal b2) {
+                    yield b1.getValue() == b2.getValue();
+                } else if (v1 instanceof StringVal s1 && v2 instanceof StringVal s2) {
+                    yield s1.getValue().equals(s2.getValue());
                 } else {
                     yield false;
                 }
             }
             case AND -> {
-                yield (boolean) v1 && (boolean) v2;
-            }
-
-            case CONCAT -> {
-                if (v1 instanceof StringVal && v2 instanceof StringVal) {
-                    yield (String) v1 + (String) v2;
-                } else if (v1 instanceof Shape && v2 instanceof Shape) {
-                    Shape shape1 = (Shape) v1;
-                    Shape shape2 = (Shape) v2;
-                    yield shape1.concat(shape2);
-                } else if (v1 instanceof ListVal && v2 instanceof ListVal) {
-                    List<Object> result = new ArrayList<>((List<?>) v1);
-                    result.addAll((List<?>) v2);
-                    yield result;
+                if (v1 instanceof BoolVal b1 && v2 instanceof BoolVal b2) {
+                    yield b1.getValue() && b2.getValue();
                 } else {
-                    throw new RuntimeException();
+                    throw new RuntimeException("Unsupported AND operand types");
                 }
             }
+            case CONCAT -> {
+                if (v1 instanceof StringVal s1 && v2 instanceof StringVal s2) {
+                    yield new StringVal(s1.getValue() + s2.getValue());
+                } else if (v1 instanceof Shape shape1 && v2 instanceof Shape shape2) {
+                    yield shape1.concat(shape2);
+                } else if (v1 instanceof ListVal list1 && v2 instanceof ListVal list2) {
+                    List<Object> result = new ArrayList<>(list1.getElements());
+                    result.addAll(list2.getElements());
+                    yield new ListVal(result);
+                } else {
+                    throw new RuntimeException("Unsupported CONCAT operand types");
+                }
+            }
+            default -> throw new RuntimeException("Unknown operator: " + op);
         };
     }
+
 
 
     private static Pair<Point, Pair<Store, ImgStore>> evalPoint(

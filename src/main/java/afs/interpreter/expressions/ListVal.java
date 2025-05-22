@@ -9,7 +9,7 @@ public class ListVal {
         this.elements = elements;
     }
 
-    public List<Object> getElments() {
+    public List<Object> getElements() {
         return elements;
     }
 
