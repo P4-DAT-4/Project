@@ -1,4 +1,4 @@
-package afs.interpreter;
+package afs.interpreter.interfaces;
 
 import afs.semantic_analysis.types.AFSType;
 

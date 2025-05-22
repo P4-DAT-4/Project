@@ -3,7 +3,7 @@ package afs.nodes;
 import afs.semantic_analysis.types.AFSType;
 
 public abstract class AbstractSyntaxNode {
-    private AFSType type = null;
+    private AFSType<?> type = null;
     protected int lineNumber;
     protected int columnNumber;
 
@@ -12,11 +12,11 @@ public abstract class AbstractSyntaxNode {
         this.columnNumber = columnNumber;
     }
 
-    public AFSType getAFSType() {
+    public AFSType<?> getAFSType() {
         return type;
     }
 
-    public void setType(AFSType type) {
+    public void setType(AFSType<?> type) {
         if (this.type != null) {
             System.out.printf("Attempting to set type '%s' for '%s', but type was already set. Line %d, col %d%n", type.toString(), this, getLineNumber(), getColumnNumber());
         } else {
