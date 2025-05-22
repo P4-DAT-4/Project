@@ -66,12 +66,11 @@ public class ExprInterpreter {
                 currentStore = endR.getValue1().getValue0();
                 currentImgStore = endR.getValue1().getValue1();
 
-
+                //create first segment
                 Shape.Segment firstSegment = new Shape.Segment(Shape.Segment.SegmentType.CURVE);
                 firstSegment.addPoint(start.getX(), start.getY());
                 firstSegment.addPoint(control.getX(), control.getY());
                 firstSegment.addPoint(end.getX(), end.getY());
-
                 curveShape.addSegment(firstSegment);
 
 
@@ -89,10 +88,15 @@ public class ExprInterpreter {
                     currentStore = nextEndR.getValue1().getValue0();
                     currentImgStore = nextEndR.getValue1().getValue1();
 
+                    // Create continuation segment with proper 3 points
                     Shape.Segment segment = new Shape.Segment(Shape.Segment.SegmentType.CURVE);
-                    segment.addPoint(nextControl.getX(), nextControl.getY());
-                    segment.addPoint(nextEnd.getX(), nextEnd.getY());
+                    segment.addPoint(end.getX(), end.getY());           // Start from previous end
+                    segment.addPoint(nextControl.getX(), nextControl.getY()); // Control point
+                    segment.addPoint(nextEnd.getX(), nextEnd.getY());         // New end point
+                    curveShape.addSegment(segment);
 
+                    // Update end point for next iteration
+                    end = nextEnd;
                 }
 
                 yield new Triplet<>(curveShape, currentStore, currentImgStore);
@@ -188,11 +192,11 @@ public class ExprInterpreter {
                 currentStore = endR.getValue1().getValue0();
                 currentImgStore = endR.getValue1().getValue1();
 
+                //create first segment
                 Shape.Segment firstSegment = new Shape.Segment(Shape.Segment.SegmentType.LINE);
                 firstSegment.addPoint(start.getX(), start.getY());
                 firstSegment.addPoint(end.getX(), end.getY());
                 lineShape.addSegment(firstSegment);
-
 
                 for (int i = 4; i <exprs.size(); i += 2){
                     // Evaluate next end point
@@ -201,10 +205,14 @@ public class ExprInterpreter {
                     currentStore = nextEndR.getValue1().getValue0();
                     currentImgStore = nextEndR.getValue1().getValue1();
 
+                    //Create continuation segments
                     Shape.Segment segment = new Shape.Segment(Shape.Segment.SegmentType.LINE);
+                    segment.addPoint(end.getX(), end.getY());
                     segment.addPoint(nextEnd.getX(), nextEnd.getY());
                     lineShape.addSegment(segment);
 
+                    // Update end point for next iteration
+                    end = nextEnd;
                 }
 
                 yield new Triplet<>(lineShape, currentStore, currentImgStore);
