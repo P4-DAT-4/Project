@@ -5,23 +5,23 @@ import afs.nodes.expr.ExprNode;
 import java.util.List;
 
 public final class EventDeclarationNode extends EventNode {
-    private final ExprNode expression;
-    private final String identifier;
+    private final String ident;
+    private final String funIdent;
     private final List<ExprNode> arguments;
 
-    public EventDeclarationNode(ExprNode expression, String identifier, List<ExprNode> arguments, int line, int column) {
+    public EventDeclarationNode(String ident, String identifier, List<ExprNode> arguments, int line, int column) {
         super(line, column);
-        this.expression = expression;
-        this.identifier = identifier;
+        this.ident = ident;
+        this.funIdent = identifier;
         this.arguments = arguments;
     }
 
-    public ExprNode getExpression() {
-        return expression;
+    public String getIdent() {
+        return ident;
     }
 
-    public String getIdentifier() {
-        return identifier;
+    public String getFunIdent() {
+        return funIdent;
     }
 
     public List<ExprNode> getArguments() {
