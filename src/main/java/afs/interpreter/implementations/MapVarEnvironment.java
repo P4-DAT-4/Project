@@ -11,6 +11,10 @@ public class MapVarEnvironment implements VarEnvironment {
         _environment = new HashMap<>();
     }
 
+    public MapVarEnvironment(MapVarEnvironment envV) {
+        _environment = new HashMap<>(envV._environment);
+    }
+
     @Override
     public void declare(String ident, int location) {
         _environment.put(ident, location);
