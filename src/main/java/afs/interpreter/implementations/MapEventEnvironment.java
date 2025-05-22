@@ -8,15 +8,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MapEventEnvironment implements EventEnvironment {
-    private final Map<ExprNode, ExprFunctionCallNode> _environment;
+    private final Map<String, ExprFunctionCallNode> _environment;
 
     public MapEventEnvironment() {
         _environment = new HashMap<>();
     }
 
     @Override
-    public void declare(ExprNode expr, ExprFunctionCallNode call) {
-        _environment.put(expr, call);
+    public void declare(String ident, ExprFunctionCallNode call) {
+        _environment.put(ident, call);
     }
 
     @Override
