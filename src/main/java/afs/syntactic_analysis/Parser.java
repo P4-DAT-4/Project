@@ -430,10 +430,11 @@ public class Parser {
 	EventNode  Events() {
 		EventNode  event;
 		List<EventNode> events = new ArrayList<>(); List<ExprNode> arguments = new ArrayList<>(); 
-		ExprNode expr = Expr();
-		Expect(14);
 		Expect(4);
 		int line = t.line; int col = t.col; String ident = t.val; 
+		Expect(14);
+		Expect(4);
+		String ident2 = t.val; 
 		Expect(6);
 		if (StartOf(3)) {
 			ExprNode arg = Expr();
@@ -446,13 +447,13 @@ public class Parser {
 		}
 		Expect(8);
 		Expect(11);
-		event = new EventDeclarationNode(expr, ident, arguments, line, col); events.add(event); 
-		while (StartOf(3)) {
-			expr = Expr();
-			line = t.line; col = t.col; arguments = new ArrayList<>(); 
+		event = new EventDeclarationNode(ident, ident2, arguments, line, col); events.add(event); 
+		while (la.kind == 4) {
+			Get();
+			line = t.line; col = t.col; ident = t.val; 
 			Expect(14);
 			Expect(4);
-			line = t.line; col = t.col; ident = t.val; 
+			ident2 = t.val; 
 			Expect(6);
 			if (StartOf(3)) {
 				ExprNode arg = Expr();
@@ -465,7 +466,7 @@ public class Parser {
 			}
 			Expect(8);
 			Expect(11);
-			event = new EventDeclarationNode(expr, ident, arguments, line, col); events.add(event); 
+			event = new EventDeclarationNode(ident, ident2, arguments, line, col); events.add(event); 
 		}
 		event = toCompEvent(events); 
 		return event;

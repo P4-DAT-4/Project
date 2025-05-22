@@ -1,6 +1,6 @@
 package afs;
 
-import afs.astprinter.RecursiveGraphvizPrinter;
+// import afs.astprinter.RecursiveGraphvizPrinter;
 import afs.semantic_analysis.ReturnChecker;
 import afs.semantic_analysis.TypeChecker;
 import afs.nodes.prog.ProgNode;
@@ -46,7 +46,7 @@ public class Main {
                 returnChecker.checkReturn(program);
 
                 if (printFile != null) {
-                    new RecursiveGraphvizPrinter().print(program, printFile, true);
+//                    new RecursiveGraphvizPrinter().print(program, printFile, true);
                     System.out.println("AST printed to: " + printFile);
                 } else {
                     // interpret

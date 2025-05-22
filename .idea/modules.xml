@@ -8,6 +8,9 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/CoCoR.AFS.iml" filepath="$PROJECT_DIR$/.idea/modules/CoCoR.AFS.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/CoCoR.AFS.main.iml" filepath="$PROJECT_DIR$/.idea/modules/CoCoR.AFS.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/CoCoR.AFS.test.iml" filepath="$PROJECT_DIR$/.idea/modules/CoCoR.AFS.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Project.AFS.iml" filepath="$PROJECT_DIR$/.idea/modules/Project.AFS.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Project.AFS.main.iml" filepath="$PROJECT_DIR$/.idea/modules/Project.AFS.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Project.AFS.test.iml" filepath="$PROJECT_DIR$/.idea/modules/Project.AFS.test.iml" />
     </modules>
   </component>
 </project>

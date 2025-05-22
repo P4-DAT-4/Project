@@ -46,7 +46,6 @@ tasks.register("runAFS", Exec) {
     }
 }
 
-
 compileJava.dependsOn(GenerateParserScanner)
 
 repositories {
