@@ -6,6 +6,7 @@ public final class ExprStringNode extends ExprNode {
     public ExprStringNode(String value, int line, int column) {
         super(line, column);
         this.value = value.length() >= 2 ? value.substring(1, value.length() - 1) : value;
+
     }
 
     public String getValue() {

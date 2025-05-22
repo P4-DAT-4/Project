@@ -11,6 +11,7 @@ public class SimpleType extends AFSType {
     public final String name;
 
     public SimpleType(String name) {
+        super(name);
         this.name = name;
     }
 

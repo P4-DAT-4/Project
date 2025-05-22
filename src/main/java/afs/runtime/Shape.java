@@ -1,8 +1,6 @@
 package afs.runtime;
-
 import afs.interpreter.expressions.Point;
 import afs.semantic_analysis.types.AFSType;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,7 +8,7 @@ import java.util.List;
  * Represents a shape in AFS as a collection of segments.
  * Each segment contains points and a type indicator.
  */
-public class Shape extends AFSType {
+public class Shape extends AFSType<List<Shape.Segment>> {
 
     /**
      * Represents a segment in a shape with its type and points.
@@ -21,7 +19,6 @@ public class Shape extends AFSType {
             CURVE,
             TEXT
         }
-
         private final SegmentType type;
         private final List<Point> points;
         private String textContent; // Only used for TEXT segments
@@ -33,15 +30,11 @@ public class Shape extends AFSType {
 
         public Segment(SegmentType type, List<Point> points) {
             this.type = type;
-            this.points = new ArrayList<>();
+            this.points = new ArrayList<>(points); // Fixed: actually use the points parameter
         }
 
         public void addPoint(double x, double y) {
             points.add(new Point(x, y));
-            //List<Double> point = new ArrayList<>(2);
-            //point.add(x);
-            //point.add(y);
-            //points.add(point);
         }
 
         public List<Point> getCoordinates() {
@@ -61,35 +54,32 @@ public class Shape extends AFSType {
         }
     }
 
-    // List of segments that make up this shape
-    private final List<Segment> segments;
-
     /**
      * Creates an empty shape.
      */
     public Shape() {
-        this.segments = new ArrayList<>();
+        super(new ArrayList<>()); // Call parent constructor with empty list
     }
 
     /**
      * Creates a shape with the given segments.
      */
     public Shape(List<Segment> segments) {
-        this.segments = new ArrayList<>(segments);
+        super(new ArrayList<>(segments)); // Call parent constructor with segments copy
     }
 
     /**
      * Adds a segment to this shape.
      */
     public void addSegment(Segment segment) {
-        segments.add(segment);
+        getValue().add(segment); // Use the inherited getValue() method
     }
 
     /**
      * Gets all segments in this shape.
      */
     public List<Segment> getSegments() {
-        return new ArrayList<>(segments);
+        return new ArrayList<>(getValue()); // Use the inherited getValue() method
     }
 
     /**
@@ -97,8 +87,8 @@ public class Shape extends AFSType {
      * Implements the union operation from concat-shapeBS semantics.
      */
     public Shape concat(Shape other) {
-        List<Segment> combinedSegments = new ArrayList<>(segments);
-        combinedSegments.addAll(other.segments);
+        List<Segment> combinedSegments = new ArrayList<>(getValue());
+        combinedSegments.addAll(other.getValue());
         return new Shape(combinedSegments);
     }
 
@@ -108,13 +98,10 @@ public class Shape extends AFSType {
     public static Shape createText(String text, double x, double y) {
         Shape textShape = new Shape();
         Segment textSegment = new Segment(Segment.SegmentType.TEXT);
-
         // Add the position point
         textSegment.addPoint(x, y);
-
         // Set the text content
         textSegment.setTextContent(text);
-
         textShape.addSegment(textSegment);
         return textShape;
     }
@@ -122,13 +109,12 @@ public class Shape extends AFSType {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("Shape with ");
+        List<Segment> segments = getValue();
         sb.append(segments.size()).append(" segments: ");
-
         for (Segment segment : segments) {
             sb.append(segment.getType().name()).append("(");
             sb.append(segment.getCoordinates().size()).append(" points), ");
         }
-
         return sb.toString();
     }
 }

@@ -131,18 +131,18 @@ public class ExprInterpreter {
                 }
 
                 // Create a new scope from function declaration enviroment
-                VarEnvironment newEnvV = funcDeclEnv.newScope();
-
-                // Bind parameterr to new location
-                for (int i = 0; i < paramName.size(); i++) {
-                    String param = paramName.get(i);
-                    Object argVal = evaluatedArgs.get(i);
-
-                    int newLoc = location + i + 1;
-                    newEnvV.declare(param, newLoc); // declare variable in evironnment
-                    currentStore.store(newLoc, argVal);
-
-                }
+//                VarEnvironment newEnvV = funcDeclEnv.newScope();
+//
+//                // Bind parameterr to new location
+//                for (int i = 0; i < paramName.size(); i++) {
+//                    String param = paramName.get(i);
+//                    Object argVal = evaluatedArgs.get(i);
+//
+//                    int newLoc = location + i + 1;
+//                    newEnvV.declare(param, newLoc); // declare variable in evironnment
+//                    currentStore.store(newLoc, argVal);
+//
+//                }
                 // Interpret the function body
                 //evalStmt(funcBody, newEnvV, envF, envE, location, currentStore, currentImgStore);
 
@@ -547,20 +547,7 @@ public class ExprInterpreter {
         };
     }
 
-    private static Object evalUnopExpr(UnOp op, Object val) {
-        return switch (op) {
-            case NEG -> {
-                if (val instanceof IntVal) {
-                    yield -(int) val;
-                } else if (val instanceof DoubleVal) {
-                    yield -(double) val;
-                } else {
-                    throw new RuntimeException();
-                }
-            }
-            case NOT -> !(boolean) val;
-        };
-    }
+
 
 //
 //    private static Object evalBinopExpr(Object v1, BinOp op, Object v2) {
@@ -648,28 +635,28 @@ public class ExprInterpreter {
 //        };
 //    }
 //
-//    private static Object evalUnopExpr(UnOp op, Object val) {
-//        return switch (op) {
-//            case NEG -> {
-//                if (val instanceof IntVal intVal) {
-//                    yield new IntVal(-intVal.getValue());
-//                } else if (val instanceof DoubleVal doubleVal) {
-//                    yield new DoubleVal(-doubleVal.getValue());
-//                } else {
-//                    throw new RuntimeException("NEG operator requires IntVal or DoubleVal");
-//                }
-//            }
-//            case NOT -> {
-//                if (val instanceof BoolVal boolVal) {
-//                    yield new BoolVal(!boolVal.getValue());
-//                } else if (val instanceof Boolean) {
-//                    yield !(Boolean) val;
-//                } else {
-//                    throw new RuntimeException("NOT operator requires BoolVal or Boolean");
-//                }
-//            }
-//        };
-//    }
+    private static Object evalUnopExpr(UnOp op, Object val) {
+        return switch (op) {
+            case NEG -> {
+                if (val instanceof IntVal intVal) {
+                    yield new IntVal(-intVal.getValue());
+                } else if (val instanceof DoubleVal doubleVal) {
+                    yield new DoubleVal(-doubleVal.getValue());
+                } else {
+                    throw new RuntimeException("NEG operator requires IntVal or DoubleVal");
+                }
+            }
+            case NOT -> {
+                if (val instanceof BoolVal boolVal) {
+                    yield new BoolVal(!boolVal.getValue());
+                } else if (val instanceof Boolean) {
+                    yield !(Boolean) val;
+                } else {
+                    throw new RuntimeException("NOT operator requires BoolVal or Boolean");
+                }
+            }
+        };
+    }
 
 
 
@@ -714,29 +701,29 @@ public class ExprInterpreter {
             }
             case LT -> {
                 if (v1 instanceof IntVal i1 && v2 instanceof IntVal i2) {
-                    yield i1.getValue() < i2.getValue();
+                    yield new BoolVal(i1.getValue() < i2.getValue());
                 } else if (v1 instanceof DoubleVal d1 && v2 instanceof DoubleVal d2) {
-                    yield d1.getValue() < d2.getValue();
+                    yield new BoolVal( d1.getValue() < d2.getValue());
                 } else {
                     throw new RuntimeException("Unsupported LT operand types");
                 }
             }
             case EQ -> {
                 if (v1 instanceof IntVal i1 && v2 instanceof IntVal i2) {
-                    yield i1.getValue() == i2.getValue();
+                    yield new BoolVal(i1.getValue() == i2.getValue());
                 } else if (v1 instanceof DoubleVal d1 && v2 instanceof DoubleVal d2) {
-                    yield d1.getValue() == d2.getValue();
+                    yield new BoolVal(d1.getValue() == d2.getValue());
                 } else if (v1 instanceof BoolVal b1 && v2 instanceof BoolVal b2) {
-                    yield b1.getValue() == b2.getValue();
+                    yield  new BoolVal(b1.getValue() == b2.getValue());
                 } else if (v1 instanceof StringVal s1 && v2 instanceof StringVal s2) {
-                    yield s1.getValue().equals(s2.getValue());
+                    yield new BoolVal(s1.getValue().equals(s2.getValue()));
                 } else {
-                    yield false;
+                    yield new BoolVal(false);
                 }
             }
             case AND -> {
                 if (v1 instanceof BoolVal b1 && v2 instanceof BoolVal b2) {
-                    yield b1.getValue() && b2.getValue();
+                    yield new BoolVal(b1.getValue() && b2.getValue());
                 } else {
                     throw new RuntimeException("Unsupported AND operand types");
                 }

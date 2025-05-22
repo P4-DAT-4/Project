@@ -10,6 +10,7 @@ public class FunctionType extends AFSType {
     private final List<Param> params = new ArrayList<>();
 
     public FunctionType(AFSType returnType) {
+        super(returnType);
         this.returnType = returnType;
     }
 
