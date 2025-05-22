@@ -109,7 +109,7 @@ public class TypeChecker {
                 }
 
                 // Validate the function call type
-                String funIdentifier = declarationNode.getIdentifier();
+                String funIdentifier = declarationNode.getFunIdent();
                 FunctionType funType = TypeEnvironment.lookupFun(funIdentifier);
 
                 checkFunction(funIdentifier, declarationNode.getArguments(), funType.getParams());

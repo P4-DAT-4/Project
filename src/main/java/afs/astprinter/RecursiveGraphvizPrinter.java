@@ -150,7 +150,7 @@ public class RecursiveGraphvizPrinter implements PrinterInterface {
                 int exprId = printExpr(node.getExpression());
                 addEdge(nodeId, exprId);
 
-                String ident = node.getIdentifier();
+                String ident = node.getFunIdent();
                 int identId = counter++;
                 addNode(identId, ident);
                 addEdge(nodeId, identId);
