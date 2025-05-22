@@ -1,77 +1,147 @@
 package afs.SVGGenerator;
 
-import static afs.SVGGenerator.SVGGenerator.*;
+import afs.runtime.Shape;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
 public class Demo {
     public static void main(String[] args) {
-        List<SVGElement> shapes = Arrays.asList(
-                // Large square
-                new Line(10, 10, 60, 10),
-                new Line(60, 10, 60, 60),
-                new Line(60, 60, 10, 60),
-                new Line(10, 60, 10, 10),
-                new Text(15, 80, "Square"),
 
-                // Circle (approximated using Bezier curves)
-                new BezierCurve(120, 10, 147, 10, 147, 35),
-                new BezierCurve(147, 35, 147, 60, 120, 60),
-                new BezierCurve(120, 60, 93, 60, 93, 35),
-                new BezierCurve(93, 35, 93, 10, 120, 10),
-                new Text(100, 80, "Circle"),
+        // 1. Square using 1 line segment
+        Shape squareShape = new Shape();
+        Shape.Segment squareSegment = new Shape.Segment(Shape.Segment.SegmentType.LINE);
+        squareSegment.addPoint(10.0, 10.0);
+        squareSegment.addPoint(60.0, 10.0);
+        squareSegment.addPoint(60.0, 60.0);
+        squareSegment.addPoint(10.0, 60.0);
+        squareSegment.addPoint(10.0, 10.0);
+        squareShape.addSegment(squareSegment);
 
-                // Diagonal line
-                new Line(180, 10, 230, 60),
-                new Text(185, 80, "Line"),
+        // 2. Circle approximation using multiple CURVE segments
+        Shape circleShape = new Shape();
 
-                // Bezier curve
-                new BezierCurve(250, 10, 275, 0, 300, 60),
-                new Text(255, 80, "Bezier"),
+        // First quadratic curve (top-right)
+        Shape.Segment curve1 = new Shape.Segment(Shape.Segment.SegmentType.CURVE);
+        curve1.addPoint(120.0, 10.0);  // Start
+        curve1.addPoint(147.0, 10.0);  // Control
+        curve1.addPoint(147.0, 35.0);  // End
+        circleShape.addSegment(curve1);
 
-                // Six small squares below (each made of 4 lines)
-                // Square 1
-                new Line(10, 110, 30, 110),
-                new Line(30, 110, 30, 130),
-                new Line(30, 130, 10, 130),
-                new Line(10, 130, 10, 110),
+        // Second quadratic curve (bottom-right)
+        Shape.Segment curve2 = new Shape.Segment(Shape.Segment.SegmentType.CURVE);
+        curve2.addPoint(147.0, 35.0);  // Start
+        curve2.addPoint(147.0, 60.0);  // Control
+        curve2.addPoint(120.0, 60.0);  // End
+        circleShape.addSegment(curve2);
 
-                // Square 2
-                new Line(40, 110, 60, 110),
-                new Line(60, 110, 60, 130),
-                new Line(60, 130, 40, 130),
-                new Line(40, 130, 40, 110),
+        // Third quadratic curve (bottom-left)
+        Shape.Segment curve3 = new Shape.Segment(Shape.Segment.SegmentType.CURVE);
+        curve3.addPoint(120.0, 60.0);  // Start
+        curve3.addPoint(93.0, 60.0);   // Control
+        curve3.addPoint(93.0, 35.0);   // End
+        circleShape.addSegment(curve3);
 
-                // Square 3
-                new Line(70, 110, 90, 110),
-                new Line(90, 110, 90, 130),
-                new Line(90, 130, 70, 130),
-                new Line(70, 130, 70, 110),
+        // Fourth quadratic curve (top-left)
+        Shape.Segment curve4 = new Shape.Segment(Shape.Segment.SegmentType.CURVE);
+        curve4.addPoint(93.0, 35.0);   // Start
+        curve4.addPoint(93.0, 10.0);   // Control
+        curve4.addPoint(120.0, 10.0);  // End
+        circleShape.addSegment(curve4);
 
-                // Square 4
-                new Line(100, 110, 120, 110),
-                new Line(120, 110, 120, 130),
-                new Line(120, 130, 100, 130),
-                new Line(100, 130, 100, 110),
+        // 3. Simple diagonal line
+        Shape lineShape = new Shape();
+        Shape.Segment lineSegment = new Shape.Segment(Shape.Segment.SegmentType.LINE);
+        lineSegment.addPoint(180.0, 10.0);
+        lineSegment.addPoint(230.0, 60.0);
+        lineShape.addSegment(lineSegment);
 
-                // Square 5
-                new Line(130, 110, 150, 110),
-                new Line(150, 110, 150, 130),
-                new Line(150, 130, 130, 130),
-                new Line(130, 130, 130, 110),
+        // 4. Simple bezier curve
+        Shape bezierShape = new Shape();
+        Shape.Segment bezierSegment = new Shape.Segment(Shape.Segment.SegmentType.CURVE);
+        bezierSegment.addPoint(250.0, 10.0);  // Start
+        bezierSegment.addPoint(275.0, 0.0);   // Control
+        bezierSegment.addPoint(300.0, 60.0);  // End
+        bezierShape.addSegment(bezierSegment);
 
-                // Square 6
-                new Line(160, 110, 180, 110),
-                new Line(180, 110, 180, 130),
-                new Line(180, 130, 160, 130),
-                new Line(160, 130, 160, 110),
-                new Text(50, 150, "array of squares")
+        // 5. Cross made of two LINE segments in one shape
+        Shape crossShape = new Shape();
+
+        // First line of the cross (diagonal from top-left to bottom-right)
+        Shape.Segment crossLine1 = new Shape.Segment(Shape.Segment.SegmentType.LINE);
+        crossLine1.addPoint(330.0, 10.0);
+        crossLine1.addPoint(380.0, 60.0);
+        crossShape.addSegment(crossLine1);
+
+        // Second line of the cross (diagonal from bottom-left to top-right)
+        Shape.Segment crossLine2 = new Shape.Segment(Shape.Segment.SegmentType.LINE);
+        crossLine2.addPoint(330.0, 60.0);
+        crossLine2.addPoint(380.0, 10.0);
+        crossShape.addSegment(crossLine2);
+
+        // 6. Precise line with fractional coordinates
+        Shape preciseShape = new Shape();
+        Shape.Segment preciseSegment = new Shape.Segment(Shape.Segment.SegmentType.LINE);
+        preciseSegment.addPoint(410.5, 10.5);
+        preciseSegment.addPoint(435.75, 35.25);
+        preciseSegment.addPoint(410.5, 60.5);
+        preciseShape.addSegment(preciseSegment);
+
+        // Add text labels to each shape
+        // Add text to square shape
+        Shape.Segment squareTextSegment = new Shape.Segment(Shape.Segment.SegmentType.TEXT);
+        squareTextSegment.addPoint(15.0, 80.0);
+        squareTextSegment.setTextContent("Square");
+        squareShape.addSegment(squareTextSegment);
+
+        // Add text to circle shape
+        Shape.Segment circleTextSegment = new Shape.Segment(Shape.Segment.SegmentType.TEXT);
+        circleTextSegment.addPoint(100.0, 80.0);
+        circleTextSegment.setTextContent("Circle");
+        circleShape.addSegment(circleTextSegment);
+
+        // line shape with text
+        Shape.Segment lineTextSegment = new Shape.Segment(Shape.Segment.SegmentType.TEXT);
+        lineTextSegment.addPoint(185.0, 80.0);
+        lineTextSegment.setTextContent("Line");
+        lineShape.addSegment(lineTextSegment);
+
+        // bezier shape with text
+        Shape.Segment bezierTextSegment = new Shape.Segment(Shape.Segment.SegmentType.TEXT);
+        bezierTextSegment.addPoint(255.0, 80.0);
+        bezierTextSegment.setTextContent("Bezier");
+        bezierShape.addSegment(bezierTextSegment);
+
+        // Add text to cross shape
+        Shape.Segment crossTextSegment = new Shape.Segment(Shape.Segment.SegmentType.TEXT);
+        crossTextSegment.addPoint(340.0, 80.0);
+        crossTextSegment.setTextContent("Cross");
+        crossShape.addSegment(crossTextSegment);
+
+        // Add text to precise shape (decimal locations)
+        Shape.Segment preciseTextSegment = new Shape.Segment(Shape.Segment.SegmentType.TEXT);
+        preciseTextSegment.addPoint(407.5, 80.0);
+        preciseTextSegment.setTextContent("Precise");
+        preciseShape.addSegment(preciseTextSegment);
+
+        // Create a standalone text shape for the special characters
+        Shape specialTextShape = Shape.createText(" 1 > 2 < 4 $ & |", 20.0, 120.0);
+
+        // Combine all shapes into a list
+        List<Shape> shapes = Arrays.asList(
+                squareShape,
+                circleShape,
+                lineShape,
+                bezierShape,
+                crossShape,
+                preciseShape,
+                specialTextShape
         );
 
         try {
-            SVGGenerator.generateToFile(shapes, 400, 200, "test7.svg");
-            System.out.println("SVG saved as test7.svg");
+            SVGGenerator.generateToFile(shapes, 480.0, 200.0, "test_shapes.svg");
+            System.out.println("SVG saved as test_shapes.svg");
         } catch (IOException e) {
             e.printStackTrace();
         }
