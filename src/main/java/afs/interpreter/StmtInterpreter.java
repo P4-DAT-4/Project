@@ -1,7 +1,10 @@
 package afs.interpreter;
 
+import afs.interpreter.expressions.ListVal;
 import afs.interpreter.expressions.Val;
 import afs.interpreter.interfaces.*;
+import afs.nodes.expr.ExprIdentifierNode;
+import afs.nodes.expr.ExprListAccessNode;
 import afs.nodes.expr.ExprNode;
 import afs.nodes.stmt.*;
 import org.javatuples.Triplet;
@@ -72,7 +75,7 @@ public class StmtInterpreter {
                 List<ExprNode> args = stmtFunctionCallNode.getArguments();
                 var funcData = envF.lookup(funcName);
 
-                if (args.size() == 0) {
+                if (args.isEmpty()) {
                     StmtNode funcBody = funcData.getValue0();
                     yield evalStmt(envV.newScope(), envF, envE, location, funcBody, store, imgStore);
                 } else {
@@ -80,39 +83,23 @@ public class StmtInterpreter {
                     int col = stmt.getColumnNumber();
 
                     List<String> paramNames = funcData.getValue1();
-                    Val exprVal = ExprInterpreter.evalExpr(envV, envF, envE, location, args.getLast(), store, imgStore).getValue0();
                     VarEnvironment newEnvV = envV.newScope();
-                    envV.declare(paramNames.get(args.size() - 1), location);
-                    store.store(location, exprVal);
+                    ExprNode expr = args.getLast();
+                    Val exprVal = ExprInterpreter.evalExpr(envV, envF, envE, location, expr, store, imgStore).getValue0();
+                    int n = args.size() -1;
+                    if (exprVal instanceof ListVal) {
+                        if (!(expr instanceof ExprIdentifierNode)) {
+                            throw new RuntimeException("Cannot lookup array literal");
+                        }
+                        newEnvV.declare(paramNames.get(n), envV.lookup(((ExprIdentifierNode) expr).getIdentifier()));
+                    } else {
+                        newEnvV.declare(paramNames.get(n), location);
+                        store.store(location, exprVal);
+                    }
 
                     StmtFunctionCallNode functionCallNode = new StmtFunctionCallNode(funcName, args.subList(1, args.size()), line, col);
+                    yield evalStmt(newEnvV, envF, envE, location, functionCallNode, store, imgStore);
                 }
-
-                //Look up function definition
-
-                // Extract function components
-                VarEnvironment funcDeclEnv = funcData.getValue2();
-
-                // Evaluate each argument
-                List<Val> evaluatedArgs = new ArrayList<>();
-
-                for (ExprNode arg : args) {
-                    var argResult = ExprInterpreter.evalExpr(funcDeclEnv, envF, envE, location, arg, store, imgStore);
-                    evaluatedArgs.add(argResult.getValue0());
-                }
-
-                 //Create a new scope from function declaration environment
-                VarEnvironment newEnvV = funcDeclEnv.newScope();
-
-                // Bind parameter to new location
-                for (int i = 0; i < paramNames.size(); i++) {
-                    String param = paramNames.get(i);
-                    Val argVal = evaluatedArgs.get(i);
-                    newEnvV.declare(param, ++location); // declare variable in environment
-                    store.store(location, argVal);
-                }
-
-                 //Interpret the function body
             }
             case StmtIfNode stmtIfNode -> {
                 var exprNode = stmtIfNode.getExpression();
