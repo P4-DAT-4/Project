@@ -2,11 +2,9 @@ package afs.semantic_analysis;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 import afs.nodes.event.EventDeclarationNode;
 import afs.nodes.event.EventNode;
-import afs.nodes.prog.ProgNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -17,7 +15,6 @@ import afs.nodes.def.*;
 import afs.nodes.expr.*;
 import afs.nodes.stmt.*;
 import afs.nodes.type.*;
-import setup.ASTGenerator;
 
 import static org.junit.jupiter.api.Assertions.*;
 

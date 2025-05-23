@@ -31,5 +31,4 @@ public class Environment {
     public Boolean check(String identifier) {
         return environment.containsKey(identifier);
     }
-
 }
