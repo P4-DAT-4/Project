@@ -12,6 +12,7 @@ build/**
 
 # Ignore user-specific IntelliJ settings
 .idea
+.settings
 
 # Ignore generated .jar files
 *.jar
