@@ -115,6 +115,7 @@ public class Shape extends AFSType<List<Shape.Segment>> {
         for (Segment segment : segments) {
             sb.append(segment.getType().name()).append("(");
             sb.append(segment.getCoordinates().size()).append(" points), ");
+
         }
         return sb.toString();
     }

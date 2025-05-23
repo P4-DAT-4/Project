@@ -2,7 +2,7 @@ package afs;
 
 // import afs.astprinter.RecursiveGraphvizPrinter;
 import afs.semantic_analysis.ReturnChecker;
-import afs.semantic_analysis.TypeChecker;
+//import afs.semantic_analysis.TypeChecker;
 import afs.nodes.prog.ProgNode;
 import afs.syntactic_analysis.Parser;
 import afs.syntactic_analysis.Scanner;
@@ -38,12 +38,12 @@ public class Main {
             if (parser.hasErrors()) {
                 System.out.println("Error parsing file: " + inputFile);
             } else {
-                ProgNode program = parser.mainNode;
-                TypeChecker typeChecker = new TypeChecker();
-                typeChecker.checkProgram(program);
-
-                ReturnChecker returnChecker = new ReturnChecker();
-                returnChecker.checkReturn(program);
+//                ProgNode program = parser.mainNode;
+//                TypeChecker typeChecker = new TypeChecker();
+//                typeChecker.checkProgram(program);
+//
+//                ReturnChecker returnChecker = new ReturnChecker();
+//                returnChecker.checkReturn(program);
 
                 if (printFile != null) {
 //                    new RecursiveGraphvizPrinter().print(program, printFile, true);

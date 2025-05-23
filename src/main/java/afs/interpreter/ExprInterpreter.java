@@ -540,7 +540,7 @@ public class ExprInterpreter {
 
                 var result = evalExpr(envV, envF, envE, location, e, store, imgStore);
 
-                Object value = result.getValue0();
+                StringVal value = (StringVal) result.getValue0();
                 Store updatedStore = result.getValue1();
                 ImgStore updatedImgStore = result.getValue2();
 
@@ -549,8 +549,9 @@ public class ExprInterpreter {
                 Shape textShape = Shape.createText(textValue, 10, 20);
 
                 updatedImgStore.push(textShape);
+                ShapeVal shapeVal = new ShapeVal(textShape);
 
-                yield new Triplet<>(value, updatedStore, updatedImgStore);
+                yield new Triplet<>(shapeVal, updatedStore, updatedImgStore);
             }
             case ExprUnopNode exprUnopNode -> {
                 var e1 = exprUnopNode.getExpression();
