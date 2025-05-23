@@ -46,7 +46,6 @@ tasks.register("runAFS", Exec) {
     }
 }
 
-
 compileJava.dependsOn(GenerateParserScanner)
 
 repositories {
@@ -56,6 +55,7 @@ repositories {
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
     implementation 'org.javatuples:javatuples:1.2'
+    implementation("org.jfree:jfreesvg:3.4.3")
 }
 
 test {

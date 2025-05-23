@@ -1,28 +1,23 @@
 package afs.semantic_analysis.types;
 
-import afs.nodes.def.Param;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class FunctionType extends AFSType {
+    private final List<AFSType> paramTypes = new ArrayList<>();
     private final AFSType returnType;
-    private final List<Param> params = new ArrayList<>();
 
     public FunctionType(AFSType returnType) {
+        super(returnType);
         this.returnType = returnType;
     }
 
-    public void addParam(Param param) {
-        boolean paramIdentifierExists = params.stream().anyMatch(p -> p.getIdentifier() == param.getIdentifier());
-        if (paramIdentifierExists) {
-            throw new IllegalArgumentException("Duplicate parameter identifier'" + param.getIdentifier() + "'");
-        }
-        params.add(param);
+    public void addParamType(AFSType paramType) {
+        paramTypes.add(paramType);
     }
 
-    public List<Param> getParams() {
-        return params;
+    public List<AFSType> getParamTypes() {
+        return paramTypes;
     }
 
     public AFSType getReturnType() {

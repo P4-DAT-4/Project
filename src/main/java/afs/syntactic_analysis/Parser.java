@@ -429,11 +429,12 @@ public class Parser {
 
 	EventNode  Events() {
 		EventNode  event;
-		List<EventNode> events = new ArrayList<>(); List<ExprNode> arguments = new ArrayList<>(); 
-		ExprNode expr = Expr();
+		List<EventNode> events = new ArrayList<>(); List<ExprNode> arguments = new ArrayList<>(); String ident, fname; 
+		Expect(4);
+		ident = t.val; 
 		Expect(14);
 		Expect(4);
-		int line = t.line; int col = t.col; String ident = t.val; 
+		int line = t.line; int col = t.col; fname = t.val; 
 		Expect(6);
 		if (StartOf(3)) {
 			ExprNode arg = Expr();
@@ -446,11 +447,10 @@ public class Parser {
 		}
 		Expect(8);
 		Expect(11);
-		event = new EventDeclarationNode(expr, ident, arguments, line, col); events.add(event); 
-		while (StartOf(3)) {
-			expr = Expr();
+		event = new EventDeclarationNode(ident, fname, arguments, line, col); events.add(event); 
+		while (la.kind == 14) {
 			line = t.line; col = t.col; arguments = new ArrayList<>(); 
-			Expect(14);
+			Get();
 			Expect(4);
 			line = t.line; col = t.col; ident = t.val; 
 			Expect(6);
@@ -465,7 +465,7 @@ public class Parser {
 			}
 			Expect(8);
 			Expect(11);
-			event = new EventDeclarationNode(expr, ident, arguments, line, col); events.add(event); 
+			event = new EventDeclarationNode(ident, fname, arguments, line, col); events.add(event); 
 		}
 		event = toCompEvent(events); 
 		return event;
@@ -805,8 +805,13 @@ public class Parser {
 		int line = t.line; int col = t.col; 
 		ExprNode lExpr = Expr();
 		Expect(31);
+		Expect(6);
+		ExprNode mExpr = Expr();
+		Expect(7);
 		ExprNode rExpr = Expr();
-		declExpr = new ExprScaleNode(lExpr, rExpr, line, col); 
+		Expect(7);
+		Expect(8);
+		declExpr = new ExprScaleNode(lExpr, mExpr, rExpr, line, col); 
 		return declExpr;
 	}
 
@@ -814,12 +819,16 @@ public class Parser {
 		ExprNode  declExpr;
 		Expect(32);
 		int line = t.line; int col = t.col; 
-		ExprNode lExpr = Expr();
+		ExprNode fExpr = Expr();
 		Expect(33);
-		ExprNode mExpr = Expr();
+		Expect(6);
+		ExprNode sExpr = Expr();
+		Expect(7);
+		ExprNode tExpr = Expr();
+		Expect(8);
 		Expect(31);
-		ExprNode rExpr = Expr();
-		declExpr = new ExprRotateNode(lExpr, mExpr, rExpr, line, col); 
+		ExprNode lExpr = Expr();
+		declExpr = new ExprRotateNode(fExpr, sExpr, tExpr, lExpr, line, col); 
 		return declExpr;
 	}
 

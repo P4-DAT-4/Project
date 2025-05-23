@@ -1,27 +1,33 @@
 package afs.nodes.expr;
 
 public final class ExprRotateNode extends ExprNode {
-    private final ExprNode leftExpression;
-    private final ExprNode middleExpression;
-    private final ExprNode rightExpression;
+    private final ExprNode firstExpression;
+    private final ExprNode secondExpression;
+    private final ExprNode thirdExpression;
+    private final ExprNode lastExpression;
 
-    public ExprRotateNode(ExprNode leftExpression, ExprNode middleExpression, ExprNode rightExpression, int line, int column) {
+
+    public ExprRotateNode(ExprNode firstExpression, ExprNode secondExpression, ExprNode thirdExpression, ExprNode lastExpression, int line, int column) {
         super(line, column);
-        this.leftExpression = leftExpression;
-        this.middleExpression = middleExpression;
-        this.rightExpression = rightExpression;
+        this.firstExpression = firstExpression;
+        this.secondExpression = secondExpression;
+        this.thirdExpression = thirdExpression;
+        this.lastExpression = lastExpression;
     }
 
-    public ExprNode getLeftExpression() {
-        return leftExpression;
+    public ExprNode getFirstExpression() {
+        return firstExpression;
     }
 
-    public ExprNode getMiddleExpression() {
-        return middleExpression;
+    public ExprNode getSecondExpression() {
+        return secondExpression;
     }
 
-    public ExprNode getRightExpression() {
-        return rightExpression;
+    public ExprNode getThirdExpression() {
+        return thirdExpression;
+    }
+    public ExprNode getLastExpression() {
+        return lastExpression;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package afs.interpreter;
 
+import afs.interpreter.interfaces.*;
 import afs.nodes.expr.ExprNode;
 import afs.nodes.stmt.*;
 import org.javatuples.Triplet;
@@ -10,6 +11,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StmtInterpreter {
+
+    private final ExprInterpreter exprInterpreter;
+
+    public StmtInterpreter(ExprInterpreter exprInterpreter) {
+        this.exprInterpreter = exprInterpreter;
+    }
+
+
+
     public Triplet<Object, Store, ImgStore> evalStmt(VarEnvironment envV,
                                                      FunEnvironment envF,
                                                      EventEnvironment envE,
@@ -23,7 +33,7 @@ public class StmtInterpreter {
                 var exprNode = stmtAssignmentNode.getExpression();
 
                 // Evaluate the expression
-                var exprResult = new ExprInterpreter().evalExpr(envV, envF, envE, location, exprNode, store, imgStore);
+                var exprResult = exprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore);
                 Object value = exprResult.getValue0();
                 var store2 = exprResult.getValue1();
                 var imgStore2 = exprResult.getValue2();
@@ -61,7 +71,7 @@ public class StmtInterpreter {
                 var nextStmt = stmtDeclarationNode.getStatement();
 
                 // Evaluate the expression
-                var exprResult = new ExprInterpreter().evalExpr(envV, envF, envE, location, exprNode, store, imgStore);
+                var exprResult = exprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore);
                 Object value = exprResult.getValue0();
                 var store2 = exprResult.getValue1();
                 var imgStore2 = exprResult.getValue2();
@@ -99,13 +109,13 @@ public class StmtInterpreter {
                 ImgStore currentImgStore = imgStore;
 
                 for (ExprNode arg : args) {
-                    var argResult = new ExprInterpreter().evalExpr(funcDeclEnv, envF, envE, location, arg, currentStore, currentImgStore);
+                    var argResult = exprInterpreter.evalExpr(funcDeclEnv, envF, envE, location, arg, currentStore, currentImgStore);
                     evaluatedArgs.add(argResult.getValue0());
                     currentStore = argResult.getValue1();
                     currentImgStore = argResult.getValue2();
                 }
 
-                // Create a new scope from function declaration environment
+                 //Create a new scope from function declaration environment
                 VarEnvironment newEnvV = funcDeclEnv.newScope();
 
                 // Bind parameter to new location
@@ -118,7 +128,7 @@ public class StmtInterpreter {
                     currentStore.store(newLoc, argVal);
                 }
 
-                // Interpret the function body
+                 //Interpret the function body
                 yield evalStmt(newEnvV, envF, envE, location, funcBody, currentStore, currentImgStore);
             }
             case StmtIfNode stmtIfNode -> {
@@ -127,7 +137,7 @@ public class StmtInterpreter {
                 var elseStmt = stmtIfNode.getRightStatement();
 
                 // Evaluate the expression
-                var exprResult = new ExprInterpreter().evalExpr(envV, envF, envE, location, exprNode, store, imgStore);
+                var exprResult = exprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore);
                 Object value = exprResult.getValue0();
                 var store2 = exprResult.getValue1();
                 var imgStore2 = exprResult.getValue2();
@@ -160,7 +170,7 @@ public class StmtInterpreter {
                 var currentImgStore = imgStore;
 
                 for (ExprNode indexExpr : indexExprs) {
-                    var exprResult = new ExprInterpreter().evalExpr(envV, envF, envE, location, indexExpr, currentStore, currentImgStore);
+                    var exprResult = exprInterpreter.evalExpr(envV, envF, envE, location, indexExpr, currentStore, currentImgStore);
                     Object indexValue = exprResult.getValue0();
                     if (!(indexValue instanceof Integer i)) {
                         throw new RuntimeException("Index expression is not an integer");
@@ -171,7 +181,7 @@ public class StmtInterpreter {
                 }
 
                 // Evaluate the value expression
-                var valueResult = new ExprInterpreter().evalExpr(envV, envF, envE, location, valueExpr, currentStore, currentImgStore);
+                var valueResult = exprInterpreter.evalExpr(envV, envF, envE, location, valueExpr, currentStore, currentImgStore);
                 Object value2 = valueResult.getValue0();
                 var store2 = valueResult.getValue1();
                 var imgStore2 = valueResult.getValue2();
@@ -188,7 +198,7 @@ public class StmtInterpreter {
                 var exprNode = stmtReturnNode.getExpression();
 
                 // Evaluate the expression
-                var exprResult = new ExprInterpreter().evalExpr(envV, envF, envE, location, exprNode, store, imgStore);
+                var exprResult = exprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore);
                 Object value = exprResult.getValue0();
                 var store2 = exprResult.getValue1();
                 var imgStore2 = exprResult.getValue2();
@@ -202,7 +212,7 @@ public class StmtInterpreter {
                 var bodyStmt = stmtWhileNode.getStatement();
 
                 // Evaluate the expression
-                var exprResult = new ExprInterpreter().evalExpr(envV, envF, envE, location, exprNode, store, imgStore);
+                var exprResult = exprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore);
                 Object value = exprResult.getValue0();
                 var store2 = exprResult.getValue1();
                 var imgStore2 = exprResult.getValue2();

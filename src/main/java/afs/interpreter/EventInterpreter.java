@@ -1,5 +1,6 @@
 package afs.interpreter;
 
+import afs.interpreter.interfaces.EventEnvironment;
 import afs.nodes.event.EventCompositionNode;
 import afs.nodes.event.EventDeclarationNode;
 import afs.nodes.event.EventNode;

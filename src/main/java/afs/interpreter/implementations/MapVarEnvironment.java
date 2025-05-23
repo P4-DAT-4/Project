@@ -6,26 +6,75 @@ import java.util.Map;
 
 public class MapVarEnvironment implements VarEnvironment {
     private final Map<String, Integer> _environment;
+    private final MapVarEnvironment parent;
 
     public MapVarEnvironment() {
-        _environment = new HashMap<>();
+
+        this._environment = new HashMap<>();
+        this.parent = null;
     }
 
     public MapVarEnvironment(MapVarEnvironment envV) {
-        _environment = new HashMap<>(envV._environment);
+        this._environment = new HashMap<>(envV._environment);
+        this.parent = null;
     }
 
     @Override
     public void declare(String ident, int location) {
+        if (_environment.containsKey(ident)) {
+            throw new RuntimeException("Variable '" + ident + "' already declared");
+        }
+
         _environment.put(ident, location);
     }
 
+//    @Override
+//    public int lookup(String ident) {
+//        if (!_environment.containsKey(ident)) {
+//            throw new RuntimeException("Variable '" + ident + "' not found in VarEnvironment");
+//        }
+//        return _environment.get(ident);
+//
+//    }
+
     @Override
     public int lookup(String ident) {
-        boolean found = _environment.containsKey(ident);
-        if (!found) {
-            throw new RuntimeException(String.format("Variable '%s' not found in VarEnvironment", ident));
+        // Check if the variable is declared in the current scope
+        if (_environment.containsKey(ident)) {
+            return _environment.get(ident);
+        // If not found locally, recursively look up in the parent scope
+        } else if (parent != null) {
+            return parent.lookup(ident);
+        } else {
+            throw new RuntimeException("Variable '" + ident + "' not found in environment");
         }
-        return _environment.get(ident);
     }
+
+    @Override
+    public void set(String ident, int location) {
+    // Check if the variable is declared in the current scope
+        if (_environment.containsKey(ident)) {
+        // Update the variable's location in the current scope
+            _environment.put(ident, location);
+        } else if (parent != null) {
+            // If not found locally, recursively try to set in the parent scope
+            parent.set(ident, location);
+        } else {
+            throw new RuntimeException("Cannot set undeclared variable '" + ident + "'");
+        }
+    }
+
+    @Override
+    public boolean isLocal(String ident) {
+        return _environment.containsKey(ident);
+    }
+
+    @Override
+    public VarEnvironment newScope() {
+        // Creates a new nested scope with the current scope as its parent
+        return new MapVarEnvironment(this);
+    }
+
+
+
 }

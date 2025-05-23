@@ -255,17 +255,17 @@ Visualize<out DefNode vis> = (. List<ExprNode> arguments = new ArrayList<>(); .)
 .
 
 /*-----------------------------------Events-----------------------------------*/
-Events<out EventNode event> = (. List<EventNode> events = new ArrayList<>(); List<ExprNode> arguments = new ArrayList<>(); .)
-    Expr<out ExprNode expr>
+Events<out EventNode event> = (. List<EventNode> events = new ArrayList<>(); List<ExprNode> arguments = new ArrayList<>(); String ident, fname; .)
+    IDENT (. ident = t.val; .)
     "do"
-    IDENT (. int line = t.line; int col = t.col; String ident = t.val; .)
+    IDENT (. int line = t.line; int col = t.col; fname = t.val; .)
     "("
     [Expr<out ExprNode arg> (. arguments.add(arg); .)
     { "," Expr<out arg> (. arguments.add(arg); .)
     }]
     ")"
-    ";" (. event = new EventDeclarationNode(expr, ident, arguments, line, col); events.add(event); .)
-    { Expr<out expr> (. line = t.line; col = t.col; arguments = new ArrayList<>(); .)
+    ";" (. event = new EventDeclarationNode(ident, fname, arguments, line, col); events.add(event); .)
+    { (. line = t.line; col = t.col; arguments = new ArrayList<>(); .)
     "do"
     IDENT (. line = t.line; col = t.col; ident = t.val; .)
     "("
@@ -273,7 +273,7 @@ Events<out EventNode event> = (. List<EventNode> events = new ArrayList<>(); Lis
     { "," Expr<out arg> (. arguments.add(arg); .)
     }]
     ")"
-    ";" (. event = new EventDeclarationNode(expr, ident, arguments, line, col); events.add(event); .)
+    ";" (. event = new EventDeclarationNode(ident, fname, arguments, line, col); events.add(event); .)
     } (. event = toCompEvent(events); .)
 .
 
@@ -481,17 +481,21 @@ Place<out ExprNode declExpr> =
 Scale<out ExprNode declExpr> =
     "scale" (. int line = t.line; int col = t.col; .)
     Expr<out ExprNode lExpr>
-    "by"
-    Expr<out ExprNode rExpr> (. declExpr = new ExprScaleNode(lExpr, rExpr, line, col); .)
+    "by" "(" Expr<out ExprNode mExpr> ","
+    Expr<out ExprNode rExpr> ","
+
+    ")"
+     (. declExpr = new ExprScaleNode(lExpr, mExpr, rExpr, line, col); .)
 .
 
 Rotate<out ExprNode declExpr> =
     "rotate" (. int line = t.line; int col = t.col; .)
-    Expr<out ExprNode lExpr>
+    Expr<out ExprNode fExpr>
     "around"
-    Expr<out ExprNode mExpr>
+    "("Expr<out ExprNode sExpr> ","
+    Expr<out ExprNode tExpr>")"
     "by"
-    Expr<out ExprNode rExpr> (. declExpr = new ExprRotateNode(lExpr, mExpr, rExpr, line, col); .)
+    Expr<out ExprNode lExpr> (. declExpr = new ExprRotateNode(fExpr, sExpr, tExpr, lExpr, line, col); .)
 .
 
 /*-----------------------------------Expressions-----------------------------------*/

@@ -1,26 +1,30 @@
 package afs.nodes.expr;
 
 public final class ExprPlaceNode extends ExprNode {
-    private final ExprNode leftExpression;
-    private final ExprNode middleExpression;
-    private final ExprNode rightExpression;
+    private final ExprNode fExpression;
+    private final ExprNode sExpression;
+    private final ExprNode tExpression;
 
-    public ExprPlaceNode(ExprNode leftExpression, ExprNode middleExpression, ExprNode rightExpression, int line, int column) {
+
+    public ExprPlaceNode(ExprNode fExpression, ExprNode sExpression, ExprNode tExpression,int line, int column) {
         super(line, column);
-        this.leftExpression = leftExpression;
-        this.middleExpression = middleExpression;
-        this.rightExpression = rightExpression;
+        this.fExpression = fExpression;
+        this.sExpression = sExpression;
+        this.tExpression = tExpression;
+
     }
 
-    public ExprNode getLeftExpression() {
-        return leftExpression;
+    public ExprNode getFExpression() {
+        return fExpression;
     }
 
-    public ExprNode getMiddleExpression() { return middleExpression; }
+    public ExprNode getSExpression() { return sExpression; }
 
-    public ExprNode getRightExpression() {
-        return rightExpression;
+    public ExprNode getTExpression() {
+        return tExpression;
     }
+
+
 
     @Override
     public String toString() {

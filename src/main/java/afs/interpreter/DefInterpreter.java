@@ -1,5 +1,6 @@
 package afs.interpreter;
 
+import afs.interpreter.interfaces.*;
 import afs.nodes.def.*;
 import afs.nodes.stmt.StmtFunctionCallNode;
 import org.javatuples.Pair;
@@ -9,6 +10,16 @@ import afs.interpreter.interfaces.*;
 import java.util.List;
 
 public class DefInterpreter {
+
+    private final StmtInterpreter stmtInterpreter;
+    private final ExprInterpreter exprInterpreter;
+
+    public DefInterpreter(StmtInterpreter stmtInterpreter, ExprInterpreter exprInterpreter) {
+        this.stmtInterpreter = stmtInterpreter;
+        this.exprInterpreter = exprInterpreter;
+    }
+
+
     public Pair<Store, ImgStore> evalDef(VarEnvironment envV,
                                          FunEnvironment envF,
                                          EventEnvironment envE,
@@ -23,7 +34,7 @@ public class DefInterpreter {
                 var nextDef = defDeclarationNode.getDefinition();
 
                 // Evaluate the expression
-                var exprResult = new ExprInterpreter().evalExpr(envV, envF, envE, location, expr, store, imgStore);
+                var exprResult = exprInterpreter.evalExpr(envV, envF, envE, location, expr, store, imgStore);
                 Object value = exprResult.getValue0();
                 var store2 = exprResult.getValue1();
                 var imgStore2 = exprResult.getValue2();
@@ -66,7 +77,7 @@ public class DefInterpreter {
                 var functionCallAsStmt = new StmtFunctionCallNode(funName, args, -1, -1);
 
                 // Evaluate function body
-                var result = new StmtInterpreter().evalStmt(envV, envF, updatedEnvE, location, functionCallAsStmt, store, imgStore);
+                var result = stmtInterpreter.evalStmt(envV, envF, updatedEnvE, location, functionCallAsStmt, store, imgStore);
                 var store2 = result.getValue1();
                 var imgStore2 = result.getValue2();
 
