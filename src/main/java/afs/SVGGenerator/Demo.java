@@ -140,8 +140,8 @@ public class Demo {
         );
 
         try {
-            SVGGenerator.generateToFile(shapes, 480.0, 200.0, "test_shapes.svg");
-            System.out.println("SVG saved as test_shapes.svg");
+            SVGGenerator.generateToFile(shapes, 480.0, 200.0, "test_shapes1.svg");
+            System.out.println("SVG saved as test_shapes1.svg");
         } catch (IOException e) {
             e.printStackTrace();
         }
