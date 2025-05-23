@@ -548,6 +548,40 @@ public class ExprInterpreterTest{
 
         }
 
+
+        @Test
+        public void ExprListAccessNode1DOutOfBounds(){
+            // Set up array
+            List<ExprNode> exprs = List.of(
+                    new ExprIntNode("1",0,0),
+                    new ExprIntNode("3",0,0),
+                    new ExprIntNode("6",0,0)
+            );
+
+            ExprListDeclaration listDeclaration = new ExprListDeclaration(exprs, 0,0);
+            var resultListDecl = exprInterpreter.evalExpr(envV, envF, envE, location, listDeclaration, store, imgStore);
+
+            ListVal listVal = (ListVal) resultListDecl.getValue0();
+            String varName = "myList";
+            envV.declare(varName, location);
+            store.store(location, listVal);
+
+            // Invalid access: index 5 (out of bounds)
+            ExprNode invalidIndexExpr = new ExprIntNode("5", 0, 0);
+            ExprListAccessNode invalidAccess = new ExprListAccessNode(varName, List.of(invalidIndexExpr), 0, 0);
+
+            Exception exception = assertThrows(RuntimeException.class, () -> {
+                exprInterpreter.evalExpr(envV, envF, envE, location, invalidAccess, store, imgStore);
+            });
+
+            assertTrue(exception.getMessage().contains("out of bounds"), "Expected an out-of-bounds exception message");
+
+
+
+        }
+
+
+
         @Test
         public void ExprListAccessNode2D(){
             // Create nested lists: [ [1, 2], [3, 4] ]
@@ -609,13 +643,12 @@ public class ExprInterpreterTest{
 //
 //        assertTrue(shapeVal instanceof ShapeVal, "Expected StringVal from ExprTextNode evaluation");
 
-
-
-
-
-
-
     }
+
+
+
+
+
 }
 
 
