@@ -9,152 +9,160 @@ import afs.nodes.event.*;
 import afs.nodes.type.*;
 import afs.nodes.def.*;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 public class TypeChecker {
     public void checkProgram(ProgNode program) {
-        DeclarationType(program.getDefinition());
+        Environment env = new Environment();
+        DeclarationType(env, program.getDefinition());
     }
-
-    private AFSType DeclarationType(DefNode def) {
+    private AFSType DeclarationType(Environment env, DefNode def) {
         switch (def) {
-            case DefDeclarationNode declarationNode -> { 
+            case DefDeclarationNode declarationNode -> {
                 AFSType type = TypeType(declarationNode.getType());
                 ExprNode expr = declarationNode.getExpression();
 
-                AFSType exprType = ExprType(expr);
+                AFSType exprType = ExprType(env, expr);
                 TypeValidator.validateTypeEquality(exprType, type);
 
                 // Check if the identifier is already declared
                 String identifier = declarationNode.getIdentifier();
-                TypeEnvironment.declareVar(identifier, type);
+
+                // Check if the identifier is already declared
+                if (env.check(identifier)) {
+                    throw new TypeCheckException(String.format("Global variable '%s' already declared", identifier));
+                }
+
+                // declare the variable in the environment
+                env.declare(identifier, type);
 
                 def.setType(type);
+                DeclarationType(env, declarationNode.getDefinition());
 
-                DeclarationType(declarationNode.getDefinition());
                 return type;
             }
-            case DefFunctionNode functionNode -> { // ok
+            case DefFunctionNode functionNode -> {
                 AFSType type = TypeType(functionNode.getType());
-                if (!(type instanceof ListType) && !(type.equals(SimpleType.VOID)) && !(type.equals(SimpleType.SHAPE))) {
-                    TypeValidator.validatePrimitiveType(type);
-                }
                 
                 // Validate function identifier
                 String identifier = functionNode.getIdentifier();
-                FunctionType functionType = new FunctionType(type);
-
-                List<Param> params = functionNode.getParameters();
-                for (Param param : params) {
-                    AFSType paramType = TypeType(param.getType());
-                    if (!(paramType instanceof ListType)) {
-                        TypeValidator.validatePrimitiveType(paramType);
-                    }
-                    functionType.addParam(param);
+                if (env.check(identifier)) {
+                    throw new TypeCheckException(String.format("Function '%s' already declared", identifier));
                 }
 
-                TypeEnvironment.declareFun(identifier, functionType);
+                Environment funEnv = new Environment(env); // copy of env
 
-                TypeEnvironment.enterFunction(identifier);
-                StmtType(functionNode.getStatement());
-                TypeEnvironment.exitFunction();
+                FunctionType functionType = new FunctionType(type);
 
+                List<String> paramNames = new ArrayList<>();
+                List<Param> params = functionNode.getParameters();
+                for (Param param : params) {
+                    String ident = param.getIdentifier();
+                    // Check if param is already declared
+                    if (paramNames.contains(ident)) {
+                        throw new TypeCheckException(String.format("Duplicate parameter '%s'", ident));
+                    }
+                    // Add the param to the list of param names
+                    paramNames.add(ident);
+
+                    // check the type is non-void
+                    AFSType paramType = TypeType(param.getType());
+                    if (paramType.equals(SimpleType.VOID)) {
+                        throw new TypeCheckException("Cannot declare parameter of type void");
+                    }
+                    // declare the param the in the new environment
+                    funEnv.declare(param.getIdentifier(), paramType);
+                    functionType.addParamType(paramType);
+                }
+
+                funEnv.declare(identifier, functionType);
+                funEnv.declare("return", functionType.getReturnType());
+                env.declare(identifier, functionType);
+
+                StmtType(funEnv, functionNode.getStatement());
                 def.setType(type);
 
-
-                DeclarationType(functionNode.getDefinition());
+                DeclarationType(env, functionNode.getDefinition());
                 return type;
             }
             case DefVisualizeNode visualizeNode -> {
                 // Lookup function
                 String identifier = visualizeNode.getIdentifier();
-                FunctionType funType = TypeEnvironment.lookupFun(identifier);
 
-                if (funType.getReturnType() == SimpleType.SHAPE) {
-                    throw new TypeCheckException(String.format("Cannot visualize img '%s' that returns a shape.", identifier));
+                AFSType type = env.lookup(identifier);
+
+                if (!(type instanceof FunctionType funType)) {
+                    throw new TypeCheckException(String.format("Cannot visualize function '%s' that is not a function.", identifier));
                 }
+                List<ExprNode> args = visualizeNode.getArguments();
 
-                checkFunction(identifier, visualizeNode.getArguments(), funType.getParams());
+                // Check if the function is valid
+                checkFunction(env, identifier, funType, args);
 
-                EventType(visualizeNode.getEvent()); // check all events
+                EventType(env, visualizeNode.getEvent()); // check all events
 
-                def.setType(SimpleType.VOID);
-                return SimpleType.VOID;
+                return null;
             }
             default -> {
                 throw new IllegalDefException("Unexpected value: " + def);
             }
         }
     }
-
-    private AFSType EventType(EventNode event) {
+    private AFSType EventType(Environment env ,EventNode event) {
         switch(event) {
             case EventCompositionNode compositionNode -> {
                 // Check both events
-                EventType(compositionNode.getLeftEvent());
-                EventType(compositionNode.getRightEvent());
-
-                compositionNode.setType(SimpleType.VOID);
-                return SimpleType.VOID;
+                EventType(env, compositionNode.getLeftEvent());
+                EventType(env, compositionNode.getRightEvent());
             }
-            // e do x(arrow(e))
             case EventDeclarationNode declarationNode -> {
                 // Validate the type
-                ExprNode expr = declarationNode.getExpression();
-                ExprType(expr);
+                String conIdent = declarationNode.getLeftIdentifier(); // condition
+                String funIdent = declarationNode.getRightIdentifier(); // fun identifier
+                env.lookup(conIdent);
 
-                if (!(expr instanceof ExprFunctionCallNode) && !(expr instanceof ExprIdentifierNode)) {
-                    AFSType exprType = ExprType(declarationNode.getExpression());
-                    TypeValidator.validBooleanType(exprType);
+                // Check if the function is valid
+                AFSType type = env.lookup(funIdent);
+                if (!(type instanceof FunctionType funType)) {
+                    throw new TypeCheckException(String.format("Cannot visualize '%s' that is not a function.", funIdent));
                 }
-
-                // Validate the function call type
-                String funIdentifier = declarationNode.getFunIdent();
-                FunctionType funType = TypeEnvironment.lookupFun(funIdentifier);
-
-                checkFunction(funIdentifier, declarationNode.getArguments(), funType.getParams());
-
-                declarationNode.setType(expr.getAFSType());
-                return expr.getAFSType();
+                checkFunction(env, funIdent, funType, declarationNode.getArguments());
             }
             default -> throw new IllegalEventException("Unexpected value: " + event);
         }
+        return null;
     }
-
-    private AFSType StmtType(StmtNode stmt) {
+    private AFSType StmtType(Environment env, StmtNode stmt) {
         switch(stmt) {
             case StmtIfNode ifNode -> {
-                AFSType exprType = ExprType(ifNode.getExpression());
+                AFSType exprType = ExprType(env, ifNode.getExpression());
                 TypeValidator.validBooleanType(exprType);
 
-                TypeEnvironment.enterScope();
-                StmtType(ifNode.getLeftStatement());
-                TypeEnvironment.exitScope();
+                Environment rightEnv = new Environment(env); // copy of env
+                StmtType(rightEnv, ifNode.getLeftStatement());
 
-                TypeEnvironment.enterScope();
-                StmtType(ifNode.getRightStatement());
-                TypeEnvironment.exitScope();
+                Environment leftEnv = new Environment(env); // copy of env
+                StmtType(leftEnv, ifNode.getRightStatement());
 
-                ifNode.setType(SimpleType.VOID);
-                return SimpleType.VOID;
+                return null;
             }
             case StmtWhileNode whileNode -> {
-                AFSType exprType = ExprType(whileNode.getExpression());
+                AFSType exprType = ExprType(env, whileNode.getExpression());
                 TypeValidator.validBooleanType(exprType);
 
-                TypeEnvironment.enterScope();
-                StmtType(whileNode.getStatement());
-                TypeEnvironment.exitScope();
+                Environment whileEnv = new Environment(env); // copy of env
+                StmtType(whileEnv, whileNode.getStatement());
 
-                whileNode.setType(SimpleType.VOID);
-                return SimpleType.VOID;
+                return null;
             }
             case StmtAssignmentNode assignmentNode -> {
                 String identifier = assignmentNode.getIdentifier();
-                AFSType varType = TypeEnvironment.lookupVar(identifier);
+                AFSType varType = env.lookup(identifier);
 
                 ExprNode Expr = assignmentNode.getExpression();
-                AFSType ExprType = ExprType(Expr);
+                AFSType ExprType = ExprType(env, Expr);
                 TypeValidator.validateTypeEquality(ExprType, varType);
 
                 assignmentNode.setType(Expr.getAFSType());
@@ -164,145 +172,141 @@ public class TypeChecker {
                 TypeNode type = declarationNode.getType();
 
                 ExprNode expr = declarationNode.getExpression();
-                AFSType exprType = ExprType(expr);
+                AFSType exprType = ExprType(env, expr);
 
                 TypeValidator.validateTypeEquality(exprType, TypeType(type));
 
                 String identifier = declarationNode.getIdentifier();
 
-                TypeEnvironment.enterScope();
-                TypeEnvironment.declareVar(identifier, exprType);
-                StmtType(declarationNode.getStatement());
-                TypeEnvironment.exitScope();
+                Environment newEnv = new Environment(env); // copy of env
+                newEnv.declare(identifier, exprType);
+                StmtType(newEnv, declarationNode.getStatement());
 
                 declarationNode.setType(exprType);
                 return exprType;
             }
             case StmtCompositionNode compositionNode -> {
-                StmtType(compositionNode.getLeftStatement());
-                StmtType(compositionNode.getRightStatement());
+                Environment leftEnv = new Environment(env); // copy of env
+                StmtType(leftEnv, compositionNode.getLeftStatement());
 
-                compositionNode.setType(SimpleType.VOID);
-                return SimpleType.VOID;
+                Environment rightEnv = new Environment(env); // copy of env
+                StmtType(rightEnv, compositionNode.getRightStatement());
+
+                return null;
             }
             case StmtFunctionCallNode functionCallNode -> {
                 // Get the identifier
                 String identifier = functionCallNode.getIdentifier();
 
-                // Get the return type of the function
-                FunctionType funType = TypeEnvironment.lookupFun(identifier);
-
-                // Check type if different from SHAPE
-                if (funType.getReturnType() == SimpleType.SHAPE) {
-                    throw new TypeCheckException(String.format("Cannot call function '%s' that returns a shape as an imperative statement.", identifier));
+                AFSType type = env.lookup(identifier);
+                if (!(type instanceof FunctionType funType)) {
+                    throw new TypeCheckException(String.format("Cannot call '%s' that is not a function", identifier));
                 }
 
-                checkFunction(identifier, functionCallNode.getArguments(), funType.getParams());
+                // Get the args
+                List<ExprNode> args = functionCallNode.getArguments();
 
-                functionCallNode.setType(funType.getReturnType());
-                return funType.getReturnType();
+                // Check the call is valid.
+                checkFunction(env, identifier, funType, args);
+
+                return null;
             }
             case StmtReturnNode returnNode -> {
-                AFSType exprType = ExprType(returnNode.getExpression());
+                AFSType exprType = ExprType(env, returnNode.getExpression());
+                AFSType funRetType = env.lookup("return");
 
-                String funIdentifier = TypeEnvironment.getCurrentFunction();
-                FunctionType function = TypeEnvironment.lookupFun(funIdentifier);
+                // Validate the return type
+                TypeValidator.validateTypeEquality(exprType, funRetType);
 
-                // Validate against function's declared return type
-                TypeValidator.validateTypeEquality(exprType, function.getReturnType());
+                // Check the return is not null
+                if (funRetType.equals(SimpleType.VOID)) {
+                    throw new TypeCheckException(String.format("Cannot return type void at line %d, col %d", returnNode.getLineNumber(), returnNode.getColumnNumber()));
+                }
 
                 returnNode.setType(exprType);
                 return exprType;
             }
-            // x[arrow(e)] = e - x[1][2][3] = 2;
             case StmtListAssignmentNode ListAssignmentNode -> {
                 String identifier = ListAssignmentNode.getIdentifier();
-                AFSType varType = TypeEnvironment.lookupVar(identifier);
-
                 List<ExprNode> expressions = ListAssignmentNode.getExpressions(); // x[1][2][3]
-                for (ExprNode expression : expressions) {
-                    if (!(varType instanceof ListType)) {
-                        throw new TypeCheckException(String.format("Cannot access index on '%s' that is not a list.", identifier));
-                    }
-                    varType = ((ListType) varType).getType();
-                    TypeValidator.validateIntType(ExprType(expression));
-                }
+                ExprNode rightExpression = ListAssignmentNode.getExpression();
 
-                ExprNode expr = ListAssignmentNode.getExpression();
-                AFSType exprType = ExprType(expr);
+                AFSType leftType = ExprType(env, new ExprListAccessNode(
+                        identifier, expressions, ListAssignmentNode.getLineNumber(),
+                        ListAssignmentNode.getColumnNumber())
+                );
 
-                TypeValidator.validateTypeEquality(exprType, varType);
+                AFSType rightType = ExprType(env, rightExpression);
 
-                ListAssignmentNode.setType(exprType);
-                return exprType;
+                TypeValidator.validateTypeEquality(leftType, rightType);
+
+                ListAssignmentNode.setType(leftType);
+                return leftType;
             }
-            case StmtSkipNode skipNode -> {
-                skipNode.setType(SimpleType.VOID);
-                return SimpleType.VOID;
+            case StmtSkipNode ignored -> {
+                return null;
             }
             default -> throw new IllegalStatementException("Unexpected value: " + stmt);
         }
     }
-
-    private AFSType ExprType(ExprNode expr) {
+    private AFSType ExprType(Environment env, ExprNode expr) {
         switch(expr) {
             case ExprBinopNode binopNode -> {
                 BinOp binOp = binopNode.getOp();
                 switch (binOp) {
                     case ADD, SUB, MUL, DIV -> {
-                        AFSType leftType = ExprType(binopNode.getLeftExpression());
+                        AFSType leftType = ExprType(env, binopNode.getLeftExpression());
                         TypeValidator.validateBinop(leftType);
                         
-                        AFSType rightType = ExprType(binopNode.getRightExpression());
+                        AFSType rightType = ExprType(env, binopNode.getRightExpression());
                         TypeValidator.validateTypeEquality(leftType, rightType);
 
                         binopNode.setType(leftType);
                         return leftType;
                     }
                     case CONCAT -> {
-                        AFSType leftType = ExprType(binopNode.getLeftExpression());
+                        AFSType leftType = ExprType(env, binopNode.getLeftExpression());
                         boolean validLeft = leftType.equals(SimpleType.STRING) || leftType.equals(SimpleType.SHAPE) || leftType instanceof ListType;
 
                         if (!validLeft) {
                             throw new TypeCheckException("Invalid type '" + leftType + "': " + "Expected string or shape or list");
                         }
 
-                        AFSType rightType = ExprType(binopNode.getRightExpression());
+                        AFSType rightType = ExprType(env, binopNode.getRightExpression());
                         TypeValidator.validateTypeEquality(rightType, leftType);
 
                         binopNode.setType(leftType);
                         return leftType;
                     }
                     case LT -> {
-                        AFSType leftType = ExprType(binopNode.getLeftExpression());
+                        AFSType leftType = ExprType(env, binopNode.getLeftExpression());
                         TypeValidator.validateBinop(leftType);
 
-                        AFSType rightType = ExprType(binopNode.getRightExpression());
+                        AFSType rightType = ExprType(env, binopNode.getRightExpression());
                         TypeValidator.validateTypeEquality(leftType, rightType);
 
                         binopNode.setType(SimpleType.BOOL);
                         return SimpleType.BOOL;
                     }
                     case EQ -> {
-                        // int, double, string, boolean
-                        AFSType leftType = ExprType(binopNode.getLeftExpression());
+                        AFSType leftType = ExprType(env, binopNode.getLeftExpression());
                         boolean validLeft = leftType.equals(SimpleType.INT) || leftType.equals(SimpleType.DOUBLE) || leftType.equals(SimpleType.STRING) || leftType.equals(SimpleType.BOOL);
 
                         if (!validLeft) {
                             throw new TypeCheckException("Invalid type '" + leftType + "': " + "Expected int, double, string or boolean");
                         }
 
-                        AFSType rightType = ExprType(binopNode.getRightExpression());
+                        AFSType rightType = ExprType(env, binopNode.getRightExpression());
                         TypeValidator.validateTypeEquality(leftType, rightType);
 
                         binopNode.setType(SimpleType.BOOL);
                         return SimpleType.BOOL;
                     }
                     case AND -> {
-                        AFSType leftType = ExprType(binopNode.getLeftExpression());
+                        AFSType leftType = ExprType(env, binopNode.getLeftExpression());
                         TypeValidator.validBooleanType(leftType);
 
-                        AFSType rightType = ExprType(binopNode.getRightExpression());
+                        AFSType rightType = ExprType(env, binopNode.getRightExpression());
                         TypeValidator.validBooleanType(rightType);
 
                         binopNode.setType(SimpleType.BOOL);
@@ -313,19 +317,18 @@ public class TypeChecker {
                     }
                 }
             }
-            
             case ExprUnopNode unopNode -> {
                 UnOp UnOp = unopNode.getUnOp();
                 switch (UnOp) {
                     case NOT -> {
-                        AFSType exprType = ExprType(unopNode.getExpression());
+                        AFSType exprType = ExprType(env, unopNode.getExpression());
                         TypeValidator.validBooleanType(exprType);
 
                         unopNode.setType(SimpleType.BOOL);
                         return SimpleType.BOOL;
                     }
                     case NEG -> {
-                        AFSType exprType = ExprType(unopNode.getExpression());
+                        AFSType exprType = ExprType(env, unopNode.getExpression());
                         TypeValidator.validateBinop(exprType);
 
                         unopNode.setType(exprType);
@@ -339,14 +342,11 @@ public class TypeChecker {
             case ExprIdentifierNode identifierNode -> {
                 String identifier = identifierNode.getIdentifier();
 
-                AFSType varType = TypeEnvironment.lookupVar(identifier);
+                AFSType varType = env.lookup(identifier);
 
                 identifierNode.setType(varType);
                 return varType;
             }
-            // curve [e_1, ... , e_n] - n >= 6, n mod 2 = 0
-            // curve (1,2) (3,4), (5, 6), (7, 8), (9, 10)
-            // curve A, B, C, D, E : kurve fra A til C med B som kontrolpunkt, og en kurve fra C til E med D som kontrolpunkt
             case ExprCurveNode curveNode -> {
                 // Get expressions
                 List<ExprNode> expressions = curveNode.getExpressions();
@@ -359,7 +359,7 @@ public class TypeChecker {
 
                 // Validate the expressions
                 for (int i = 1; i < expressions.size(); i++) {
-                    AFSType exprType = ExprType(expressions.get(i));
+                    AFSType exprType = ExprType(env, expressions.get(i));
                     TypeValidator.validateDoubleType(exprType);
                 }
 
@@ -370,11 +370,16 @@ public class TypeChecker {
                 // Get the identifier
                 String identifier = FunctionCallNode.getIdentifier();
                 
-                FunctionType function = TypeEnvironment.lookupFun(identifier);
+                AFSType type = env.lookup(identifier);
+                if (!(type instanceof FunctionType funType)) {
+                    throw new TypeCheckException(String.format("Cannot call '%s' that is not a function", identifier));
+                }
 
-                checkFunction(identifier, FunctionCallNode.getArguments(), function.getParams());
+                List<ExprNode> args = FunctionCallNode.getArguments();
 
-                AFSType returnType = function.getReturnType();
+                checkFunction(env, identifier, funType, args);
+
+                AFSType returnType = funType.getReturnType();
 
                 FunctionCallNode.setType(returnType);
                 return returnType;
@@ -388,8 +393,8 @@ public class TypeChecker {
                     throw new TypeCheckException("Cannot have half a point in a line");
                 }
 
-                for (ExprNode expreesion : expressions) {
-                    AFSType exprType = ExprType(expreesion);
+                for (ExprNode expression : expressions) {
+                    AFSType exprType = ExprType(env, expression);
                     TypeValidator.validateDoubleType(exprType);
                 }
 
@@ -400,54 +405,52 @@ public class TypeChecker {
 
                 List<ExprNode> expressions = ListDeclarationNode.getExpressions();
 
-                AFSType firstExprType = ExprType(expressions.getFirst());
+                AFSType firstExprType = ExprType(env, expressions.getFirst());
 
                 for (ExprNode expression : expressions) {
-                    AFSType exprType = ExprType(expression);
+                    AFSType exprType = ExprType(env, expression);
                     TypeValidator.validateTypeEquality(exprType, firstExprType);
-                
                 }
 
                 AFSType listType = new ListType(firstExprType);
                 ListDeclarationNode.setType(listType);
                 return listType;
             }
-            // place e1 at (e2, e3)
             case ExprPlaceNode PlaceNode -> {
-                AFSType leftType = ExprType(PlaceNode.getLeftExpression());
+                AFSType leftType = ExprType(env, PlaceNode.getLeftExpression());
                 TypeValidator.validateShapeType(leftType);
 
-                AFSType middleType = ExprType(PlaceNode.getMiddleExpression());
+                AFSType middleType = ExprType(env, PlaceNode.getMiddleExpression());
                 TypeValidator.validateDoubleType(middleType);
 
-                AFSType rightType = ExprType(PlaceNode.getRightExpression());
+                AFSType rightType = ExprType(env, PlaceNode.getRightExpression());
                 TypeValidator.validateDoubleType(rightType);
 
                 PlaceNode.setType(SimpleType.SHAPE);
                 return SimpleType.SHAPE;
             }
             case ExprTextNode TextNode -> {
-                AFSType ExprType = ExprType(TextNode.getExpression());
+                AFSType ExprType = ExprType(env, TextNode.getExpression());
                 TypeValidator.validateStringType(ExprType);
 
                 TextNode.setType(SimpleType.SHAPE);
                 return SimpleType.SHAPE;
             }
             case ExprScaleNode scaleNode -> {
-                AFSType leftType = ExprType(scaleNode.getLeftExpression());
+                AFSType leftType = ExprType(env, scaleNode.getLeftExpression());
                 TypeValidator.validateShapeType(leftType);
 
-                AFSType rightType = ExprType(scaleNode.getRightExpression());
+                AFSType rightType = ExprType(env, scaleNode.getRightExpression());
                 TypeValidator.validateDoubleType(rightType);
 
                 scaleNode.setType(SimpleType.SHAPE);
                 return SimpleType.SHAPE;
             }
             case ExprRotateNode RotateNode -> {
-                AFSType leftType = ExprType(RotateNode.getLeftExpression());
+                AFSType leftType = ExprType(env, RotateNode.getLeftExpression());
                 TypeValidator.validateShapeType(leftType);
 
-                AFSType middleType = ExprType(RotateNode.getMiddleExpression());
+                AFSType middleType = ExprType(env, RotateNode.getMiddleExpression());
                 if (middleType instanceof ListType) {
                     middleType = ((ListType) middleType).getType();
                     TypeValidator.validateDoubleType(middleType);
@@ -455,7 +458,7 @@ public class TypeChecker {
                     throw new TypeCheckException("Invalid type '" + middleType + "': " + "Expected list of doubles or shape");
                 }
 
-                AFSType rightType = ExprType(RotateNode.getRightExpression());
+                AFSType rightType = ExprType(env, RotateNode.getRightExpression());
                 TypeValidator.validateDoubleType(rightType);
 
                 RotateNode.setType(SimpleType.SHAPE);
@@ -463,22 +466,38 @@ public class TypeChecker {
             }
             case ExprListAccessNode listAccessNode -> {
                 String identifier = listAccessNode.getIdentifier();
-                AFSType varType = TypeEnvironment.lookupVar(identifier);
-
                 List<ExprNode> expressions = listAccessNode.getExpressions();
-                for (ExprNode expression : expressions) {
-                    if (!(varType instanceof ListType)) {
-                        throw new TypeCheckException(String.format("Cannot access index on '%s' that is not a list.", identifier));
-                    }
-                    varType = ((ListType) varType).getType();
-                    TypeValidator.validateIntType(ExprType(expression));
+
+                // Validate int type for the first expression
+                AFSType exprType = ExprType(env, expressions.getFirst());
+                TypeValidator.validateIntType(exprType);
+
+                // Lookup the variable in the environment
+                AFSType varType = env.lookup(identifier);
+                if (!(varType instanceof ListType)) {
+                    throw new TypeCheckException(String.format("Cannot access '%s' which is not a list", identifier));
                 }
 
-                listAccessNode.setType(varType);
-                return varType;
-            }
+                // Base case: Single access
+                if (expressions.size() == 1) {
+                    listAccessNode.setType(((ListType) varType).getType());
+                    return ((ListType) varType).getType();
+                } else { // Recursive case: Multi-dimensional access
+                    int line = listAccessNode.getLineNumber();
+                    int col = listAccessNode.getColumnNumber();
 
-            
+                    ExprNode listAccess = new ExprListAccessNode(identifier, expressions.subList(1, expressions.size()), line, col);
+                    AFSType listAccessType = ExprType(env, listAccess);
+
+                    if (!(listAccessType instanceof ListType)) {
+                        throw new TypeCheckException(String.format("Cannot access index on '%s' that is not a list", identifier));
+                    }
+
+                    AFSType resType = ((ListType) listAccessType).getType();
+                    listAccessNode.setType(resType);
+                    return resType;
+                }
+            }
             case ExprStringNode ignored -> {
                 expr.setType(SimpleType.STRING);
                 return SimpleType.STRING;
@@ -498,7 +517,6 @@ public class TypeChecker {
             default -> throw new IllegalStateException("Unexpected value: " + expr);
         }
     }
-
     private AFSType TypeType(TypeNode type) {
         switch(type) {
             case TypeBoolNode ignored -> {
@@ -534,35 +552,42 @@ public class TypeChecker {
         }
     }
 
-    private void checkFunction(String identifier, List<ExprNode> arguments, List<Param> params) {
+    /**
+     * Checks if the function call is valid.
+     * @param identifier
+     * @param funType
+     * @param arguments
+     */
+    private void checkFunction(Environment env, String identifier, FunctionType funType, List<ExprNode> arguments) {
         int numArgs = arguments.size();
-        int numParams = params.size();
+        int numParams = funType.getParamTypes().size();
         boolean equalSize = numArgs == numParams;
         if (!equalSize) {
             throw new TypeCheckException(String.format("Function '%s' expected %d arguments, but got %d", identifier, numParams, numArgs));
         }
 
+        List<AFSType> paramTypes = funType.getParamTypes();
         for (int i = 0; i < arguments.size(); i++) {
-            AFSType argType = ExprType(arguments.get(i));
-            AFSType paramType = TypeType(params.get(i).getType());
+            AFSType argType = ExprType(env, arguments.get(i));
+            AFSType paramType = paramTypes.get(i);
             TypeValidator.validateTypeEquality(argType, paramType);
         }
     }
 
     // Visitors for testing
-    public AFSType processDefNode(DefNode defNode) {
-        return DeclarationType(defNode);
+    public AFSType processDefNode(Environment env, DefNode defNode) {
+        return DeclarationType(env, defNode);
     }
-    public AFSType processEventNode(EventNode eventNode) {
-        return EventType(eventNode);
+    public AFSType processEventNode(Environment env, EventNode eventNode) {
+        return EventType(env, eventNode);
     }
-    public AFSType processStmtNode(StmtNode stmtNode) {
-        return StmtType(stmtNode);
+    public AFSType processStmtNode(Environment env, StmtNode stmtNode) {
+        return StmtType(env, stmtNode);
     }
     public AFSType processTypeNode(TypeNode typeNode) {
         return TypeType(typeNode);
     }
-    public AFSType processExprNode(ExprNode exprNode) {
-        return ExprType(exprNode);
+    public AFSType processExprNode(Environment env, ExprNode exprNode) {
+        return ExprType(env, exprNode);
     }
 }
