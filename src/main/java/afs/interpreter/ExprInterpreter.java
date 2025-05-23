@@ -108,7 +108,7 @@ public class ExprInterpreter {
                     end = nextEnd;
                 }
 
-                yield new Triplet<>(curveShape, currentStore, currentImgStore);
+                yield new Triplet<>(new ShapeVal(curveShape), currentStore, currentImgStore);
 
             }
             case ExprDoubleNode exprDoubleNode -> {
@@ -224,7 +224,7 @@ public class ExprInterpreter {
                     end = nextEnd;
                 }
 
-                yield new Triplet<>(lineShape, currentStore, currentImgStore);
+                yield new Triplet<>(new ShapeVal(lineShape), currentStore, currentImgStore);
 
             }
             case ExprListAccessNode exprListAccessNode -> {
@@ -379,7 +379,7 @@ public class ExprInterpreter {
                     placedShape.addSegment(newSegment);
                 }
 
-                yield new Triplet<>(placedShape, updatedStore, updatedImgStore);
+                yield new Triplet<>(new ShapeVal(placedShape), updatedStore, updatedImgStore);
             }
             case ExprRotateNode exprRotateNode -> {
                 // Get the shape to place
@@ -447,7 +447,7 @@ public class ExprInterpreter {
                     rotatedShape.addSegment(newSegment);
                 }
 
-                yield new Triplet<>(rotatedShape, updatedStore, updatedImgStore);
+                yield new Triplet<>(new ShapeVal(rotatedShape), updatedStore, updatedImgStore);
             }
             case ExprScaleNode exprScaleNode -> {
                 var shapeExpr = exprScaleNode.getLeftExpression();
@@ -528,7 +528,7 @@ public class ExprInterpreter {
                     scaledShape.addSegment(newSegment);
                 }
 
-                yield new Triplet<>(scaledShape, updatedStore, updatedImgStore);
+                yield new Triplet<>(new ShapeVal(scaledShape), updatedStore, updatedImgStore);
             }
             case ExprStringNode exprStringNode -> {
                 String value = exprStringNode.getValue();
@@ -658,9 +658,8 @@ public class ExprInterpreter {
             case CONCAT -> {
                 if (v1 instanceof StringVal s1 && v2 instanceof StringVal s2) {
                     yield new StringVal(s1.getValue() + s2.getValue());
-//                } else if (v1 instanceof Shape shape1 && v2 instanceof Shape shape2) {
-//                    yield shape1.concat(shape2);
-
+                } else if (v1 instanceof ShapeVal shape1 && v2 instanceof ShapeVal shape2) {
+                    yield new ShapeVal(shape1.getShape().concat(shape2.getShape()));
                 } else if (v1 instanceof ListVal list1 && v2 instanceof ListVal list2) {
                     List<Val> result = new ArrayList<>(list1.getElements());
                     result.addAll(list2.getElements());
