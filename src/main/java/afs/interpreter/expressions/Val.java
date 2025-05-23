@@ -2,6 +2,8 @@ package afs.interpreter.expressions;
 
 import afs.runtime.Shape;
 
+import java.util.List;
+
 public interface Val {
     default int asInt(){
         if (this instanceof IntVal) {
@@ -30,6 +32,13 @@ public interface Val {
             return ((BoolVal) this).getValue();
         }
         throw new UnsupportedOperationException("Not an BoolVal");
+    }
+
+    default ListVal asList(){
+        if (this instanceof ListVal){
+            return (ListVal) ((ListVal) this).getElements();
+        }
+        throw new UnsupportedOperationException("Not an ListVal");
     }
 
 
