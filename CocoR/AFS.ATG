@@ -256,24 +256,25 @@ Visualize<out DefNode vis> = (. List<ExprNode> arguments = new ArrayList<>(); .)
 
 /*-----------------------------------Events-----------------------------------*/
 Events<out EventNode event> = (. List<EventNode> events = new ArrayList<>(); List<ExprNode> arguments = new ArrayList<>(); .)
-    Expr<out ExprNode expr>
-    "do"
     IDENT (. int line = t.line; int col = t.col; String ident = t.val; .)
-    "("
-    [Expr<out ExprNode arg> (. arguments.add(arg); .)
-    { "," Expr<out arg> (. arguments.add(arg); .)
-    }]
-    ")"
-    ";" (. event = new EventDeclarationNode(expr, ident, arguments, line, col); events.add(event); .)
-    { Expr<out expr> (. line = t.line; col = t.col; arguments = new ArrayList<>(); .)
     "do"
-    IDENT (. line = t.line; col = t.col; ident = t.val; .)
+    IDENT (. String ident2 = t.val; .)
     "("
     [Expr<out ExprNode arg> (. arguments.add(arg); .)
     { "," Expr<out arg> (. arguments.add(arg); .)
     }]
     ")"
-    ";" (. event = new EventDeclarationNode(expr, ident, arguments, line, col); events.add(event); .)
+    ";" (. event = new EventDeclarationNode(ident, ident2, arguments, line, col); events.add(event); .)
+    {
+    IDENT (. line = t.line; col = t.col; ident = t.val; .)
+    "do"
+    IDENT (. ident2 = t.val; .)
+    "("
+    [Expr<out ExprNode arg> (. arguments.add(arg); .)
+    { "," Expr<out arg> (. arguments.add(arg); .)
+    }]
+    ")"
+    ";" (. event = new EventDeclarationNode(ident, ident2, arguments, line, col); events.add(event); .)
     } (. event = toCompEvent(events); .)
 .
 
