@@ -1,6 +1,6 @@
 package afs.interpreter.expressions;
 
-import afs.runtime.Shape;
+import afs.interpreter.expressions.shape.Shape;
 
 import java.util.List;
 
@@ -34,16 +34,19 @@ public interface Val {
         throw new UnsupportedOperationException("Not an BoolVal");
     }
 
-    default ListVal asList(){
+    default List<Val> asList(){
         if (this instanceof ListVal){
-            return (ListVal) ((ListVal) this).getElements();
+            return ((ListVal) this).getValue();
         }
         throw new UnsupportedOperationException("Not an ListVal");
     }
 
-
-
-
+    default List<Shape> asShape(){
+        if (this instanceof ShapeVal) {
+            return ((ShapeVal) this).getValue();
+        }
+        throw new UnsupportedOperationException("Not a ShapeVal");
+    }
 }
 
 

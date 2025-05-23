@@ -9,33 +9,19 @@ public class MapVarEnvironment implements VarEnvironment {
     private final MapVarEnvironment parent;
 
     public MapVarEnvironment() {
-
         this._environment = new HashMap<>();
         this.parent = null;
     }
 
     public MapVarEnvironment(MapVarEnvironment envV) {
         this._environment = new HashMap<>(envV._environment);
-        this.parent = null;
+        this.parent = envV;
     }
 
     @Override
     public void declare(String ident, int location) {
-        if (_environment.containsKey(ident)) {
-            throw new RuntimeException("Variable '" + ident + "' already declared");
-        }
-
         _environment.put(ident, location);
     }
-
-//    @Override
-//    public int lookup(String ident) {
-//        if (!_environment.containsKey(ident)) {
-//            throw new RuntimeException("Variable '" + ident + "' not found in VarEnvironment");
-//        }
-//        return _environment.get(ident);
-//
-//    }
 
     @Override
     public int lookup(String ident) {
@@ -74,7 +60,4 @@ public class MapVarEnvironment implements VarEnvironment {
         // Creates a new nested scope with the current scope as its parent
         return new MapVarEnvironment(this);
     }
-
-
-
 }

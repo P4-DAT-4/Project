@@ -1,5 +1,6 @@
 package afs.interpreter;
 
+import afs.interpreter.expressions.Val;
 import afs.interpreter.interfaces.*;
 import afs.nodes.expr.ExprNode;
 import afs.nodes.stmt.*;
@@ -11,59 +12,42 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StmtInterpreter {
-
-    private final ExprInterpreter exprInterpreter;
-
-    public StmtInterpreter(ExprInterpreter exprInterpreter) {
-        this.exprInterpreter = exprInterpreter;
-    }
-
-
-
-    public Triplet<Object, Store, ImgStore> evalStmt(VarEnvironment envV,
-                                                     FunEnvironment envF,
-                                                     EventEnvironment envE,
-                                                     int location,
-                                                     StmtNode stmt,
-                                                     Store store,
-                                                     ImgStore imgStore) {
+    public static Triplet<Val, Store, ImgStore> evalStmt(VarEnvironment envV,
+                                                         FunEnvironment envF,
+                                                         EventEnvironment envE,
+                                                         int location,
+                                                         StmtNode stmt,
+                                                         Store store,
+                                                         ImgStore imgStore) {
         return switch (stmt) {
             case StmtAssignmentNode stmtAssignmentNode -> {
                 String varName = stmtAssignmentNode.getIdentifier();
                 var exprNode = stmtAssignmentNode.getExpression();
 
                 // Evaluate the expression
-                var exprResult = exprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore);
-                Object value = exprResult.getValue0();
-                var store2 = exprResult.getValue1();
-                var imgStore2 = exprResult.getValue2();
-
-                // Get location of variable
-                int varLocation = envV.lookup(varName);
+                Val value = ExprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore).getValue0();
 
                 // Update store
-                store2.store(varLocation, value);
+                store.store(envV.lookup(varName), value);
 
                 // Return
-                yield new Triplet<>(null, store2, imgStore2);
+                yield new Triplet<>(null, store, imgStore);
             }
             case StmtCompositionNode stmtCompositionNode -> {
                 var s1 = stmtCompositionNode.getLeftStatement();
-                var s2 = stmtCompositionNode.getRightStatement();
 
                 // Evaluate the first statement
-                var r1 = evalStmt(envV, envF, envE, location, s1, store, imgStore);
-                Object value = r1.getValue0();
-                var store2 = r1.getValue1();
-                var imgStore2 = r1.getValue2();
+                Val value = evalStmt(envV.newScope(), envF, envE, location, s1, store, imgStore).getValue0();
 
                 // Comp-2: s1 is a non-epsilon value
                 if (value != null) {
-                    yield new Triplet<>(value, store2, imgStore2);
+                    yield new Triplet<>(value, store, imgStore);
                 }
 
-                // Comp-1: Do s2 as s1 evaluated to epsilon
-                yield evalStmt(envV, envF, envE, location, s2, store2, imgStore2);
+                var s2 = stmtCompositionNode.getRightStatement();
+
+                // Comp-1: Evaluate s2 as s1 evaluated to epsilon
+                yield evalStmt(envV.newScope(), envF, envE, location, s2, store, imgStore);
             }
             case StmtDeclarationNode stmtDeclarationNode -> {
                 String varName = stmtDeclarationNode.getIdentifier();
@@ -71,48 +55,50 @@ public class StmtInterpreter {
                 var nextStmt = stmtDeclarationNode.getStatement();
 
                 // Evaluate the expression
-                var exprResult = exprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore);
-                Object value = exprResult.getValue0();
-                var store2 = exprResult.getValue1();
-                var imgStore2 = exprResult.getValue2();
+                Val value = ExprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore).getValue0();
 
-                // Update the environment
-                envV.declare(varName, location);
+                // Create a copy of the current var env and declare a new variable in that
+                VarEnvironment newEnvV = envV.newScope();
+                newEnvV.declare(varName, location);
 
                 // Update the store
-                store2.store(location, value);
-
-                // Get next location
-                int nextLocation = store2.nextLocation();
+                store.store(location, value);
 
                 // Evaluate the statement and return
-                yield evalStmt(envV, envF, envE, nextLocation, nextStmt, store2, imgStore2);
+                yield evalStmt(envV, envF, envE, ++location, nextStmt, store, imgStore);
             }
             case StmtFunctionCallNode stmtFunctionCallNode -> {
                 String funcName = stmtFunctionCallNode.getIdentifier();
                 List<ExprNode> args = stmtFunctionCallNode.getArguments();
-
-                //Look up function definition
                 var funcData = envF.lookup(funcName);
-                if (funcData == null) {
-                    throw new RuntimeException("Undefined function: " + funcName);
+
+                if (args.size() == 0) {
+                    StmtNode funcBody = funcData.getValue0();
+                    yield evalStmt(envV.newScope(), envF, envE, location, funcBody, store, imgStore);
+                } else {
+                    int line = stmtFunctionCallNode.getLineNumber();
+                    int col = stmt.getColumnNumber();
+
+                    List<String> paramNames = funcData.getValue1();
+                    Val exprVal = ExprInterpreter.evalExpr(envV, envF, envE, location, args.getLast(), store, imgStore).getValue0();
+                    VarEnvironment newEnvV = envV.newScope();
+                    envV.declare(paramNames.get(args.size() - 1), location);
+                    store.store(location, exprVal);
+
+                    StmtFunctionCallNode functionCallNode = new StmtFunctionCallNode(funcName, args.subList(1, args.size()), line, col);
                 }
 
+                //Look up function definition
+
                 // Extract function components
-                StmtNode funcBody = funcData.getValue0();
-                List<String> paramNames = funcData.getValue1();
                 VarEnvironment funcDeclEnv = funcData.getValue2();
 
                 // Evaluate each argument
-                List<Object> evaluatedArgs = new ArrayList<>();
-                Store currentStore = store;
-                ImgStore currentImgStore = imgStore;
+                List<Val> evaluatedArgs = new ArrayList<>();
 
                 for (ExprNode arg : args) {
-                    var argResult = exprInterpreter.evalExpr(funcDeclEnv, envF, envE, location, arg, currentStore, currentImgStore);
+                    var argResult = ExprInterpreter.evalExpr(funcDeclEnv, envF, envE, location, arg, store, imgStore);
                     evaluatedArgs.add(argResult.getValue0());
-                    currentStore = argResult.getValue1();
-                    currentImgStore = argResult.getValue2();
                 }
 
                  //Create a new scope from function declaration environment
@@ -121,15 +107,12 @@ public class StmtInterpreter {
                 // Bind parameter to new location
                 for (int i = 0; i < paramNames.size(); i++) {
                     String param = paramNames.get(i);
-                    Object argVal = evaluatedArgs.get(i);
-
-                    int newLoc = currentStore.nextLocation();
-                    newEnvV.declare(param, newLoc); // declare variable in environment
-                    currentStore.store(newLoc, argVal);
+                    Val argVal = evaluatedArgs.get(i);
+                    newEnvV.declare(param, ++location); // declare variable in environment
+                    store.store(location, argVal);
                 }
 
                  //Interpret the function body
-                yield evalStmt(newEnvV, envF, envE, location, funcBody, currentStore, currentImgStore);
             }
             case StmtIfNode stmtIfNode -> {
                 var exprNode = stmtIfNode.getExpression();
@@ -137,7 +120,7 @@ public class StmtInterpreter {
                 var elseStmt = stmtIfNode.getRightStatement();
 
                 // Evaluate the expression
-                var exprResult = exprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore);
+                var exprResult = ExprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore);
                 Object value = exprResult.getValue0();
                 var store2 = exprResult.getValue1();
                 var imgStore2 = exprResult.getValue2();
@@ -170,7 +153,7 @@ public class StmtInterpreter {
                 var currentImgStore = imgStore;
 
                 for (ExprNode indexExpr : indexExprs) {
-                    var exprResult = exprInterpreter.evalExpr(envV, envF, envE, location, indexExpr, currentStore, currentImgStore);
+                    var exprResult = ExprInterpreter.evalExpr(envV, envF, envE, location, indexExpr, currentStore, currentImgStore);
                     Object indexValue = exprResult.getValue0();
                     if (!(indexValue instanceof Integer i)) {
                         throw new RuntimeException("Index expression is not an integer");
@@ -181,7 +164,7 @@ public class StmtInterpreter {
                 }
 
                 // Evaluate the value expression
-                var valueResult = exprInterpreter.evalExpr(envV, envF, envE, location, valueExpr, currentStore, currentImgStore);
+                var valueResult = ExprInterpreter.evalExpr(envV, envF, envE, location, valueExpr, currentStore, currentImgStore);
                 Object value2 = valueResult.getValue0();
                 var store2 = valueResult.getValue1();
                 var imgStore2 = valueResult.getValue2();
@@ -198,13 +181,10 @@ public class StmtInterpreter {
                 var exprNode = stmtReturnNode.getExpression();
 
                 // Evaluate the expression
-                var exprResult = exprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore);
-                Object value = exprResult.getValue0();
-                var store2 = exprResult.getValue1();
-                var imgStore2 = exprResult.getValue2();
+                var value = ExprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore).getValue0();
 
                 // Return the value
-                yield new Triplet<>(value, store2, imgStore2);
+                yield new Triplet<>(value, store, imgStore);
             }
             case StmtSkipNode stmtSkipNode -> new Triplet<>(null, store, imgStore);
             case StmtWhileNode stmtWhileNode -> {
@@ -212,7 +192,7 @@ public class StmtInterpreter {
                 var bodyStmt = stmtWhileNode.getStatement();
 
                 // Evaluate the expression
-                var exprResult = exprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore);
+                var exprResult = ExprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore);
                 Object value = exprResult.getValue0();
                 var store2 = exprResult.getValue1();
                 var imgStore2 = exprResult.getValue2();
@@ -233,7 +213,7 @@ public class StmtInterpreter {
         };
     }
     @SuppressWarnings("unchecked")
-    private List<Object> updateNestedList(List<?> list, List<Integer> indices, Object value) {
+    private static List<Object> updateNestedList(List<?> list, List<Integer> indices, Object value) {
         if (indices.isEmpty()) {
             throw new IllegalArgumentException("Empty index list.");
         }

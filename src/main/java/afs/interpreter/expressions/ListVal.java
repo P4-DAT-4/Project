@@ -9,7 +9,7 @@ public class ListVal implements Val {
         this.elements = elements;
     }
 
-    public List<Val> getElements() {
+    public List<Val> getValue() {
         return elements;
     }
 

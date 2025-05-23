@@ -11,7 +11,6 @@ import afs.nodes.def.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 public class TypeChecker {
     public void checkProgram(ProgNode program) {
@@ -118,17 +117,17 @@ public class TypeChecker {
                 EventType(env, compositionNode.getRightEvent());
             }
             case EventDeclarationNode declarationNode -> {
-                // Validate the type
-                String conIdent = declarationNode.getLeftIdentifier(); // condition
-                String funIdent = declarationNode.getRightIdentifier(); // fun identifier
-                env.lookup(conIdent);
-
-                // Check if the function is valid
-                AFSType type = env.lookup(funIdent);
-                if (!(type instanceof FunctionType funType)) {
-                    throw new TypeCheckException(String.format("Cannot visualize '%s' that is not a function.", funIdent));
-                }
-                checkFunction(env, funIdent, funType, declarationNode.getArguments());
+//                // Validate the type
+//                String conIdent = declarationNode.getLeftIdentifier(); // condition
+//                String funIdent = declarationNode.getRightIdentifier(); // fun identifier
+//                env.lookup(conIdent);
+//
+//                // Check if the function is valid
+//                AFSType type = env.lookup(funIdent);
+//                if (!(type instanceof FunctionType funType)) {
+//                    throw new TypeCheckException(String.format("Cannot visualize '%s' that is not a function.", funIdent));
+//                }
+//                checkFunction(env, funIdent, funType, declarationNode.getArguments());
             }
             default -> throw new IllegalEventException("Unexpected value: " + event);
         }
@@ -417,14 +416,14 @@ public class TypeChecker {
                 return listType;
             }
             case ExprPlaceNode PlaceNode -> {
-                AFSType leftType = ExprType(env, PlaceNode.getLeftExpression());
-                TypeValidator.validateShapeType(leftType);
-
-                AFSType middleType = ExprType(env, PlaceNode.getMiddleExpression());
-                TypeValidator.validateDoubleType(middleType);
-
-                AFSType rightType = ExprType(env, PlaceNode.getRightExpression());
-                TypeValidator.validateDoubleType(rightType);
+//                AFSType leftType = ExprType(env, PlaceNode.get());
+//                TypeValidator.validateShapeType(leftType);
+//
+//                AFSType middleType = ExprType(env, PlaceNode.getMiddleExpression());
+//                TypeValidator.validateDoubleType(middleType);
+//
+//                AFSType rightType = ExprType(env, PlaceNode.getRightExpression());
+//                TypeValidator.validateDoubleType(rightType);
 
                 PlaceNode.setType(SimpleType.SHAPE);
                 return SimpleType.SHAPE;
@@ -447,19 +446,17 @@ public class TypeChecker {
                 return SimpleType.SHAPE;
             }
             case ExprRotateNode RotateNode -> {
-                AFSType leftType = ExprType(env, RotateNode.getLeftExpression());
-                TypeValidator.validateShapeType(leftType);
+                AFSType firstType = ExprType(env, RotateNode.getFirstExpression());
+                TypeValidator.validateShapeType(firstType);
 
-                AFSType middleType = ExprType(env, RotateNode.getMiddleExpression());
-                if (middleType instanceof ListType) {
-                    middleType = ((ListType) middleType).getType();
-                    TypeValidator.validateDoubleType(middleType);
-                } else if (!(middleType.equals(SimpleType.SHAPE))) {
-                    throw new TypeCheckException("Invalid type '" + middleType + "': " + "Expected list of doubles or shape");
-                }
+                AFSType secondType = ExprType(env, RotateNode.getSecondExpression());
+                TypeValidator.validateDoubleType(secondType);
 
-                AFSType rightType = ExprType(env, RotateNode.getRightExpression());
-                TypeValidator.validateDoubleType(rightType);
+                AFSType thirdType = ExprType(env, RotateNode.getThirdExpression());
+                TypeValidator.validateDoubleType(thirdType);
+
+                AFSType lastType = ExprType(env, RotateNode.getLastExpression());
+                TypeValidator.validateDoubleType(lastType);
 
                 RotateNode.setType(SimpleType.SHAPE);
                 return SimpleType.SHAPE;

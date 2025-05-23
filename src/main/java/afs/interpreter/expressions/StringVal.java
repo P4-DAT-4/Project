@@ -10,13 +10,4 @@ public class StringVal implements Val{
     public String getValue(){
         return value;
     }
-
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;  // same reference
-        if (o == null || getClass() != o.getClass()) return false; // null or different type
-        StringVal stringVal = (StringVal) o;
-        return value == stringVal.value; // compare values
-    }
 }

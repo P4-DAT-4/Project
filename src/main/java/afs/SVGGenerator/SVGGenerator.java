@@ -1,9 +1,14 @@
 package afs.SVGGenerator;
 
+import afs.interpreter.expressions.Val;
+import afs.interpreter.expressions.shape.ShapeCurve;
+import afs.interpreter.expressions.shape.ShapeLine;
+import afs.interpreter.expressions.shape.ShapeText;
+import afs.interpreter.interfaces.ImgStore;
 import org.jfree.graphics2d.svg.SVGGraphics2D;
 import org.jfree.graphics2d.svg.SVGUtils;
-import afs.interpreter.expressions.Point;
-import afs.runtime.Shape;
+import afs.interpreter.expressions.shape.Point;
+import afs.interpreter.expressions.shape.Shape;
 import java.awt.geom.Path2D;
 import java.io.File;
 import java.io.IOException;
@@ -14,7 +19,6 @@ import java.awt.geom.Rectangle2D;
 
 
 public class SVGGenerator {
-
     // drawable interface to make sure each shappy has a draw
     public interface SVGDrawable {
         void draw(SVGGraphics2D g);
@@ -141,95 +145,44 @@ public class SVGGenerator {
         return result;
     }
 
-    /**
-     * Convert a Shape.Segment to an SVGDrawable
-     */
-    private static SVGDrawable convertSegmentToDrawable(Shape.Segment segment) {
-        List<afs.interpreter.expressions.Point> points = segment.getCoordinates();
-
-        switch (segment.getType()) {
-            case LINE:
-                if (points.size() < 2) {
-                    throw new IllegalArgumentException("LINE segment must have at least 2 points");
-                }
-                return new Polyline(convertPointsToArray(points));
-
-            case CURVE:
-                if (points.size() < 3) {
-                    throw new IllegalArgumentException("CURVE segment must have at least 3 points");
-                }
-                // Interpret points as: start, control1, end, control2, end2, etc.
-                // For simplicity, assume every 3 points make a quadratic curve: start, control, end
-                if (points.size() == 3) {
-                    // Simple case: one quadratic curve
-                    double[][] curvePoints = new double[][]{
-                            {points.get(0).getX(), points.get(0).getY()},
-                            {points.get(2).getX(), points.get(2).getY()}
-                    };
-                    double[][] controlPoints = new double[][]{
-                            {points.get(1).getX(), points.get(1).getY()}
-                    };
-                    return new PolyCurve(curvePoints, controlPoints);
-                } else {
-                    // Multiple curves - assume alternating pattern: point, control, point, control, etc.
-                    // Create a polycurve connecting all the points
-                    int numCurves = (points.size() - 1) / 2;
-                    double[][] curvePoints = new double[numCurves + 1][2];
-                    double[][] controlPoints = new double[numCurves][2];
-
-                    // First point
-                    curvePoints[0][0] = points.get(0).getX();
-                    curvePoints[0][1] = points.get(0).getY();
-
-                    for (int i = 0; i < numCurves; i++) {
-                        // Control point
-                        controlPoints[i][0] = points.get(i * 2 + 1).getX();
-                        controlPoints[i][1] = points.get(i * 2 + 1).getY();
-
-                        // End point
-                        curvePoints[i + 1][0] = points.get(i * 2 + 2).getX();
-                        curvePoints[i + 1][1] = points.get(i * 2 + 2).getY();
-                    }
-
-                    return new PolyCurve(curvePoints, controlPoints);
-                }
-
-            case TEXT:
-                if (points.isEmpty()) {
-                    throw new IllegalArgumentException("TEXT segment must have at least 1 point for position");
-                }
-                Point textPos = points.get(0);
-                String content = segment.getTextContent();
-                if (content == null) {
-                    content = ""; // Default empty string if no text content
-                }
-                return new Text(new double[]{textPos.getX(), textPos.getY()}, content);
-
-            default:
-                throw new IllegalArgumentException("Unknown segment type: " + segment.getType());
-        }
+    private static SVGDrawable shapeToDrawable(Shape shape) {
+        return switch (shape) {
+            case ShapeCurve shapeCurve -> {
+                var curvePoints = convertPointsToArray(List.of(shapeCurve.getStart(), shapeCurve.getEnd()));
+                var controlPoints = convertPointsToArray(List.of(shapeCurve.getControl()));
+                yield new PolyCurve(curvePoints, controlPoints);
+            }
+            case ShapeLine shapeLine -> new Polyline(convertPointsToArray(shapeLine.getPoints()));
+            case ShapeText shapeText ->
+                    new Text(convertPointsToArray(shapeText.getPoints())[0], shapeText.getTextContent());
+        };
     }
 
-    /**
-     * Generate an SVG file from a list of Shape objects
-     */
-    public static void generateToFile(List<Shape> shapes, double width, double height, String filename) throws IOException {
+    private static void generateImage(List<Shape> shapes, double width, double height, String filename) throws IOException {
         SVGGraphics2D g = new SVGGraphics2D((int) Math.ceil(width), (int) Math.ceil(height));
 
         // Optional background
         g.setPaint(Color.WHITE);
         g.fill(new Rectangle2D.Double(0, 0, width, height));
 
-        // Process each shape
-        for (Shape shape : shapes) {
-            // Process each segment in the shape
-            for (Shape.Segment segment : shape.getSegments()) {
-                SVGDrawable drawable = convertSegmentToDrawable(segment);
-                drawable.draw(g);
-            }
+        for (Shape shape: shapes) {
+            SVGDrawable drawable = shapeToDrawable(shape);
+            drawable.draw(g);
         }
 
         File outputFile = new File(filename);
         SVGUtils.writeToSVG(outputFile, g.getSVGElement());
+    }
+
+    public static void generateToFile (ImgStore imgStore,double width, double height, String filename) throws
+    IOException {
+        // Process each shape
+        int counter = 0;
+        while (!imgStore.isEmpty()) {
+            String currentFileName = filename + counter;
+            Val val = imgStore.pop();
+            generateImage(val.asShape(), width, height, currentFileName);
+            counter ++;
+        }
     }
 }

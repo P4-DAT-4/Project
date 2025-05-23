@@ -1,7 +1,9 @@
 package afs.interpreter.interfaces;
 
+import afs.interpreter.expressions.Val;
+
 public interface Store {
-    void store(int location, Object value);
-    Object lookup(int location);
+    void store(int location, Val value);
+    Val lookup(int location);
     int nextLocation();
 }

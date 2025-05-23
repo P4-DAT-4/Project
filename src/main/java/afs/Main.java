@@ -49,7 +49,7 @@ public class Main {
 //                    new RecursiveGraphvizPrinter().print(program, printFile, true);
                     System.out.println("AST printed to: " + printFile);
                 } else {
-                    // interpret
+
                 }
             }
         } catch (Exception e) {

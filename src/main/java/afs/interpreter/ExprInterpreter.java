@@ -1,36 +1,23 @@
 package afs.interpreter;
 
 import afs.interpreter.expressions.*;
+import afs.interpreter.expressions.shape.*;
 import afs.interpreter.interfaces.*;
 import afs.nodes.expr.*;
 import afs.nodes.stmt.StmtNode;
-import afs.runtime.Shape;
-import com.sun.jdi.DoubleValue;
-import org.javatuples.Pair;
 import org.javatuples.Triplet;
-
-import afs.interpreter.interfaces.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ExprInterpreter {
-    private final StmtInterpreter stmtInterpreter;
-
-    public ExprInterpreter(StmtInterpreter stmtInterpreter) {
-        this.stmtInterpreter = stmtInterpreter;
-    }
-
-
-    public Triplet<Object, Store, ImgStore> evalExpr(VarEnvironment envV,
+    public static Triplet<Val, Store, ImgStore> evalExpr(VarEnvironment envV,
                                                             FunEnvironment envF,
                                                             EventEnvironment envE,
                                                             int location,
                                                             ExprNode expr,
                                                             Store store,
                                                             ImgStore imgStore) {
-
-
         return switch (expr) {
             case ExprBinopNode exprBinopNode -> {
                 var e1 = exprBinopNode.getLeftExpression();
@@ -40,7 +27,7 @@ public class ExprInterpreter {
                 var r2 = evalExpr(envV, envF, envE, location, e2, store, imgStore);
 
                 var op = exprBinopNode.getOp();
-                var val = evalBinopExpr((Val) r1.getValue0(), op, (Val) r2.getValue0());
+                var val = evalBinopExpr(r1.getValue0(), op, r2.getValue0());
                 yield new Triplet<>(val, r2.getValue1(), r2.getValue2());
             }
             case ExprBoolNode exprBoolNode -> {
@@ -51,67 +38,22 @@ public class ExprInterpreter {
             }
             case ExprCurveNode exprCurveNode -> {
                 List<ExprNode> exprs = exprCurveNode.getExpressions();
-                if(exprs.size() % 4 != 2 || exprs.size() < 6) {
-                    throw new RuntimeException("Invalid number of expressions in cruve. Found" + exprs.size());
+                if (exprs.size() == 6) {
+                    var startR = evalPoint(exprs.get(0), exprs.get(1), envV, envF, envE, location, store, imgStore ).getValue0();
+                    var controlR = evalPoint(exprs.get(2), exprs.get(3), envV, envF, envE, location, store, imgStore ).getValue0();
+                    var endR = evalPoint(exprs.get(4), exprs.get(5), envV, envF, envE, location, store, imgStore ).getValue0();
+                    Shape curve = new ShapeCurve(startR, controlR, endR);
+                    yield new Triplet<>(new ShapeVal(curve), store, imgStore);
+                } else {
+                    int line = exprCurveNode.getLineNumber();
+                    int col = exprCurveNode.getColumnNumber();
+                    ExprCurveNode firstCurveNode = new ExprCurveNode(exprs.subList(0, 6), line, col);
+                    var firstCurve = evalExpr(envV, envF, envE, location, firstCurveNode, store, imgStore).getValue0();
+
+                    ExprCurveNode lastCurveNode = new ExprCurveNode(exprs.subList(4, exprs.size()), line, col);
+                    var lastCurve = evalExpr(envV, envF, envE, location, lastCurveNode, store, imgStore).getValue0();
+                    yield new Triplet<>(new ShapeVal(firstCurve, lastCurve), store, imgStore);
                 }
-
-                Store currentStore = store;
-                ImgStore currentImgStore = imgStore;
-                Shape curveShape = new Shape();
-
-                // Evaluate start point
-                var startR = evalPoint(exprs.get(0), exprs.get(1), envV, envF, envE, location, currentStore, currentImgStore );
-                Point start = startR.getValue0();
-                currentStore = startR.getValue1().getValue0();
-                currentImgStore = startR.getValue1().getValue1();
-
-                // Evaluate control point
-                var controlR = evalPoint(exprs.get(2), exprs.get(3), envV, envF, envE, location, currentStore, currentImgStore );
-                Point control = controlR.getValue0();
-                currentStore = controlR.getValue1().getValue0();
-                currentImgStore = controlR.getValue1().getValue1();
-
-                // Evaluate end point
-                var endR = evalPoint(exprs.get(4), exprs.get(5), envV, envF, envE, location, currentStore, currentImgStore );
-                Point end = endR.getValue0();
-                currentStore = endR.getValue1().getValue0();
-                currentImgStore = endR.getValue1().getValue1();
-
-                //create first segment
-                Shape.Segment firstSegment = new Shape.Segment(Shape.Segment.SegmentType.CURVE);
-                firstSegment.addPoint(start.getX(), start.getY());
-                firstSegment.addPoint(control.getX(), control.getY());
-                firstSegment.addPoint(end.getX(), end.getY());
-                curveShape.addSegment(firstSegment);
-
-
-                for(int i = 6; i <exprs.size(); i += 4){
-                    // Evaluate next control point
-                    var nextControlR = evalPoint(exprs.get(i), exprs.get(i + 1), envV, envF, envE, location, currentStore, currentImgStore );
-                    Point nextControl = nextControlR.getValue0();
-                    currentStore = nextControlR.getValue1().getValue0();
-                    currentImgStore = nextControlR.getValue1().getValue1();
-
-
-                    // Evaluate next end point
-                    var nextEndR = evalPoint(exprs.get(i + 2), exprs.get(i + 3), envV, envF, envE, location, currentStore, currentImgStore );
-                    Point nextEnd = nextEndR.getValue0();
-                    currentStore = nextEndR.getValue1().getValue0();
-                    currentImgStore = nextEndR.getValue1().getValue1();
-
-                    // Create continuation segment with proper 3 points
-                    Shape.Segment segment = new Shape.Segment(Shape.Segment.SegmentType.CURVE);
-                    segment.addPoint(end.getX(), end.getY());           // Start from previous end
-                    segment.addPoint(nextControl.getX(), nextControl.getY()); // Control point
-                    segment.addPoint(nextEnd.getX(), nextEnd.getY());         // New end point
-                    curveShape.addSegment(segment);
-
-                    // Update end point for next iteration
-                    end = nextEnd;
-                }
-
-                yield new Triplet<>(new ShapeVal(curveShape), currentStore, currentImgStore);
-
             }
             case ExprDoubleNode exprDoubleNode -> {
                 // Extract double value from the node
@@ -134,7 +76,7 @@ public class ExprInterpreter {
                 VarEnvironment funcDeclEnv = funcData.getValue2();
 
                 // Evaluate each argument
-                List<Object> evaluatedArgs = new ArrayList<>();
+                List<Val> evaluatedArgs = new ArrayList<>();
                 Store currentStore = store;
                 ImgStore currentImgStore = imgStore;
 
@@ -151,7 +93,7 @@ public class ExprInterpreter {
                 // Bind parameterr to new location
                 for (int i = 0; i < paramName.size(); i++) {
                     String param = paramName.get(i);
-                    Object argVal = evaluatedArgs.get(i);
+                    Val argVal = evaluatedArgs.get(i);
 
                     int newLoc = currentStore.nextLocation();
                     newEnvV.declare(param, newLoc); // declare variable in evironnment
@@ -159,12 +101,8 @@ public class ExprInterpreter {
 
                 }
                 // Evaluate function body with new enviroment and updates stores
-                var funcResult = stmtInterpreter.evalStmt(newEnvV, envF, envE, location, funcBody, currentStore, currentImgStore);
-
-
+                var funcResult = StmtInterpreter.evalStmt(newEnvV, envF, envE, location, funcBody, currentStore, currentImgStore);
                 yield new Triplet<>(funcResult.getValue0(), currentStore, currentImgStore);
-
-
             }
             case ExprIdentifierNode exprIdentifierNode -> {
                 // Get variable name
@@ -172,7 +110,7 @@ public class ExprInterpreter {
                 // Get memory location
                 int varLocation = envV.lookup(varName);
                 // Look up the actual
-                Object value = store.lookup(varLocation);
+                Val value = store.lookup(varLocation);
                 yield new Triplet<>(value, store, imgStore);
             }
             case ExprIntNode exprIntNode -> {
@@ -182,115 +120,48 @@ public class ExprInterpreter {
                 yield new Triplet<>(result, store, imgStore);
             }
             case ExprLineNode exprLineNode -> {
-                List<ExprNode> exprs = exprLineNode.getExpressions();
-                if (exprs.size() % 2 != 0 || exprs.size() < 4) {
-                    throw new RuntimeException("Invalid number of expressions in line. Found" + exprs.size());
+                List<ExprNode> exprs = exprLineNode.getExpressions();;
+                if (exprs.size() == 4) {
+                    var startR = evalPoint(exprs.get(0), exprs.get(1), envV, envF, envE, location, store, imgStore ).getValue0();
+                    var endR = evalPoint(exprs.get(2), exprs.get(3), envV, envF, envE, location, store, imgStore ).getValue0();
+                    Shape line = new ShapeLine(startR, endR);
+                    yield new Triplet<>(new ShapeVal(line), store, imgStore);
+                } else {
+                    int line = exprLineNode.getLineNumber();
+                    int col = exprLineNode.getColumnNumber();
+                    ExprCurveNode firstLineNode = new ExprCurveNode(exprs.subList(0, 4), line, col);
+                    var firstLine = evalExpr(envV, envF, envE, location, firstLineNode, store, imgStore).getValue0();
+
+                    ExprCurveNode lastLineNode = new ExprCurveNode(exprs.subList(2, exprs.size()), line, col);
+                    var lastLine = evalExpr(envV, envF, envE, location, lastLineNode, store, imgStore).getValue0();
+                    yield new Triplet<>(new ShapeVal(firstLine, lastLine), store, imgStore);
                 }
-
-                Store currentStore = store;
-                ImgStore currentImgStore = imgStore;
-                Shape lineShape = new Shape();
-
-                // Evaluate start point
-                var startR = evalPoint(exprs.get(0), exprs.get(1), envV, envF, envE, location, currentStore, currentImgStore );
-                Point start = startR.getValue0();
-                currentStore = startR.getValue1().getValue0();
-                currentImgStore = startR.getValue1().getValue1();
-
-                // Evaluate end point
-                var endR = evalPoint(exprs.get(2), exprs.get(3), envV, envF, envE, location, currentStore, currentImgStore );
-                Point end = endR.getValue0();
-                currentStore = endR.getValue1().getValue0();
-                currentImgStore = endR.getValue1().getValue1();
-
-                //create first segment
-                Shape.Segment firstSegment = new Shape.Segment(Shape.Segment.SegmentType.LINE);
-                firstSegment.addPoint(start.getX(), start.getY());
-                firstSegment.addPoint(end.getX(), end.getY());
-                lineShape.addSegment(firstSegment);
-
-                for (int i = 4; i <exprs.size(); i += 2){
-                    // Evaluate next end point
-                    var nextEndR  = evalPoint(exprs.get(i), exprs.get(i+1), envV, envF, envE, location, currentStore, currentImgStore );
-                    Point nextEnd = nextEndR.getValue0();
-                    currentStore = nextEndR.getValue1().getValue0();
-                    currentImgStore = nextEndR.getValue1().getValue1();
-
-                    //Create continuation segments
-                    Shape.Segment segment = new Shape.Segment(Shape.Segment.SegmentType.LINE);
-                    segment.addPoint(end.getX(), end.getY());
-                    segment.addPoint(nextEnd.getX(), nextEnd.getY());
-                    lineShape.addSegment(segment);
-
-                    // Update end point for next iteration
-                    end = nextEnd;
-                }
-
-                yield new Triplet<>(new ShapeVal(lineShape), currentStore, currentImgStore);
-
             }
             case ExprListAccessNode exprListAccessNode -> {
-                String varName = exprListAccessNode.getIdentifier();
                 List<ExprNode> indexExprs = exprListAccessNode.getExpressions();
-
-                // Look up identifer memory location
-                int arrlocation = envV.lookup(varName);
-
-                // fetch actual list from store
-                Object listObj = store.lookup(arrlocation);
-
-                if(!(listObj instanceof ListVal)) {
-                    throw new RuntimeException("Variable " + varName + " is not a list");
-                }
-
-                ListVal listVal = (ListVal) listObj;
-                List<Val> currentList = listVal.getElements();
-
-                // evalaute each index expression and access nestet list
-                Object currentValue = null;
-                Store currentStore = store;
-                ImgStore currentImgStore = imgStore;
-
-                for(int i = 0; i < indexExprs.size(); i++){
-                    ExprNode indexExpr = indexExprs.get(i);
-
-                    // Evaluate index expression
-                    var evalResult = evalExpr(envV, envF, envE, location, indexExpr, store, imgStore);
-                    Object indexVal = evalResult.getValue0();
-                    currentStore = evalResult.getValue1();
-                    currentImgStore = evalResult.getValue2();
-
-                    if (!(indexVal instanceof IntVal)){
-                        throw new RuntimeException("List index must be a number, got " + indexVal);
-                    }
-
-                    int index = ((IntVal) indexVal).getValue();
-
-                    if (index < 0 || index >= currentList.size()){
-                        throw new RuntimeException("List index out of bounds. Got" + index + "For" + varName);
-                    }
-
-                    currentValue = currentList.get(index);
-
-                    // if not on the last index, the value must be another list
-                    if(i < indexExprs.size() - 1){
-                        if(currentValue instanceof ListVal){
-                            currentList = ((ListVal) currentValue).getElements();
-                        } else {
-                            throw new RuntimeException("Nested access on non-list element at index" + index);
-                        }
-                    }
-                }
-
-                Val resultValue;
-
-                // return the final value accessed
-                if (currentValue instanceof ListVal){
-                    resultValue = ((ListVal) currentList).getElements().get(0);
+                String varName = exprListAccessNode.getIdentifier();
+                if (indexExprs.size() == 1) {
+                    // Lookup identifier in environment and store
+                    Val identVal = store.lookup(envV.lookup(varName));
+                    // Get value of expression
+                    Val exprVal = evalExpr(envV, envF, envE, location, indexExprs.getFirst(), store, imgStore).getValue0();
+                    // Get value at index exprVal
+                    Val val = identVal.asList().get(exprVal.asInt());
+                    yield new Triplet<>(val, store, imgStore);
                 } else {
-                    resultValue = (Val) currentValue;
+                    int line = exprListAccessNode.getLineNumber();
+                    int col = exprListAccessNode.getColumnNumber();
+                    // Create a new ExprListAccessNode with one less element in
+                    List<ExprNode> restExprs = indexExprs.subList(0, indexExprs.size() - 1);
+                    ExprListAccessNode restAccess = new ExprListAccessNode(varName, restExprs, line, col);
+                    // Evaluate the new ExprListAccessNode
+                    Val restVal = evalExpr(envV, envF, envE, location, restAccess, store, imgStore).getValue0();
+                    // Evaluate the last expression (e_n)
+                    Val exprVal = evalExpr(envV, envF, envE, location, indexExprs.getLast(), store, imgStore).getValue0();
+                    // Get the value at index exprVal
+                    Val val = restVal.asList().get(exprVal.asInt());
+                    yield new Triplet<>(val, store, imgStore);
                 }
-                yield new Triplet<>(resultValue, currentStore, currentImgStore);
             }
             case ExprListDeclaration exprListDeclaration -> {
                 List<ExprNode> exprs = exprListDeclaration.getExpressions();
@@ -314,74 +185,30 @@ public class ExprInterpreter {
             }
             case ExprPlaceNode exprPlaceNode -> {
                 // Get the shape to place
-                var shapeExpr = exprPlaceNode.getFExpression();
-                var xExpr = exprPlaceNode.getSExpression();
-                var yExpr = exprPlaceNode.getTExpression();
-
+                var shapeExpr = exprPlaceNode.getFirstExpression();
+                var xExpr = exprPlaceNode.getSecondExpression();
+                var yExpr = exprPlaceNode.getThirdExpression();
 
                 // Evaluate the shape
-                var shapeResult = evalExpr(envV, envF, envE, location, shapeExpr, store, imgStore);
-                Object shapeValue = shapeResult.getValue0();
-                Store updatedStore = shapeResult.getValue1();
-                ImgStore updatedImgStore = shapeResult.getValue2();
-
-                Shape shape = (Shape) shapeValue;
-
-                // Evaluate the x and y coordinate
-                var pointPivotResult = evalPoint(xExpr, yExpr, envV, envF, envE, location, updatedStore, updatedImgStore);
-                Point pointPivot = pointPivotResult.getValue0();
-                updatedStore = pointPivotResult.getValue1().getValue0();
-                updatedImgStore = pointPivotResult.getValue1().getValue1();
-
+                Val shapeResult = evalExpr(envV, envF, envE, location, shapeExpr, store, imgStore).getValue0();
+                Point pointPivot = evalPoint(xExpr, yExpr, envV, envF, envE, location, store, imgStore).getValue0();
 
                 // Extract x and y coordinate
                 double x = pointPivot.getX();
                 double y = pointPivot.getY();
 
                 // Calculate the center of the shape
-                double centerX = 0;
-                double centerY = 0;
-                int pointCount = 0;
-
-                for (Shape.Segment segment : shape.getSegments()) {
-                    for (Point point : segment.getCoordinates()) {
-                        centerX += point.getX();
-                        centerY += point.getY();
-                        pointCount++;
-
-                    }
-                }
-
-                if (pointCount > 0) {
-                    centerX /= pointCount;
-                    centerY /= pointCount;
-                }
+                Point center = ShapeHandler.getCenter(shapeResult.asShape());
 
                 // Create a new shape by translating all points
-                Shape placedShape = new Shape();
-                double deltaX = x - centerX;
-                double deltaY = y - centerY;
-
-                for (Shape.Segment segment : shape.getSegments()) {
-                    Shape.Segment newSegment = new Shape.Segment(segment.getType());
-
-                    // Copy text content if it's a text segment
-                    if (segment.getType() == Shape.Segment.SegmentType.TEXT) {
-                        newSegment.setTextContent(segment.getTextContent());
-                    }
-
-                    // Translate all coordinates
-                    for (Point point : segment.getCoordinates()) {
-                        double newX = point.getX() + deltaX;
-                        double newY = point.getY() + deltaY;
-                        newSegment.addPoint(newX, newY);
-
-                    }
-
-                    placedShape.addSegment(newSegment);
+                double deltaX = x - center.getX();
+                double deltaY = y - center.getY();
+                List<Shape> shapes = new ArrayList<>();
+                for (Shape shape : shapeResult.asShape()) {
+                    Shape newShape = shape.addToPoints(deltaX, deltaY);
+                    shapes.add(newShape);
                 }
-
-                yield new Triplet<>(new ShapeVal(placedShape), updatedStore, updatedImgStore);
+                yield new Triplet<>(new ShapeVal(shapes), store, imgStore);
             }
             case ExprRotateNode exprRotateNode -> {
                 // Get the shape to place
@@ -391,65 +218,40 @@ public class ExprInterpreter {
                 var angleExpr = exprRotateNode.getLastExpression();
 
                 // Evaluate the shape
-                var shapeResult = evalExpr(envV, envF, envE, location, shapeExpr, store, imgStore);
-                Object shapeValue = shapeResult.getValue0();
-                Store updatedStore = shapeResult.getValue1();
-                ImgStore updatedImgStore = shapeResult.getValue2();
-
-                Shape shape = (Shape) shapeValue;
+                Val shapeResult = evalExpr(envV, envF, envE, location, shapeExpr, store, imgStore).getValue0();
 
                 // Evaluate the x and y coordinate
-                var pointPivotResult = evalPoint(xExpr, yExpr, envV, envF, envE, location, updatedStore, updatedImgStore);
-                Point pointPivot = pointPivotResult.getValue0();
-                updatedStore = pointPivotResult.getValue1().getValue0();
-                updatedImgStore = pointPivotResult.getValue1().getValue1();
+                Point pointPivot = evalPoint(xExpr, yExpr, envV, envF, envE, location, store, imgStore).getValue0();
 
                 // Extract x and y-coordinates
                 double pivotX = pointPivot.getX();
                 double pivotY = pointPivot.getY();
 
-
                 // Evaluate the angle
-                var angleResult = evalExpr(envV, envF, envE, location, angleExpr, updatedStore, updatedImgStore);
-                Object angleValue = angleResult.getValue0();
-                updatedStore = angleResult.getValue1();
-                updatedImgStore = angleResult.getValue2();
+                Val angleResult = evalExpr(envV, envF, envE, location, angleExpr, store, imgStore).getValue0();
 
                 // Convert the angle from degrees to radians
-                double angleDegrees = ((DoubleVal) angleValue).getValue();
+                double angleDegrees = angleResult.asDouble();
                 double angleRadians = Math.toRadians(angleDegrees);
 
-                // Create a new shape by rotating all points
-                Shape rotatedShape = new Shape();
+                // Create new shapes with rotated points
+                List<Shape> shapes = new ArrayList<>();
+                for (Shape shape : shapeResult.asShape()) {
+                    List<Point> points = new ArrayList<>();
+                    for (Point point : shape.getPoints()) {
+                        double x = point.getX();
+                        double y = point.getY();
 
-                // Apply the rotation
-                for (Shape.Segment segment : shape.getSegments()) {
-                    Shape.Segment newSegment = new Shape.Segment(segment.getType());
-
-                    // Copy text content if it's a text segment
-                    if (segment.getType() == Shape.Segment.SegmentType.TEXT) {
-                        newSegment.setTextContent(segment.getTextContent());
+                        // Apply rotation formula
+                        double cosAngle = Math.cos(angleRadians);
+                        double sinAngle = Math.sin(angleRadians);
+                        double newX = pivotX + (x - pivotX) * cosAngle - (y - pivotY) * sinAngle;
+                        double newY = pivotY + (x - pivotX) * sinAngle + (y - pivotY) * cosAngle;
+                        points.add(new Point(newX, newY));
                     }
-
-                    // Rotate all coordinates
-                    for (Point point : segment.getCoordinates()) {
-                            double x = point.getX();
-                            double y = point.getY();
-
-                            // Apply rotation formula
-                            double cosAngle = Math.cos(angleRadians);
-                            double sinAngle = Math.sin(angleRadians);
-                            double newX = pivotX + (x - pivotX) * cosAngle - (y - pivotY) * sinAngle;
-                            double newY = pivotY + (x - pivotX) * sinAngle + (y - pivotY) * cosAngle;
-
-                            newSegment.addPoint(newX, newY);
-
-                    }
-
-                    rotatedShape.addSegment(newSegment);
+                    shapes.add(shape.createShape(points));
                 }
-
-                yield new Triplet<>(new ShapeVal(rotatedShape), updatedStore, updatedImgStore);
+                yield new Triplet<>(new ShapeVal(shapes), store, imgStore);
             }
             case ExprScaleNode exprScaleNode -> {
                 var shapeExpr = exprScaleNode.getLeftExpression();
@@ -457,57 +259,24 @@ public class ExprInterpreter {
                 var scaleYExpr = exprScaleNode.getRightExpression();
 
                 // Evaluate the shape
-                var shapeResult = evalExpr(envV, envF, envE, location, shapeExpr, store, imgStore);
-                Object shapeValue = shapeResult.getValue0();
-                Store updatedStore = shapeResult.getValue1();
-                ImgStore updatedImgStore = shapeResult.getValue2();
-
-                Shape shape = (Shape) shapeValue;
-
+                Val shapeResult = evalExpr(envV, envF, envE, location, shapeExpr, store, imgStore).getValue0();
 
                 // Evaluate the x and y coordinate
-                var pointPivotResult = evalPoint(scaleXExpr, scaleYExpr, envV, envF, envE, location, updatedStore, updatedImgStore);
-                Point pointFactor = pointPivotResult.getValue0();
-                updatedStore = pointPivotResult.getValue1().getValue0();
-                updatedImgStore = pointPivotResult.getValue1().getValue1();
+                Point pointFactor = evalPoint(scaleXExpr, scaleYExpr, envV, envF, envE, location, store, imgStore).getValue0();
 
                 // Extract x and y-coordinates
                 double scaleFactorX = pointFactor.getX();
                 double scaleFactorY = pointFactor.getY();
 
-
                 // Calculate the center of the shape for scaling around the center
-                double centerX = 0;
-                double centerY = 0;
-                int pointCount = 0;
+                Point center = ShapeHandler.getCenter(shapeResult.asShape());
+                double centerX = center.getX();
+                double centerY = center.getY();
 
-                for (Shape.Segment segment : shape.getSegments()) {
-                    for (Point point : segment.getCoordinates()) {
-                        centerX += point.getX();
-                        centerY += point.getY();
-                        pointCount++;
-
-                    }
-                }
-
-                if (pointCount > 0) {
-                    centerX /= pointCount;
-                    centerY /= pointCount;
-                }
-
-                // Create a new shape by scaling all points around the center
-                Shape scaledShape = new Shape();
-
-                for (Shape.Segment segment : shape.getSegments()) {
-                    Shape.Segment newSegment = new Shape.Segment(segment.getType());
-
-                    // Copy text content if it's a text segment
-                    if (segment.getType() == Shape.Segment.SegmentType.TEXT) {
-                        newSegment.setTextContent(segment.getTextContent());
-                    }
-
-                    // Scale all coordinates
-                    for (Point point : segment.getCoordinates()) {
+                List<Shape> shapes = new ArrayList<>();
+                for (Shape shape : shapeResult.asShape()) {
+                    List<Point> points = new ArrayList<>();
+                    for (Point point : shape.getPoints()) {
                         double x = point.getX();
                         double y = point.getY();
 
@@ -522,15 +291,11 @@ public class ExprInterpreter {
                         // Calculate the new point
                         double newX = centerX + scaledDeltaX;
                         double newY = centerY + scaledDeltaY;
-
-                        newSegment.addPoint(newX, newY);
-
+                        points.add(new Point(newX, newY));
                     }
-
-                    scaledShape.addSegment(newSegment);
+                    shapes.add(shape.createShape(points));
                 }
-
-                yield new Triplet<>(new ShapeVal(scaledShape), updatedStore, updatedImgStore);
+                yield new Triplet<>(new ShapeVal(shapes), store, imgStore);
             }
             case ExprStringNode exprStringNode -> {
                 String value = exprStringNode.getValue();
@@ -539,20 +304,13 @@ public class ExprInterpreter {
             }
             case ExprTextNode exprTextNode -> {
                 var e = exprTextNode.getExpression();
+                Val result = evalExpr(envV, envF, envE, location, e, store, imgStore).getValue0();
 
-                var result = evalExpr(envV, envF, envE, location, e, store, imgStore);
+                String textValue = result.asString();
 
-                Object value = result.getValue0();
-                Store updatedStore = result.getValue1();
-                ImgStore updatedImgStore = result.getValue2();
+                Val shapeVal = new ShapeVal(new ShapeText(textValue));
 
-                String textValue = value.toString();
-
-                Shape textShape = Shape.createText(textValue, 10, 20);
-
-                updatedImgStore.push(textShape);
-
-                yield new Triplet<>(value, updatedStore, updatedImgStore);
+                yield new Triplet<>(shapeVal, store, imgStore);
             }
             case ExprUnopNode exprUnopNode -> {
                 var e1 = exprUnopNode.getExpression();
@@ -569,7 +327,7 @@ public class ExprInterpreter {
         };
     }
 
-    private Val evalUnopExpr(UnOp op, Val val) {
+    private static Val evalUnopExpr(UnOp op, Val val) {
         return switch (op) {
             case NEG -> {
                 if (val instanceof IntVal intVal) {
@@ -590,91 +348,78 @@ public class ExprInterpreter {
         };
     }
 
-    private Val evalBinopExpr(Val v1, BinOp op, Val v2) {
+    private static Val evalBinopExpr(Val v1, BinOp op, Val v2) {
         return switch (op) {
             case ADD -> {
-                if (v1 instanceof IntVal i1 && v2 instanceof IntVal i2) {
-                    yield new IntVal(i1.getValue() + i2.getValue());
-                } else if (v1 instanceof DoubleVal d1 && v2 instanceof DoubleVal d2) {
-                    yield new DoubleVal(d1.getValue() + d2.getValue());
+                if (v1 instanceof IntVal) {
+                    yield new IntVal(v1.asInt() + v2.asInt());
                 } else {
-                    throw new RuntimeException("Unsupported ADD operand types");
+                    yield new DoubleVal(v1.asDouble() + v2.asDouble());
                 }
             }
             case SUB -> {
-                if (v1 instanceof IntVal i1 && v2 instanceof IntVal i2) {
-                    yield new IntVal(i1.getValue() - i2.getValue());
-                } else if (v1 instanceof DoubleVal d1 && v2 instanceof DoubleVal d2) {
-                    yield new DoubleVal(d1.getValue() - d2.getValue());
+                if (v1 instanceof IntVal) {
+                    yield new IntVal(v1.asInt() - v2.asInt());
                 } else {
-                    throw new RuntimeException("Unsupported SUB operand types");
+                    yield new DoubleVal(v1.asDouble() - v2.asDouble());
                 }
             }
             case MUL -> {
-                if (v1 instanceof IntVal i1 && v2 instanceof IntVal i2) {
-                    yield new IntVal(i1.getValue() * i2.getValue());
-                } else if (v1 instanceof DoubleVal d1 && v2 instanceof DoubleVal d2) {
-                    yield new DoubleVal(d1.getValue() * d2.getValue());
+                if (v1 instanceof IntVal) {
+                    yield new IntVal(v1.asInt() * v2.asInt());
                 } else {
-                    throw new RuntimeException("Unsupported MUL operand types");
+                    yield new DoubleVal(v1.asDouble() * v2.asDouble());
                 }
             }
             case DIV -> {
-                if (v1 instanceof IntVal i1 && v2 instanceof IntVal i2) {
-                    yield new IntVal(i1.getValue() / i2.getValue());
-                } else if (v1 instanceof DoubleVal d1 && v2 instanceof DoubleVal d2) {
-                    yield new DoubleVal(d1.getValue() / d2.getValue());
+                if (v1 instanceof IntVal) {
+                    yield new IntVal(v1.asInt() / v2.asInt());
                 } else {
-                    throw new RuntimeException("Unsupported DIV operand types");
+                    yield new DoubleVal(v1.asDouble() / v2.asDouble());
                 }
             }
             case LT -> {
-                if (v1 instanceof IntVal i1 && v2 instanceof IntVal i2) {
-                    yield new BoolVal(i1.getValue() < i2.getValue());
-                } else if (v1 instanceof DoubleVal d1 && v2 instanceof DoubleVal d2) {
-                    yield new BoolVal( d1.getValue() < d2.getValue());
+                if (v1 instanceof IntVal) {
+                    yield new BoolVal(v1.asInt() < v2.asInt());
                 } else {
-                    throw new RuntimeException("Unsupported LT operand types");
+                    yield new BoolVal(v1.asDouble() < v2.asDouble());
                 }
             }
             case EQ -> {
-                if (v1 instanceof IntVal i1 && v2 instanceof IntVal i2) {
-                    yield new BoolVal(i1.getValue() == i2.getValue());
-                } else if (v1 instanceof DoubleVal d1 && v2 instanceof DoubleVal d2) {
-                    yield new BoolVal(d1.getValue() == d2.getValue());
-                } else if (v1 instanceof BoolVal b1 && v2 instanceof BoolVal b2) {
-                    yield  new BoolVal(b1.getValue() == b2.getValue());
-                } else if (v1 instanceof StringVal s1 && v2 instanceof StringVal s2) {
-                    yield new BoolVal(s1.getValue().equals(s2.getValue()));
-                } else {
-                    yield new BoolVal(false);
+                switch (v1) {
+                    case IntVal intVal -> {
+                        yield new BoolVal(v1.asInt() == v2.asInt());
+                    }
+                    case DoubleVal doubleVal -> {
+                        yield new BoolVal(v1.asDouble() == v2.asDouble());
+                    }
+                    case BoolVal boolVal -> {
+                        yield new BoolVal(v1.asBool() == v2.asBool());
+                    }
+                    case StringVal stringVal -> {
+                        yield new BoolVal(v1.asString().equals(v2.asString()));
+                    }
+                    default -> throw new RuntimeException("No");
                 }
             }
-            case AND -> {
-                if (v1 instanceof BoolVal b1 && v2 instanceof BoolVal b2) {
-                    yield new BoolVal(b1.getValue() && b2.getValue());
-                } else {
-                    throw new RuntimeException("Unsupported AND operand types");
-                }
-            }
+            case AND -> new BoolVal(v1.asBool() && v2.asBool());
             case CONCAT -> {
-                if (v1 instanceof StringVal s1 && v2 instanceof StringVal s2) {
-                    yield new StringVal(s1.getValue() + s2.getValue());
-                } else if (v1 instanceof ShapeVal shape1 && v2 instanceof ShapeVal shape2) {
-                    yield new ShapeVal(shape1.getShape().concat(shape2.getShape()));
-                } else if (v1 instanceof ListVal list1 && v2 instanceof ListVal list2) {
-                    List<Val> result = new ArrayList<>(list1.getElements());
-                    result.addAll(list2.getElements());
-                    yield new ListVal(result);
+                if (v1 instanceof StringVal) {
+                    yield new StringVal(v1.asString() + v2.asString());
+                } else if (v1 instanceof ListVal) {
+                    List<Val> elements = new ArrayList<>(v1.asList());
+                    elements.addAll(v2.asList());
+                    yield new ListVal(elements);
                 } else {
-                    throw new RuntimeException("Unsupported CONCAT operand types");
+                    List<Shape> elements = new ArrayList<>(v1.asShape());
+                    elements.addAll(v2.asShape());
+                    yield new ShapeVal(elements);
                 }
             }
-            default -> throw new RuntimeException("Unknown operator: " + op);
         };
     }
 
-    private Pair<Point, Pair<Store, ImgStore>> evalPoint(
+    private static Triplet<Point, Store, ImgStore> evalPoint(
             ExprNode xExpr, ExprNode yExpr,
             VarEnvironment envV, FunEnvironment envF, EventEnvironment envE,
             int location, Store store, ImgStore imgStore
@@ -685,12 +430,8 @@ public class ExprInterpreter {
             throw new RuntimeException("Expected DoubleVal for x-coordinate, but got: " + xRes.getValue0());
         }
 
-        Store currentStore = xRes.getValue1();
-        ImgStore currentImgStore = xRes.getValue2();
-
-
         // Evaluate y expression
-        var yRes = evalExpr(envV, envF, envE, location, yExpr, currentStore, currentImgStore );
+        var yRes = evalExpr(envV, envF, envE, location, yExpr, store, imgStore );
         if(!(yRes.getValue0() instanceof DoubleVal yVal)) {
             throw new RuntimeException("Expected DoubleVal for y-coordinate, but got: " + yRes.getValue0());
         }
@@ -699,8 +440,7 @@ public class ExprInterpreter {
         Point point = new Point(xVal.getValue(), yVal.getValue());
 
         // Return point an update enviroments
-        return new Pair<>(point, new Pair<>(yRes.getValue1(), yRes.getValue2()));
+        return new Triplet<>(point, yRes.getValue1(), yRes.getValue2());
 
     }
 }
-

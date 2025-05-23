@@ -22,11 +22,9 @@ public class ProgramInterpreter {
 
         DefNode defNode = progNode.getDefinition();
 
-        var result = new DefInterpreter().evalDef(envV, funV, eventV, location, defNode, store, stackImg);
+        var result = DefInterpreter.evalDef(envV, funV, eventV, location, defNode, store, stackImg);
 
-        var updatedImg = result.getValue1();
-
-        return updatedImg;
+        return result.getValue1();
 
 
     }
