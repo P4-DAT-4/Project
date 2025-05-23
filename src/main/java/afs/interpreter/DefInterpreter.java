@@ -12,10 +12,12 @@ public class DefInterpreter {
 
     private final StmtInterpreter stmtInterpreter;
     private final ExprInterpreter exprInterpreter;
+    private final EventInterpreter eventInterpreter;
 
-    public DefInterpreter(StmtInterpreter stmtInterpreter, ExprInterpreter exprInterpreter) {
+    public DefInterpreter(StmtInterpreter stmtInterpreter, ExprInterpreter exprInterpreter, EventInterpreter eventInterpreter) {
         this.stmtInterpreter = stmtInterpreter;
         this.exprInterpreter = exprInterpreter;
+        this.eventInterpreter = eventInterpreter;
     }
 
 
@@ -70,7 +72,7 @@ public class DefInterpreter {
                 var nextEvent = defVisualizeNode.getEvent();
 
                 // Update the event environment
-                var updatedEnvE = new EventInterpreter().evalEvent(nextEvent, envE);
+                var updatedEnvE = eventInterpreter.evalEvent(nextEvent, envE);
 
                 // Create function call
                 var functionCallAsStmt = new StmtFunctionCallNode(funName, args, -1, -1);

@@ -1,5 +1,9 @@
 package afs.interpreter;
 
+import afs.interpreter.expressions.BoolVal;
+import afs.interpreter.expressions.IntVal;
+import afs.interpreter.expressions.ListVal;
+import afs.interpreter.expressions.Val;
 import afs.interpreter.interfaces.*;
 import afs.nodes.expr.ExprNode;
 import afs.nodes.stmt.*;
@@ -32,7 +36,7 @@ public class StmtInterpreter {
 
                 // Evaluate the expression
                 var exprResult = exprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore);
-                Object value = exprResult.getValue0();
+                Val value = (Val) exprResult.getValue0();
                 var store2 = exprResult.getValue1();
                 var imgStore2 = exprResult.getValue2();
 
@@ -136,12 +140,12 @@ public class StmtInterpreter {
 
                 // Evaluate the expression
                 var exprResult = exprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore);
-                Object value = exprResult.getValue0();
+                BoolVal value = (BoolVal) exprResult.getValue0();
                 var store2 = exprResult.getValue1();
                 var imgStore2 = exprResult.getValue2();
 
                 // Check if the expression is true or false
-                if ((boolean) value) {
+                if (value.getValue()) {
                     // Evaluate the then statement
                     yield evalStmt(envV, envF, envE, location, thenStmt, store2, imgStore2);
                 } else {
@@ -156,21 +160,21 @@ public class StmtInterpreter {
 
                 // Evaluate the variable
                 int varLocation = envV.lookup(varName);
-                Object listValue = store.lookup(varLocation);
+                Val listValue = (ListVal) store.lookup(varLocation);
 
-                if (!(listValue instanceof List<?> originalList)) {
+                if (!(listValue instanceof ListVal originalList)) {
                     throw new RuntimeException("Variable " + varName + " is not a list");
                 }
 
                 // Evaluate all index expressions
-                List<Integer> indices = new ArrayList<>();
+                List<IntVal> indices = new ArrayList<>();
                 var currentStore = store;
                 var currentImgStore = imgStore;
 
                 for (ExprNode indexExpr : indexExprs) {
                     var exprResult = exprInterpreter.evalExpr(envV, envF, envE, location, indexExpr, currentStore, currentImgStore);
                     Object indexValue = exprResult.getValue0();
-                    if (!(indexValue instanceof Integer i)) {
+                    if (!(indexValue instanceof IntVal i)) {
                         throw new RuntimeException("Index expression is not an integer");
                     }
                     indices.add(i);
@@ -180,12 +184,12 @@ public class StmtInterpreter {
 
                 // Evaluate the value expression
                 var valueResult = exprInterpreter.evalExpr(envV, envF, envE, location, valueExpr, currentStore, currentImgStore);
-                Object value2 = valueResult.getValue0();
+                Val value2 = (Val) valueResult.getValue0();
                 var store2 = valueResult.getValue1();
                 var imgStore2 = valueResult.getValue2();
 
                 // Perform nested update
-                List<Object> updatedList = updateNestedList(originalList, indices, value2);
+                ListVal updatedList = updateNestedList(originalList, indices, value2);
 
                 // Store updated list back
                 store2.store(varLocation, updatedList);
@@ -197,7 +201,7 @@ public class StmtInterpreter {
 
                 // Evaluate the expression
                 var exprResult = exprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore);
-                Object value = exprResult.getValue0();
+                Val value = (Val) exprResult.getValue0();
                 var store2 = exprResult.getValue1();
                 var imgStore2 = exprResult.getValue2();
 
@@ -211,12 +215,12 @@ public class StmtInterpreter {
 
                 // Evaluate the expression
                 var exprResult = exprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore);
-                Object value = exprResult.getValue0();
+                BoolVal value = (BoolVal) exprResult.getValue0();
                 var store2 = exprResult.getValue1();
                 var imgStore2 = exprResult.getValue2();
 
                 // Check if the expression is true or false
-                if ((boolean) value) {
+                if ( value.getValue() )  {
                     // Evaluate the body statement
                     var result = evalStmt(envV, envF, envE, location, bodyStmt, store2, imgStore2);
                     var store3 = result.getValue1();
@@ -231,29 +235,64 @@ public class StmtInterpreter {
         };
     }
     @SuppressWarnings("unchecked")
-    private List<Object> updateNestedList(List<?> list, List<Integer> indices, Object value) {
+//    private List<Object> updateNestedList(List<?> list, List<Integer> indices, Object value) {
+//        if (indices.isEmpty()) {
+//            throw new IllegalArgumentException("Empty index list.");
+//        }
+//
+//        int index = indices.getFirst();
+//
+//        if (indices.size() == 1) {
+//            // Base case: just set the value
+//            List<Object> copy = new ArrayList<>(list);
+//            copy.set(index, value);
+//            return copy;
+//        } else {
+//            // Recursive case: descend
+//            Object sublist = list.get(index);
+//            if (!(sublist instanceof List<?> subListCasted)) {
+//                throw new RuntimeException("Expected nested list at index " + index);
+//            }
+//
+//            List<Object> updatedSublist = updateNestedList(subListCasted, indices.subList(1, indices.size()), value);
+//            List<Object> copy = new ArrayList<>(list);
+//            copy.set(index, updatedSublist);
+//            return copy;
+//        }
+//    }
+
+
+    private ListVal updateNestedList(ListVal listVal, List<IntVal> indices, Val newValue) {
         if (indices.isEmpty()) {
             throw new IllegalArgumentException("Empty index list.");
         }
 
-        int index = indices.getFirst();
+        int index = indices.get(0).getValue(); // or indices.get(0)
+
+        List<Val> elements = listVal.getElements();
+        List<Val> updatedElements = new ArrayList<>(elements);
+
+        if (index < 0 || index >= updatedElements.size()) {
+            throw new IndexOutOfBoundsException("Index " + index + " out of bounds.");
+        }
 
         if (indices.size() == 1) {
-            // Base case: just set the value
-            List<Object> copy = new ArrayList<>(list);
-            copy.set(index, value);
-            return copy;
+            // Base case: set the new value
+            updatedElements.set(index, newValue);
         } else {
-            // Recursive case: descend
-            Object sublist = list.get(index);
-            if (!(sublist instanceof List<?> subListCasted)) {
+            Val subVal = updatedElements.get(index);
+            if (!(subVal instanceof ListVal nestedList)) {
                 throw new RuntimeException("Expected nested list at index " + index);
             }
 
-            List<Object> updatedSublist = updateNestedList(subListCasted, indices.subList(1, indices.size()), value);
-            List<Object> copy = new ArrayList<>(list);
-            copy.set(index, updatedSublist);
-            return copy;
+            // Recursive case
+            ListVal updatedSubList = updateNestedList(nestedList, indices.subList(1, indices.size()), newValue);
+            updatedElements.set(index, updatedSubList);
         }
+
+        return new ListVal(updatedElements);
     }
+
+
+
 }

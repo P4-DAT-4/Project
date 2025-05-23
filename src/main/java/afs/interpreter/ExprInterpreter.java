@@ -38,7 +38,7 @@ public class ExprInterpreter {
                 var r2 = evalExpr(envV, envF, envE, location, e2, store, imgStore);
 
                 var op = exprBinopNode.getOp();
-                var val = evalBinopExpr((Val) r1.getValue0(), op, (Val) r2.getValue0());
+                Val val = evalBinopExpr((Val) r1.getValue0(), op, (Val) r2.getValue0());
                 yield new Triplet<>(val, r2.getValue1(), r2.getValue2());
             }
             case ExprBoolNode exprBoolNode -> {
