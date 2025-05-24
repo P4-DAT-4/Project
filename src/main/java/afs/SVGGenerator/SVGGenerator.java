@@ -27,9 +27,6 @@ public class SVGGenerator {
         private final double[][] points;
 
         public Polyline(double[][] points) {
-            if (points.length < 2) {
-                throw new IllegalArgumentException("Points array must have at least 2 points");
-            }
             this.points = points.clone();
         }
 
@@ -48,30 +45,8 @@ public class SVGGenerator {
     public static class PolyCurve implements SVGDrawable {
         private final double[][] points;
         private final double[][] controlPoints;
-        private boolean closed = false;
 
         public PolyCurve(double[][] points, double[][] controlPoints) {
-            if (points.length < 2) {
-                throw new IllegalArgumentException("Points array must have at least 2 points");
-            }
-            if (controlPoints.length < 1) {
-                throw new IllegalArgumentException("ControlPoints array must have at least 1 point");
-            }
-            if (controlPoints.length != points.length - 1) {
-                throw new IllegalArgumentException("For n points, n-1 control points are required");
-            }
-
-            for (double[] point : points) {
-                if (point.length != 2) {
-                    throw new IllegalArgumentException("Each point must be exactly [x,y]");
-                }
-            }
-            for (double[] cp : controlPoints) {
-                if (cp.length != 2) {
-                    throw new IllegalArgumentException("Each control point must be exactly [cx,cy]");
-                }
-            }
-
             this.points = points.clone();
             this.controlPoints = controlPoints.clone();
         }
@@ -88,18 +63,6 @@ public class SVGGenerator {
                         points[i + 1][0], points[i + 1][1]
                 );
             }
-
-            if (closed) {
-                if (closed && points.length > 2) {
-                    path.quadTo(
-                            controlPoints[controlPoints.length - 1][0],
-                            controlPoints[controlPoints.length - 1][1],
-                            points[0][0], points[0][1]
-                    );
-                }
-                path.closePath();
-            }
-
             g.draw(path);
         }
     }
@@ -119,14 +82,31 @@ public class SVGGenerator {
         }
 
         public Text(double[] position, String content) {
-            this(position, content, 14);
+            this(position, content, 12);
         }
 
         @Override
         public void draw(SVGGraphics2D g) {
             g.setPaint(Color.BLACK);
-            g.setFont(new Font("Courier New", Font.PLAIN, fontSize));
-            g.drawString(content, (float) position[0], (float) position[1]);
+            Font font = new Font("Courier New", Font.PLAIN, fontSize);
+            g.setFont(font);
+
+            // Get font metrics to calculate text dimensions
+            FontMetrics metrics = g.getFontMetrics(font);
+
+            // Calculate the width and height of the text
+            int textWidth = metrics.stringWidth(content);
+            int textHeight = metrics.getHeight();
+
+            // Calculate the centered position
+            // Subtract half the width from x to center horizontally
+            float centeredX = (float) position[0] - (textWidth / 2.0f);
+
+            // Add half the ascent to y to center vertically
+            float centeredY = (float) position[1] + (textHeight/ 2.0f);
+
+            // Draw the text at the centered position
+            g.drawString(content, centeredX, centeredY);
         }
     }
 
@@ -159,7 +139,6 @@ public class SVGGenerator {
     private static void generateImage(List<Shape> shapes, double width, double height, String filename) throws IOException {
         SVGGraphics2D g = new SVGGraphics2D((int) Math.ceil(width), (int) Math.ceil(height));
 
-        // Optional background
         g.setPaint(Color.WHITE);
         g.fill(new Rectangle2D.Double(0, 0, width, height));
 
