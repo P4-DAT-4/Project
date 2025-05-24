@@ -372,14 +372,16 @@ DeclBlock<out StmtNode stmt> = (. List<StmtNode> decls = new ArrayList<>(); .)
 
 Decl<out StmtNode decl> = (. decl = new StmtSkipNode(); .)
     ( DeclDecl<out decl>
-    | DeclIf<out decl> )
+    | DeclIf<out decl>
+    | DeclExpr<out ExprNode expr> ";" (. decl = new StmtReturnNode(expr, t.line, t.col); .) )
 .
 
-DeclDecl<out StmtNode decl> =
+DeclDecl<out StmtNode decl> = (. ExprNode declExpr = null; .)
     DeclType<out TypeNode type>
     IDENT (. int line = t.line; int col = t.col; String ident = t.val; .)
     "="
-    DeclExpr<out ExprNode declExpr> (. decl = new StmtDeclarationNode(type, ident, declExpr, null, line, col); .)
+    ( DeclExpr<out declExpr>
+    | Expr<out declExpr> ) (. decl = new StmtDeclarationNode(type, ident, declExpr, null, line, col); .)
     ";"
 .
 
@@ -401,8 +403,7 @@ DeclExpr<out ExprNode declExpr> = (. declExpr = null; .)
     | Curve<out declExpr>
     | Place<out declExpr>
     | Scale<out declExpr>
-    | Rotate<out declExpr>
-    | Expr<out declExpr> )
+    | Rotate<out declExpr> )
 .
 
 Text<out ExprNode declExpr> =
