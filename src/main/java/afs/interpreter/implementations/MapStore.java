@@ -14,23 +14,16 @@ public class MapStore implements Store {
     }
 
     @Override
-    public void store(int location, Val value) {
+    public void declare(int location, Val value) {
         _environment.put(location, value);
     }
 
     @Override
-    public Object lookup(int location) {
+    public Val lookup(int location) {
         boolean found = _environment.containsKey(location);
         if (!found) {
             throw new RuntimeException(String.format("Location '%d' not found in Store", location));
         }
         return _environment.get(location);
     }
-
-    @Override
-    public int nextLocation() {
-        return 0;
-    }
-
-
 }

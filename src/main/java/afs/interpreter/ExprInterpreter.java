@@ -4,6 +4,7 @@ import afs.interpreter.expressions.*;
 import afs.interpreter.expressions.shape.*;
 import afs.interpreter.interfaces.*;
 import afs.nodes.expr.*;
+import afs.nodes.stmt.StmtFunctionCallNode;
 import afs.nodes.stmt.StmtNode;
 import org.javatuples.Triplet;
 
@@ -64,45 +65,56 @@ public class ExprInterpreter {
             case ExprFunctionCallNode exprFunctionCallNode -> {
                 String funcName = exprFunctionCallNode.getIdentifier();
                 List<ExprNode> args = exprFunctionCallNode.getArguments();
+                var funcData = envF.lookup(funcName);
 
-                //Look up function definition
-                Triplet<StmtNode, List<String>, VarEnvironment> funcData = envF.lookup(funcName);
-                if (funcData == null) {
-                    throw new RuntimeException("Undefined function: " + funcName);
+                // Base case
+                if (args.isEmpty()) {
+                    // Check for events
+                    EventHandler.check(envV, envF, envE, location, funcName, store, imgStore);
+                    // Call function by evaluating the statement in the function
+                    StmtNode funcBody = funcData.getValue0();
+                    yield StmtInterpreter.evalStmt(envV.newScope(), envF, envE, location, funcBody, store, imgStore);
+                } else {
+                    int line = exprFunctionCallNode.getLineNumber();
+                    int col = exprFunctionCallNode.getColumnNumber();
+
+                    // Get parameters
+                    List<String> paramNames = funcData.getValue1();
+
+                    // Create a new environment to store a parameter in
+                    VarEnvironment newEnvV = envV.newScope();
+
+                    // Get expression e_n and evaluate it
+                    ExprNode exprE1 = args.getLast();
+                    Val exprVal = ExprInterpreter.evalExpr(envV, envF, envE, location, exprE1, store, imgStore).getValue0();
+
+                    // Create a new function call with one less argument
+                    ExprNode functionCallNode = new ExprFunctionCallNode(funcName, args.subList(1, args.size()), line, col);
+
+                    // Index of the last argument
+                    int n = args.size() -1;
+
+                    // Check if e_n evaluates to a list
+                    if (exprVal instanceof ListVal) {
+                        // If e_n is not an identifier, throw an error as we cannot pass an array literal, for example
+                        if (!(exprE1 instanceof ExprIdentifierNode)) {
+                            throw new RuntimeException("Arrays are call-by-reference - cannot pass an array literal or an index of an array");
+                        }
+                        // Declare a new variable in the environment, using the name of the parameter, and make it point to the location of the identifier
+                        newEnvV.declare(paramNames.get(n), envV.lookup(((ExprIdentifierNode) exprE1).getIdentifier()));
+
+                        // Evaluate the new function call with one less argument
+                        yield evalExpr(newEnvV, envF, envE, location, functionCallNode, store, imgStore);
+                    } else { // If e_n is not a list
+                        // Declare a new parameter, assign it the location l
+                        newEnvV.declare(paramNames.get(n), location);
+                        // Store the value of expression e_n at the location
+                        store.declare(location, exprVal);
+
+                        // Evaluate the new function call with one less argument and with new location
+                        yield evalExpr(newEnvV, envF, envE, ++location, functionCallNode, store, imgStore);
+                    }
                 }
-                // Extract function components
-                StmtNode funcBody = funcData.getValue0();
-                List<String> paramName = funcData.getValue1();
-                VarEnvironment funcDeclEnv = funcData.getValue2();
-
-                // Evaluate each argument
-                List<Val> evaluatedArgs = new ArrayList<>();
-                Store currentStore = store;
-                ImgStore currentImgStore = imgStore;
-
-                for (ExprNode argExpr : args) {
-                    var argResult = evalExpr(funcDeclEnv, envF, envE, location, argExpr, currentStore, currentImgStore);
-                    evaluatedArgs.add(argResult.getValue0());
-                    currentStore = argResult.getValue1();
-                    currentImgStore = argResult.getValue2();
-                }
-
-                 //Create a new scope from function declaration enviroment
-                VarEnvironment newEnvV = funcDeclEnv.newScope();
-
-                // Bind parameterr to new location
-                for (int i = 0; i < paramName.size(); i++) {
-                    String param = paramName.get(i);
-                    Val argVal = evaluatedArgs.get(i);
-
-                    int newLoc = currentStore.nextLocation();
-                    newEnvV.declare(param, newLoc); // declare variable in evironnment
-                    currentStore.store(newLoc, argVal);
-
-                }
-                // Evaluate function body with new enviroment and updates stores
-                var funcResult = StmtInterpreter.evalStmt(newEnvV, envF, envE, location, funcBody, currentStore, currentImgStore);
-                yield new Triplet<>(funcResult.getValue0(), currentStore, currentImgStore);
             }
             case ExprIdentifierNode exprIdentifierNode -> {
                 // Get variable name
@@ -129,10 +141,10 @@ public class ExprInterpreter {
                 } else {
                     int line = exprLineNode.getLineNumber();
                     int col = exprLineNode.getColumnNumber();
-                    ExprCurveNode firstLineNode = new ExprCurveNode(exprs.subList(0, 4), line, col);
+                    ExprNode firstLineNode = new ExprLineNode(exprs.subList(0, 4), line, col);
                     var firstLine = evalExpr(envV, envF, envE, location, firstLineNode, store, imgStore).getValue0();
 
-                    ExprCurveNode lastLineNode = new ExprCurveNode(exprs.subList(2, exprs.size()), line, col);
+                    ExprNode lastLineNode = new ExprLineNode(exprs.subList(2, exprs.size()), line, col);
                     var lastLine = evalExpr(envV, envF, envE, location, lastLineNode, store, imgStore).getValue0();
                     yield new Triplet<>(new ShapeVal(firstLine, lastLine), store, imgStore);
                 }
@@ -179,7 +191,7 @@ public class ExprInterpreter {
                 ListVal result = new ListVal(results);
 
                 // store result
-                currentStore.store(location, result);
+                currentStore.declare(location, result);
 
                 yield new Triplet<>(result, currentStore, currentImgStore);
             }

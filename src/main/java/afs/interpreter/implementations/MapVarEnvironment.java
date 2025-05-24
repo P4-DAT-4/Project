@@ -37,27 +37,7 @@ public class MapVarEnvironment implements VarEnvironment {
     }
 
     @Override
-    public void set(String ident, int location) {
-    // Check if the variable is declared in the current scope
-        if (_environment.containsKey(ident)) {
-        // Update the variable's location in the current scope
-            _environment.put(ident, location);
-        } else if (parent != null) {
-            // If not found locally, recursively try to set in the parent scope
-            parent.set(ident, location);
-        } else {
-            throw new RuntimeException("Cannot set undeclared variable '" + ident + "'");
-        }
-    }
-
-    @Override
-    public boolean isLocal(String ident) {
-        return _environment.containsKey(ident);
-    }
-
-    @Override
     public VarEnvironment newScope() {
-        // Creates a new nested scope with the current scope as its parent
         return new MapVarEnvironment(this);
     }
 }

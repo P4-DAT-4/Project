@@ -2,7 +2,6 @@ package afs.semantic_analysis;
 
 import afs.nodes.prog.ProgNode;
 import afs.semantic_analysis.exceptions.TypeCheckException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import setup.ASTGenerator;

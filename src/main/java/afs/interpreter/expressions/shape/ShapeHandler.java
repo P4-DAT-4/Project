@@ -1,7 +1,5 @@
 package afs.interpreter.expressions.shape;
 
-import afs.interpreter.expressions.ShapeVal;
-
 import java.util.List;
 
 public class ShapeHandler {

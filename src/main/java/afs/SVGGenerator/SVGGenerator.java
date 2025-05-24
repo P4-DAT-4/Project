@@ -1,21 +1,19 @@
 package afs.SVGGenerator;
 
 import afs.interpreter.expressions.Val;
-import afs.interpreter.expressions.shape.ShapeCurve;
-import afs.interpreter.expressions.shape.ShapeLine;
-import afs.interpreter.expressions.shape.ShapeText;
+import afs.interpreter.expressions.shape.Point;
+import afs.interpreter.expressions.shape.Shape;
+import afs.interpreter.expressions.shape.*;
 import afs.interpreter.interfaces.ImgStore;
 import org.jfree.graphics2d.svg.SVGGraphics2D;
 import org.jfree.graphics2d.svg.SVGUtils;
-import afs.interpreter.expressions.shape.Point;
-import afs.interpreter.expressions.shape.Shape;
+
+import java.awt.*;
 import java.awt.geom.Path2D;
+import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.geom.Rectangle2D;
 
 
 public class SVGGenerator {
@@ -170,7 +168,7 @@ public class SVGGenerator {
             drawable.draw(g);
         }
 
-        File outputFile = new File(filename);
+        File outputFile = new File(filename + ".svg");
         SVGUtils.writeToSVG(outputFile, g.getSVGElement());
     }
 

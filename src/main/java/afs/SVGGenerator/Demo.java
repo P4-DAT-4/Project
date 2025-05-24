@@ -1,15 +1,12 @@
 package afs.SVGGenerator;
 
 import afs.interpreter.expressions.ShapeVal;
-import afs.interpreter.expressions.Val;
 import afs.interpreter.expressions.shape.Point;
 import afs.interpreter.expressions.shape.Shape;
 import afs.interpreter.expressions.shape.ShapeLine;
 import afs.interpreter.implementations.StackImgStore;
 import afs.interpreter.interfaces.ImgStore;
 
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 public class Demo {

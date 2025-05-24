@@ -1,11 +1,12 @@
 package setup;
 
+import afs.nodes.expr.*;
 import afs.nodes.prog.ProgNode;
 import afs.syntactic_analysis.Parser;
 import afs.syntactic_analysis.Scanner;
+
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
-import afs.nodes.expr.*;
 
 public class ASTGenerator {
     public static ProgNode GenerateFromString(String input) {

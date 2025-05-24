@@ -7,7 +7,6 @@ import afs.nodes.stmt.StmtFunctionCallNode;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
-import afs.interpreter.interfaces.*;
 import java.util.List;
 
 public class DefInterpreter {
@@ -32,7 +31,7 @@ public class DefInterpreter {
                 envV.declare(varName, location);
 
                 // Update the store
-                store.store(location, value);
+                store.declare(location, value);
 
                 // Evaluate the definition and return
                 yield evalDef(envV, envF, envE, ++location, nextDef, store, imgStore);

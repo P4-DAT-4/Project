@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'application'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 application {
@@ -56,6 +57,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
     implementation 'org.javatuples:javatuples:1.2'
     implementation("org.jfree:jfreesvg:3.4.3")
+    implementation 'org.javatuples:javatuples:1.2'
 }
 
 test {

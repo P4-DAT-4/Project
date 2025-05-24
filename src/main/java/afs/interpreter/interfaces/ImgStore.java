@@ -6,4 +6,5 @@ public interface ImgStore {
     void push(ShapeVal shape);
     ShapeVal pop();
     boolean isEmpty();
+    int size();
 }

@@ -3,7 +3,6 @@ package afs.interpreter.interfaces;
 import afs.interpreter.expressions.Val;
 
 public interface Store {
-    void store(int location, Val value);
+    void declare(int location, Val value);
     Val lookup(int location);
-    int nextLocation();
 }

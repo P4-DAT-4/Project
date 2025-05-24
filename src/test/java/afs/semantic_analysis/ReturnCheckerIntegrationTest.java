@@ -1,9 +1,7 @@
 package afs.semantic_analysis;
 
 import afs.nodes.prog.ProgNode;
-import afs.semantic_analysis.exceptions.TypeCheckException;
 import afs.semantic_analysis.exceptions.UnreachableCodeException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import setup.ASTGenerator;
 
@@ -51,6 +49,6 @@ public class ReturnCheckerIntegrationTest extends ReturnChecker {
         UnreachableCodeException exception = assertThrows(UnreachableCodeException.class, () -> {
             checkReturn(prog);
         });
-        assertEquals("Code after a return is unreachable: line 1, column 33", exception.getMessage());
+        assertEquals("Code after a return is unreachable: line 4, column 1", exception.getMessage());
     }
 }

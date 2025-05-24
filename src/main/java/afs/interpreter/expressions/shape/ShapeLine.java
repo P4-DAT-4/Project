@@ -1,6 +1,5 @@
 package afs.interpreter.expressions.shape;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public final class ShapeLine extends Shape {

@@ -47,6 +47,13 @@ public interface Val {
         }
         throw new UnsupportedOperationException("Not a ShapeVal");
     }
+
+    default ShapeVal asShapeVal(){
+        if (this instanceof ShapeVal) {
+            return ((ShapeVal) this);
+        }
+        throw new UnsupportedOperationException("Not a ShapeVal");
+    }
 }
 
 

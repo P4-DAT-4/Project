@@ -1,9 +1,13 @@
 package afs;
 
 // import afs.astprinter.RecursiveGraphvizPrinter;
+
+import afs.SVGGenerator.SVGGenerator;
+import afs.interpreter.ProgramInterpreter;
+import afs.interpreter.interfaces.ImgStore;
+import afs.nodes.prog.ProgNode;
 import afs.semantic_analysis.ReturnChecker;
 import afs.semantic_analysis.TypeChecker;
-import afs.nodes.prog.ProgNode;
 import afs.syntactic_analysis.Parser;
 import afs.syntactic_analysis.Scanner;
 
@@ -45,12 +49,18 @@ public class Main {
                 ReturnChecker returnChecker = new ReturnChecker();
                 returnChecker.checkReturn(program);
 
-                if (printFile != null) {
-//                    new RecursiveGraphvizPrinter().print(program, printFile, true);
-                    System.out.println("AST printed to: " + printFile);
-                } else {
+                ImgStore imgStore = ProgramInterpreter.evalProg(program);
+                System.out.println("Imgstore size: " + imgStore.size());
 
-                }
+                SVGGenerator.generateToFile(imgStore, 400, 200, "test1_");
+
+//                if (printFile != null) {
+////                    new RecursiveGraphvizPrinter().print(program, printFile, true);
+//                    System.out.println("AST printed to: " + printFile);
+//                } else {
+//                    // Interpret
+//
+//                }
             }
         } catch (Exception e) {
             System.out.println("Exception was thrown:");
