@@ -4,7 +4,6 @@ import afs.interpreter.expressions.IntVal;
 import afs.interpreter.expressions.ListVal;
 import afs.interpreter.expressions.Val;
 import afs.interpreter.interfaces.*;
-import afs.nodes.expr.ExprFunctionCallNode;
 import afs.nodes.expr.ExprIdentifierNode;
 import afs.nodes.expr.ExprNode;
 import afs.nodes.stmt.*;

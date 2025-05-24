@@ -4,7 +4,6 @@ import afs.interpreter.expressions.*;
 import afs.interpreter.expressions.shape.*;
 import afs.interpreter.interfaces.*;
 import afs.nodes.expr.*;
-import afs.nodes.stmt.StmtFunctionCallNode;
 import afs.nodes.stmt.StmtNode;
 import org.javatuples.Triplet;
 
