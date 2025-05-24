@@ -24,7 +24,7 @@ public class Demo {
     public static void main(String[] args) {
         ImgStore imgStore = new StackImgStore();
 
-        // 1. Simple line
+        // 21 Simple line
         Shape line = new ShapeLine(scalePoint(15, 40), scalePoint(65, 40));
         ShapeVal lineWithText = new ShapeVal(List.of(
                 line,
@@ -32,7 +32,7 @@ public class Demo {
         ));
         imgStore.push(lineWithText);
 
-        // 2. Square made of lines
+        // 20 Square made of lines
         List<Shape> squareShapes = new ArrayList<>();
         squareShapes.add(new ShapeLine(scalePoint(20, 15), scalePoint(60, 15)));
         squareShapes.add(new ShapeLine(scalePoint(60, 15), scalePoint(60, 55)));
@@ -42,7 +42,7 @@ public class Demo {
         ShapeVal squareVal = new ShapeVal(squareShapes);
         imgStore.push(squareVal);
 
-        // 3. Circle approximation using curves
+        // 19 Circle approximation using curves
         List<Shape> circleShapes = new ArrayList<>();
         circleShapes.add(new ShapeCurve(
                 scalePoint(40, 15), scalePoint(60, 15), scalePoint(60, 35)));
@@ -52,11 +52,10 @@ public class Demo {
                 scalePoint(40, 55), scalePoint(20, 55), scalePoint(20, 35)));
         circleShapes.add(new ShapeCurve(
                 scalePoint(20, 35), scalePoint(20, 15), scalePoint(40, 15)));
-        circleShapes.add(new ShapeText("Circle", List.of(scalePoint(40, 60))));
         ShapeVal circleVal = new ShapeVal(circleShapes);
         imgStore.push(circleVal);
 
-        // 4. Bezier curve
+        // 18 Bezier curve
         Shape bezier = new ShapeCurve(
                 scalePoint(15, 45), scalePoint(40, 15), scalePoint(65, 45));
         ShapeVal bezierWithText = new ShapeVal(List.of(
@@ -65,15 +64,14 @@ public class Demo {
         ));
         imgStore.push(bezierWithText);
 
-        // 5. Cross made of two lines
+        // 17 Cross made of two lines
         List<Shape> crossShapes = new ArrayList<>();
         crossShapes.add(new ShapeLine(scalePoint(20, 20), scalePoint(60, 60)));
         crossShapes.add(new ShapeLine(scalePoint(20, 60), scalePoint(60, 20)));
-        crossShapes.add(new ShapeText("Cross", List.of(scalePoint(40, 65))));
         ShapeVal crossVal = new ShapeVal(crossShapes);
         imgStore.push(crossVal);
 
-        // 6. Triangle
+        // 16 Triangle
         List<Shape> triangleShapes = new ArrayList<>();
         triangleShapes.add(new ShapeLine(scalePoint(40.0, 15.0), scalePoint(60.0, 50.0)));
         triangleShapes.add(new ShapeLine(scalePoint(60.0, 50.0), scalePoint(20.0, 50.0)));
@@ -82,7 +80,7 @@ public class Demo {
         ShapeVal triangleVal = new ShapeVal(triangleShapes);
         imgStore.push(triangleVal);
 
-        // 7. Text
+        // 15 Text
         List<Shape> specialShapes = new ArrayList<>();
         specialShapes.add(new ShapeText("Text:", List.of(scalePoint(40, 15))));
         specialShapes.add(new ShapeText("<= >= == !=", List.of(scalePoint(40, 25))));
@@ -93,7 +91,7 @@ public class Demo {
         ShapeVal specialText = new ShapeVal(specialShapes);
         imgStore.push(specialText);
 
-        // 8. Sun shape (small) with detached, short rays and text
+        // 9 Sun shape (small) with detached, short rays and text
         List<Shape> sunShapes = new ArrayList<>();
         sunShapes.add(new ShapeCurve(scalePoint(40, 20), scalePoint(55, 20), scalePoint(55, 35)));
         sunShapes.add(new ShapeCurve(scalePoint(55, 35), scalePoint(55, 50), scalePoint(40, 50)));
@@ -109,6 +107,131 @@ public class Demo {
         sunShapes.add(new ShapeText("Sun", List.of(scalePoint(40, 70))));
         ShapeVal sunVal = new ShapeVal(sunShapes);
         imgStore.push(sunVal);
+
+        // 8 Empty string
+        List<Shape> emptyTextTest = new ArrayList<>();
+        emptyTextTest.add(new ShapeText("Text before empty:", List.of(new Point(75, 30))));
+        emptyTextTest.add(new ShapeText("", List.of(new Point(75, 50))));
+        emptyTextTest.add(new ShapeText("Text after empty", List.of(new Point(75, 70))));
+        // Add markers where empty text should be
+        emptyTextTest.add(new ShapeLine(new Point(70, 50), new Point(80, 50)));
+        emptyTextTest.add(new ShapeLine(new Point(75, 45), new Point(75, 55)));
+        imgStore.push(new ShapeVal(emptyTextTest));
+
+        // 7 Special characters and symbols
+        List<Shape> specialCharsTest = new ArrayList<>();
+        specialCharsTest.add(new ShapeText("Math: ∑ ∏ ∫ ∞ √ ≈ ≠ ≤ ≥",
+                List.of(new Point(75, 20))));
+        specialCharsTest.add(new ShapeText("Arrows: ← → ↑ ↓ ↔ ⇒ ⇐ ⇔",
+                List.of(new Point(75, 35))));
+        specialCharsTest.add(new ShapeText("Greek: α β γ δ ε θ λ π σ ω",
+                List.of(new Point(75, 50))));
+        specialCharsTest.add(new ShapeText("Brackets: ⟨⟩ ⟦⟧ ⌊⌋ ⌈⌉",
+                List.of(new Point(75, 65))));
+        specialCharsTest.add(new ShapeText("Logic: ∧ ∨ ¬ ∃ ∀ ⊂ ⊃ ∈ ∉",
+                List.of(new Point(75, 80))));
+        imgStore.push(new ShapeVal(specialCharsTest));
+
+        // 6 Text at canvas boundaries
+        List<Shape> boundaryTextTest = new ArrayList<>();
+        // Corner positions
+        boundaryTextTest.add(new ShapeText("TopLeft", List.of(new Point(0, 0))));
+        boundaryTextTest.add(new ShapeText("TopRight", List.of(new Point(150, 0))));
+        boundaryTextTest.add(new ShapeText("BottomLeft", List.of(new Point(0, 150))));
+        boundaryTextTest.add(new ShapeText("BottomRight", List.of(new Point(150, 150))));
+        // Edge positions
+        boundaryTextTest.add(new ShapeText("TopEdge", List.of(new Point(75, 0))));
+        boundaryTextTest.add(new ShapeText("BottomEdge", List.of(new Point(75, 150))));
+        boundaryTextTest.add(new ShapeText("LeftEdge", List.of(new Point(0, 75))));
+        boundaryTextTest.add(new ShapeText("RightEdge", List.of(new Point(150, 75))));
+        // Add boundary box
+        boundaryTextTest.add(new ShapeLine(new Point(0, 0), new Point(150, 0)));
+        boundaryTextTest.add(new ShapeLine(new Point(150, 0), new Point(150, 150)));
+        boundaryTextTest.add(new ShapeLine(new Point(150, 150), new Point(0, 150)));
+        boundaryTextTest.add(new ShapeLine(new Point(0, 150), new Point(0, 0)));
+        imgStore.push(new ShapeVal(boundaryTextTest));
+
+        // 5 Overlapping text
+        List<Shape> overlapTextTest = new ArrayList<>();
+        overlapTextTest.add(new ShapeText("Background Text Here", List.of(new Point(75, 75))));
+        overlapTextTest.add(new ShapeText("Overlapping!", List.of(new Point(80, 77))));
+        overlapTextTest.add(new ShapeText("More Overlap", List.of(new Point(70, 73))));
+        imgStore.push(new ShapeVal(overlapTextTest));
+
+        // 4 Self-intersecting curve (figure-8)
+        List<Shape> selfIntersectTest = new ArrayList<>();
+        // First loop of figure-8
+        selfIntersectTest.add(new ShapeCurve(new Point(75, 50), new Point(25, 25), new Point(75, 75)));
+        // Second loop of figure-8
+        selfIntersectTest.add(new ShapeCurve(new Point(75, 75), new Point(125, 125), new Point(75, 50)));
+        selfIntersectTest.add(new ShapeText("Self-intersecting", List.of(new Point(75, 140))));
+        imgStore.push(new ShapeVal(selfIntersectTest));
+
+        // 3 Control points outside canvas
+        List<Shape> outsideControlTest = new ArrayList<>();
+        // Control point way above canvas
+        outsideControlTest.add(new ShapeCurve(new Point(25, 75), new Point(75, -50), new Point(125, 75)));
+        // Control point way below canvas
+        outsideControlTest.add(new ShapeCurve(new Point(25, 100), new Point(75, 200), new Point(125, 100)));
+        // Control point to the left
+        outsideControlTest.add(new ShapeCurve(new Point(50, 25), new Point(-50, 50), new Point(50, 75)));
+        // Control point to the right
+        outsideControlTest.add(new ShapeCurve(new Point(100, 25), new Point(250, 50), new Point(100, 75)));
+        outsideControlTest.add(new ShapeText("Controls outside", List.of(new Point(75, 140))));
+        imgStore.push(new ShapeVal(outsideControlTest));
+
+        // 2 Nearly-straight curves (control point on/near line)
+        List<Shape> straightCurveTest = new ArrayList<>();
+        // Perfectly straight (control point exactly on line)
+        Point start1 = new Point(20, 50);
+        Point end1 = new Point(130, 50);
+        Point control1 = new Point(75, 50); // Exactly on line
+        straightCurveTest.add(new ShapeCurve(start1, control1, end1));
+
+        // Almost straight (control point very close to line)
+        Point start2 = new Point(20, 70);
+        Point end2 = new Point(130, 70);
+        Point control2 = new Point(75, 71); // Just 1 pixel off
+        straightCurveTest.add(new ShapeCurve(start2, control2, end2));
+
+        // Slightly curved for comparison
+        Point start3 = new Point(20, 90);
+        Point end3 = new Point(130, 90);
+        Point control3 = new Point(75, 80); // 10 pixels off
+        straightCurveTest.add(new ShapeCurve(start3, control3, end3));
+
+        straightCurveTest.add(new ShapeText("Straight curves", List.of(new Point(75, 140))));
+        imgStore.push(new ShapeVal(straightCurveTest));
+
+        // 1 S-curves and complex paths
+        List<Shape> complexCurveTest = new ArrayList<>();
+        // S-curve using multiple segments
+        complexCurveTest.add(new ShapeCurve(new Point(20, 75), new Point(50, 25), new Point(75, 75)));
+        complexCurveTest.add(new ShapeCurve(new Point(75, 75), new Point(100, 125), new Point(130, 75)));
+
+        // Spiral-like curve
+        complexCurveTest.add(new ShapeCurve(new Point(75, 50), new Point(100, 50), new Point(100, 75)));
+        complexCurveTest.add(new ShapeCurve(new Point(100, 75), new Point(100, 100), new Point(75, 100)));
+        complexCurveTest.add(new ShapeCurve(new Point(75, 100), new Point(50, 100), new Point(50, 75)));
+        complexCurveTest.add(new ShapeCurve(new Point(50, 75), new Point(50, 50), new Point(75, 50)));
+
+        complexCurveTest.add(new ShapeText("Complex curves", List.of(new Point(75, 140))));
+        imgStore.push(new ShapeVal(complexCurveTest));
+
+        // 0 Extreme curves (very sharp angles)
+        List<Shape> extremeCurveTest = new ArrayList<>();
+        // Very sharp V-shape
+        extremeCurveTest.add(new ShapeCurve(new Point(50, 100), new Point(75, 20), new Point(100, 100)));
+
+        // Extreme control point positions
+        extremeCurveTest.add(new ShapeCurve(new Point(20, 50), new Point(140, 30), new Point(130, 50)));
+        extremeCurveTest.add(new ShapeCurve(new Point(20, 60), new Point(10, 130), new Point(130, 60)));
+
+        // Tiny curves
+        extremeCurveTest.add(new ShapeCurve(new Point(70, 120), new Point(75, 115), new Point(80, 120)));
+
+        extremeCurveTest.add(new ShapeText("Extreme curves", List.of(new Point(75, 140))));
+        imgStore.push(new ShapeVal(extremeCurveTest));
 
         try {
             SVGGenerator.generateToFile(imgStore, 150, 150, "testOutput");
