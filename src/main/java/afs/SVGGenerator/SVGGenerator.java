@@ -82,7 +82,7 @@ public class SVGGenerator {
         }
 
         public Text(double[] position, String content) {
-            this(position, content, 12);
+            this(position, content, 10);
         }
 
         @Override
