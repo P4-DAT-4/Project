@@ -740,7 +740,6 @@ public class Parser {
 		Expect(27);
 		int line = t.line; int col = t.col; 
 		Expect(6);
-		Expect(6);
 		ExprNode expr = Expr();
 		exprList.add(expr); 
 		Expect(7);

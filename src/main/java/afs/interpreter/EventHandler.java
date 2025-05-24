@@ -15,7 +15,7 @@ public class EventHandler {
         // Call the function
         ExprFunctionCallNode functionCall = envE.lookup(ident);
         // Get the image
-        System.out.println(String.format("Event triggered, calling '%s'", functionCall.getIdentifier()));
+        System.out.printf("Event triggered, calling '%s' \n", functionCall.getIdentifier());
         Val img = ExprInterpreter.evalExpr(envV, envF, envE, location, functionCall, store, imgStore).getValue0();
 
         // Put the image into the imgStore

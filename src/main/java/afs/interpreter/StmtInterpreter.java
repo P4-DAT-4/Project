@@ -1,13 +1,16 @@
 package afs.interpreter;
 
+import afs.interpreter.expressions.IntVal;
 import afs.interpreter.expressions.ListVal;
 import afs.interpreter.expressions.Val;
 import afs.interpreter.interfaces.*;
+import afs.nodes.expr.ExprFunctionCallNode;
 import afs.nodes.expr.ExprIdentifierNode;
 import afs.nodes.expr.ExprNode;
 import afs.nodes.stmt.*;
 import org.javatuples.Triplet;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class StmtInterpreter {
@@ -71,6 +74,7 @@ public class StmtInterpreter {
             }
             case StmtFunctionCallNode stmtFunctionCallNode -> {
                 String funcName = stmtFunctionCallNode.getIdentifier();
+                System.out.println("Function " + funcName);
                 List<ExprNode> args = stmtFunctionCallNode.getArguments();
                 var funcData = envF.lookup(funcName);
 
@@ -80,47 +84,52 @@ public class StmtInterpreter {
                     EventHandler.check(envV, envF, envE, location, funcName, store, imgStore);
                     // Call function by evaluating the statement in the function
                     StmtNode funcBody = funcData.getValue0();
-                    evalStmt(envV.newScope(), envF, envE, location, funcBody, store, imgStore);
-                    yield new Triplet<>(null, store, imgStore);
+                    yield StmtInterpreter.evalStmt(funcData.getValue2(), envF, envE, location, funcBody, store, imgStore);
                 } else {
                     int line = stmtFunctionCallNode.getLineNumber();
-                    int col = stmt.getColumnNumber();
+                    int col = stmtFunctionCallNode.getColumnNumber();
 
                     // Get parameters
                     List<String> paramNames = funcData.getValue1();
 
-                    // Create a new environment to store a parameter in
-                    VarEnvironment newEnvV = envV.newScope();
+                    VarEnvironment funcEnvV = funcData.getValue2();
 
                     // Get expression e_n and evaluate it
-                    ExprNode expr = args.getLast();
-                    Val exprVal = ExprInterpreter.evalExpr(envV, envF, envE, location, expr, store, imgStore).getValue0();
+                    ExprNode exprE_n = args.getLast();
+                    Val exprVal = ExprInterpreter.evalExpr(envV, envF, envE, location, exprE_n, store, imgStore).getValue0();
 
+                    List<ExprNode> newArgs = new ArrayList<>(args);
                     // Create a new function call with one less argument
-                    StmtFunctionCallNode functionCallNode = new StmtFunctionCallNode(funcName, args.subList(1, args.size()), line, col);
+                    StmtNode functionCallNode = new StmtFunctionCallNode(funcName, newArgs.subList(0, newArgs.size() - 1), line, col);
 
                     // Index of the last argument
                     int n = args.size() -1;
 
                     // Check if e_n evaluates to a list
                     if (exprVal instanceof ListVal) {
+                        System.out.println("Got listval");
                         // If e_n is not an identifier, throw an error as we cannot pass an array literal, for example
-                        if (!(expr instanceof ExprIdentifierNode)) {
+                        if (!(exprE_n instanceof ExprIdentifierNode ident)) {
                             throw new RuntimeException("Arrays are call-by-reference - cannot pass an array literal or an index of an array");
                         }
+                        System.out.println(ident);
                         // Declare a new variable in the environment, using the name of the parameter, and make it point to the location of the identifier
-                        newEnvV.declare(paramNames.get(n), envV.lookup(((ExprIdentifierNode) expr).getIdentifier()));
+                        funcEnvV.declare(paramNames.get(n), envV.lookup(ident.getIdentifier()));
 
                         // Evaluate the new function call with one less argument
-                        yield evalStmt(newEnvV, envF, envE, location, functionCallNode, store, imgStore);
+                        yield evalStmt(envV, envF, envE, location, functionCallNode, store, imgStore);
                     } else { // If e_n is not a list
+                        System.out.println("Got not listval");
+                        if (exprVal instanceof IntVal intVal) {
+                            System.out.println("Intval is " + intVal.asInt());
+                        }
                         // Declare a new parameter, assign it the location l
-                        newEnvV.declare(paramNames.get(n), location);
+                        funcEnvV.declare(paramNames.get(n), location);
                         // Store the value of expression e_n at the location
                         store.declare(location, exprVal);
 
-                        // Evaluate the new function call with one less argument
-                        yield evalStmt(newEnvV, envF, envE, ++location, functionCallNode, store, imgStore);
+                        // Evaluate the new function call with one less argument and with new location
+                        yield evalStmt(envV, envF, envE, ++location, functionCallNode, store, imgStore);
                     }
                 }
             }
@@ -133,6 +142,7 @@ public class StmtInterpreter {
                 Val exprVal = ExprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore).getValue0();
 
                 // Check if the expression is true or false
+                System.out.println("ExprVal is " + exprVal.asBool());
                 if (exprVal.asBool()) {
                     // Evaluate the then statement
                     yield evalStmt(envV.newScope(), envF, envE, location, thenStmt, store, imgStore);
