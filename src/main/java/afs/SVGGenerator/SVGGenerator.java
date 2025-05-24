@@ -10,6 +10,7 @@ import org.jfree.graphics2d.svg.SVGUtils;
 
 import java.awt.*;
 import java.awt.geom.Path2D;
+import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
@@ -17,72 +18,69 @@ import java.util.List;
 
 
 public class SVGGenerator {
-    // drawable interface to make sure each shappy has a draw
+    // drawable interface to make sure each shape has a draw
     public interface SVGDrawable {
         void draw(SVGGraphics2D g);
     }
 
-    // polyline class
-    public static class Polyline implements SVGDrawable {
-        private final double[][] points;
+    // line class
+    public static class Line implements SVGDrawable {
+        private final double x1, y1, x2, y2;
 
-        public Polyline(double[][] points) {
-            this.points = points.clone();
+        public Line(double x1, double y1, double x2, double y2) {
+            this.x1 = x1;
+            this.y1 = y1;
+            this.x2 = x2;
+            this.y2 = y2;
+        }
+
+        @Override
+        public void draw(SVGGraphics2D g) {
+            g.setPaint(Color.BLACK);
+            g.draw(new Line2D.Double(x1, y1, x2, y2));
+        }
+    }
+
+    // Curve class
+    public static class Curve implements SVGDrawable {
+        private final double startX, startY;
+        private final double controlX, controlY;
+        private final double endX, endY;
+
+        public Curve(double startX, double startY, double controlX, double controlY, double endX, double endY) {
+            this.startX = startX;
+            this.startY = startY;
+            this.controlX = controlX;
+            this.controlY = controlY;
+            this.endX = endX;
+            this.endY = endY;
         }
 
         @Override
         public void draw(SVGGraphics2D g) {
             g.setPaint(Color.BLACK);
             Path2D.Double path = new Path2D.Double();
-            path.moveTo(points[0][0], points[0][1]);
-            for (int i = 1; i < points.length; i++) {
-                path.lineTo(points[i][0], points[i][1]);
-            }
+            path.moveTo(startX, startY);
+            path.quadTo(controlX, controlY, endX, endY);
             g.draw(path);
         }
     }
 
-    public static class PolyCurve implements SVGDrawable {
-        private final double[][] points;
-        private final double[][] controlPoints;
-
-        public PolyCurve(double[][] points, double[][] controlPoints) {
-            this.points = points.clone();
-            this.controlPoints = controlPoints.clone();
-        }
-
-        @Override
-        public void draw(SVGGraphics2D g) {
-            g.setPaint(Color.BLACK);
-            Path2D.Double path = new Path2D.Double();
-            path.moveTo(points[0][0], points[0][1]);
-
-            for (int i = 0; i < points.length - 1; i++) {
-                path.quadTo(
-                        controlPoints[i][0], controlPoints[i][1],
-                        points[i + 1][0], points[i + 1][1]
-                );
-            }
-            g.draw(path);
-        }
-    }
-
+    //text class
     public static class Text implements SVGDrawable {
-        private final double[] position;
+        private final double x, y;
         private final int fontSize;
         private final String content;
 
-        public Text(double[] position, String content, int fontSize) {
-            if (position.length != 2) {
-                throw new IllegalArgumentException("Position must be exactly [x,y]");
-            }
-            this.position = position.clone();
+        public Text(double x, double y, String content, int fontSize) {
+            this.x = x;
+            this.y = y;
             this.content = content;
             this.fontSize = fontSize;
         }
 
-        public Text(double[] position, String content) {
-            this(position, content, 10);
+        public Text(double x, double y, String content) {
+            this(x, y, content, 10);
         }
 
         @Override
@@ -100,39 +98,36 @@ public class SVGGenerator {
 
             // Calculate the centered position
             // Subtract half the width from x to center horizontally
-            float centeredX = (float) position[0] - (textWidth / 2.0f);
+            float centeredX = (float) x - (textWidth / 2.0f);
 
             // Add half the ascent to y to center vertically
-            float centeredY = (float) position[1] + (textHeight/ 2.0f);
+            float centeredY = (float) y + (textHeight / 2.0f);
 
             // Draw the text at the centered position
             g.drawString(content, centeredX, centeredY);
         }
     }
 
-    /**
-     * Helper method to convert Point objects to double arrays
-     */
-    private static double[][] convertPointsToArray(List<Point> points) {
-        double[][] result = new double[points.size()][2];
-        for (int i = 0; i < points.size(); i++) {
-            Point p = points.get(i);
-            result[i][0] = p.getX();
-            result[i][1] = p.getY();
-        }
-        return result;
-    }
-
     private static SVGDrawable shapeToDrawable(Shape shape) {
         return switch (shape) {
             case ShapeCurve shapeCurve -> {
-                var curvePoints = convertPointsToArray(List.of(shapeCurve.getStart(), shapeCurve.getEnd()));
-                var controlPoints = convertPointsToArray(List.of(shapeCurve.getControl()));
-                yield new PolyCurve(curvePoints, controlPoints);
+                Point start = shapeCurve.getStart();
+                Point control = shapeCurve.getControl();
+                Point end = shapeCurve.getEnd();
+                yield new Curve(start.getX(), start.getY(),
+                        control.getX(), control.getY(),
+                        end.getX(), end.getY());
             }
-            case ShapeLine shapeLine -> new Polyline(convertPointsToArray(shapeLine.getPoints()));
-            case ShapeText shapeText ->
-                    new Text(convertPointsToArray(shapeText.getPoints())[0], shapeText.getTextContent());
+            case ShapeLine shapeLine -> {
+                Point start = shapeLine.getStart();
+                Point end = shapeLine.getEnd();
+                yield new Line(start.getX(), start.getY(), end.getX(), end.getY());
+            }
+            case ShapeText shapeText -> {
+                List<Point> points = shapeText.getPoints();
+                Point position = points.getFirst();
+                yield new Text(position.getX(), position.getY(), shapeText.getTextContent());
+            }
         };
     }
 
@@ -142,26 +137,22 @@ public class SVGGenerator {
         g.setPaint(Color.WHITE);
         g.fill(new Rectangle2D.Double(0, 0, width, height));
 
-        int i = 0;
-        for (Shape shape: shapes) {
+        for (Shape shape : shapes) {
             SVGDrawable drawable = shapeToDrawable(shape);
-            //System.out.println("Drawing shape" + ++i);
             drawable.draw(g);
         }
-
         File outputFile = new File(filename + ".svg");
         SVGUtils.writeToSVG(outputFile, g.getSVGElement());
     }
 
-    public static void generateToFile (ImgStore imgStore,double width, double height, String filename) throws
-    IOException {
+    public static void generateToFile(ImgStore imgStore, double width, double height, String filename) throws IOException {
         // Process each shape
         int counter = 0;
         while (!imgStore.isEmpty()) {
             String currentFileName = filename + counter;
             Val val = imgStore.pop();
             generateImage(val.asShape(), width, height, currentFileName);
-            counter ++;
+            counter++;
         }
     }
 }
