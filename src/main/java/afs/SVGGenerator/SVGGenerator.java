@@ -131,8 +131,8 @@ public class SVGGenerator {
         };
     }
 
-    private static void generateImage(List<Shape> shapes, double width, double height, String filename) throws IOException {
-        SVGGraphics2D g = new SVGGraphics2D((int) Math.ceil(width), (int) Math.ceil(height));
+    private static void generateImage(List<Shape> shapes, int width, int height, String filename) throws IOException {
+        SVGGraphics2D g = new SVGGraphics2D(width, height);
 
         g.setPaint(Color.WHITE);
         g.fill(new Rectangle2D.Double(0, 0, width, height));
@@ -145,7 +145,7 @@ public class SVGGenerator {
         SVGUtils.writeToSVG(outputFile, g.getSVGElement());
     }
 
-    public static void generateToFile(ImgStore imgStore, double width, double height, String filename) throws IOException {
+    public static void generateToFile(ImgStore imgStore, int width, int height, String filename) throws IOException {
         // Process each shape
         int counter = 0;
         while (!imgStore.isEmpty()) {
