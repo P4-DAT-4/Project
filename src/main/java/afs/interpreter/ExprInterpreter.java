@@ -416,6 +416,7 @@ public class ExprInterpreter {
             }
             case AND -> new BoolVal(v1.asBool() && v2.asBool());
             case CONCAT -> {
+                System.out.println("Concatenating");
                 if (v1 instanceof StringVal) {
                     yield new StringVal(v1.asString() + v2.asString());
                 } else if (v1 instanceof ListVal) {
@@ -425,6 +426,7 @@ public class ExprInterpreter {
                 } else {
                     List<Shape> elements = new ArrayList<>(v1.asShape());
                     elements.addAll(v2.asShape());
+                    System.out.println(String.format("V1 size: %d, V2 size: %d, elements size: %d", v1.asShape().size(), v2 .asShape().size(), elements.size()));
                     yield new ShapeVal(elements);
                 }
             }

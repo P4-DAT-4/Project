@@ -163,8 +163,10 @@ public class SVGGenerator {
         g.setPaint(Color.WHITE);
         g.fill(new Rectangle2D.Double(0, 0, width, height));
 
+        int i = 0;
         for (Shape shape: shapes) {
             SVGDrawable drawable = shapeToDrawable(shape);
+            System.out.println("Drawing shape" + ++i);
             drawable.draw(g);
         }
 
