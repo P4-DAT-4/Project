@@ -232,7 +232,6 @@ public class Demo {
         try {
             SVGGenerator.generateToFile(imgStore, 150, 150, "testOutput");
             System.out.println("SVG files generated successfully!");
-            System.out.println("Generated files: testOutput0.svg through testOutput6.svg");
         } catch (Exception e) {
             e.printStackTrace();
         }
