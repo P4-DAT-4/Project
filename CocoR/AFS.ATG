@@ -434,7 +434,7 @@ Line<out ExprNode declExpr> = (. List<ExprNode> exprList = new ArrayList<>(); .)
 .
 
 Curve<out ExprNode declExpr> = (. List<ExprNode> exprList = new ArrayList<>(); .)
-    "curve" (. int line = t.line; int col = t.col; .)"("
+    "curve" (. int line = t.line; int col = t.col; .)
     "("
     Expr<out ExprNode expr> (. exprList.add(expr); .)
     ","
