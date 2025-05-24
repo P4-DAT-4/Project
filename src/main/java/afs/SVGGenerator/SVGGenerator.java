@@ -145,7 +145,7 @@ public class SVGGenerator {
         int i = 0;
         for (Shape shape: shapes) {
             SVGDrawable drawable = shapeToDrawable(shape);
-            System.out.println("Drawing shape" + ++i);
+            //System.out.println("Drawing shape" + ++i);
             drawable.draw(g);
         }
 
