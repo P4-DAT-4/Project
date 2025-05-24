@@ -1,7 +1,9 @@
 package afs.interpreter;
 
+import afs.interpreter.implementations.MapVarEnvironment;
 import afs.interpreter.interfaces.*;
 import afs.nodes.def.*;
+import afs.nodes.expr.ExprNode;
 import afs.nodes.stmt.StmtFunctionCallNode;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
@@ -60,8 +62,13 @@ public class DefInterpreter {
                 var body = defFunctionNode.getStatement();
                 var nextDef = defFunctionNode.getDefinition();
 
+                // Create a fresh environment for the function
+                VarEnvironment funcDeclEnv = new MapVarEnvironment();
+
+
+
                 // Declare function environment
-                envF.declare(varName, new Triplet<>(body, paramNames, envV));
+                envF.declare(varName, new Triplet<>(body, paramNames, funcDeclEnv));
 
                 // Evaluate the definition and return
                 yield evalDef(envV, envF, envE, location, nextDef, store, imgStore);

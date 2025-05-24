@@ -4,6 +4,7 @@ import afs.interpreter.expressions.BoolVal;
 import afs.interpreter.expressions.IntVal;
 import afs.interpreter.expressions.ListVal;
 import afs.interpreter.expressions.Val;
+import afs.interpreter.implementations.MapVarEnvironment;
 import afs.interpreter.interfaces.*;
 import afs.nodes.expr.ExprNode;
 import afs.nodes.stmt.*;
@@ -37,17 +38,16 @@ public class StmtInterpreter {
                 // Evaluate the expression
                 var exprResult = exprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore);
                 Val value = (Val) exprResult.getValue0();
-                var store2 = exprResult.getValue1();
-                var imgStore2 = exprResult.getValue2();
+
 
                 // Get location of variable
                 int varLocation = envV.lookup(varName);
 
                 // Update store
-                store2.store(varLocation, value);
+                store.store(varLocation, value);
 
                 // Return
-                yield new Triplet<>(null, store2, imgStore2);
+                yield new Triplet<>(null, store, imgStore);
             }
             case StmtCompositionNode stmtCompositionNode -> {
                 var s1 = stmtCompositionNode.getLeftStatement();
@@ -105,33 +105,47 @@ public class StmtInterpreter {
                 List<String> paramNames = funcData.getValue1();
                 VarEnvironment funcDeclEnv = funcData.getValue2();
 
+
+
                 // Evaluate each argument
                 List<Object> evaluatedArgs = new ArrayList<>();
-                Store currentStore = store;
-                ImgStore currentImgStore = imgStore;
+
 
                 for (ExprNode arg : args) {
-                    var argResult = exprInterpreter.evalExpr(funcDeclEnv, envF, envE, location, arg, currentStore, currentImgStore);
+                    var argResult = exprInterpreter.evalExpr(envV, envF, envE, location, arg, store, imgStore);
+
                     evaluatedArgs.add(argResult.getValue0());
-                    currentStore = argResult.getValue1();
-                    currentImgStore = argResult.getValue2();
+
+                }
+
+                // Check argument count
+                if (evaluatedArgs.size() != paramNames.size()) {
+                    throw new RuntimeException("Argument count mismatch for function " + funcName +
+                            ": expected " + paramNames.size() + ", got " + evaluatedArgs.size());
                 }
 
                  //Create a new scope from function declaration environment
-                VarEnvironment newEnvV = funcDeclEnv.newScope();
+                  VarEnvironment newEnvV = funcDeclEnv.newScope();
 
                 // Bind parameter to new location
                 for (int i = 0; i < paramNames.size(); i++) {
                     String param = paramNames.get(i);
                     Object argVal = evaluatedArgs.get(i);
+                    System.out.println("Param: " + param + ", argVal class: " + argVal.getClass() + ", value: " + argVal);
 
-                    int newLoc = currentStore.nextLocation();
-                    newEnvV.declare(param, newLoc); // declare variable in environment
-                    currentStore.store(newLoc, argVal);
+
+                    int paramLoc = store.nextLocation();
+                    newEnvV.declare(param, paramLoc); // declare variable in environment
+                    store.store(paramLoc, argVal);
+
+
+
+
                 }
 
                  //Interpret the function body
-                yield evalStmt(newEnvV, envF, envE, location, funcBody, currentStore, currentImgStore);
+                yield evalStmt(newEnvV, envF, envE, location, funcBody, store, imgStore);
+
             }
             case StmtIfNode stmtIfNode -> {
                 var exprNode = stmtIfNode.getExpression();

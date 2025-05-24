@@ -19,7 +19,9 @@ import afs.nodes.event.EventNode;
 import afs.nodes.expr.*;
 import afs.nodes.stmt.*;
 import afs.nodes.type.TypeIntNode;
+import afs.nodes.type.TypeListNode;
 import afs.nodes.type.TypeNode;
+import afs.nodes.type.TypeVoidNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -129,50 +131,162 @@ public class StmtInterpreterTest {
 
     }
 
-    @Test
-    public void StmtFunctionCallNodeTest(){
 
-        // Setup function parmeter x
-        String paramName =  "x";
-        TypeNode type = new TypeIntNode(0,0);
-        List<Param> params = List.of ( new Param(type,paramName,0,0));
+    @Nested
+    class StmtFunctionCallNodeTest{
+        @Test
+        public void StmtFunctionNode(){
 
-        // Setup function body return x + 1
-        ExprNode paramExpr = new ExprIdentifierNode(paramName, 0, 0);
-        ExprNode value = new ExprIntNode("1",0,0);
-        ExprNode bodyExpr = new ExprBinopNode(paramExpr, BinOp.ADD, value, 0,0);
-        StmtNode funcBody = new StmtReturnNode(bodyExpr, 0, 0);
+            // Setup function parmeter x
+            String paramName =  "x";
+            TypeNode type = new TypeIntNode(0,0);
+            List<Param> params = List.of ( new Param(type,paramName,0,0));
 
-
-        // Create function definition
-        String funcName = "increment";
-        String eventName = "ev1";
-        List<ExprNode> eventArgs = List.of(new ExprIntNode("5", 0, 0));
-
-        // Use helper to create the function def node
-        DefNode functionDef = createFunction(type, funcName, params, funcBody, eventName, eventArgs);
+            // Setup function body return x + 1
+            ExprNode paramExpr = new ExprIdentifierNode(paramName, 0, 0);
+            ExprNode value = new ExprIntNode("1",0,0);
+            ExprNode bodyExpr = new ExprBinopNode(paramExpr, BinOp.ADD, value, 0,0);
+            StmtNode funcBody = new StmtReturnNode(bodyExpr, 0, 0);
 
 
-        // Evaluate the function declaration to register it in function enviroment
-        var defResult = defInterpreter.evalDef(envV, envF, envE, location, functionDef, store, imgStore);
+            // Create function definition
+            String funcName = "increment";
+            String eventName = "ev1";
+            List<ExprNode> eventArgs = List.of(new ExprIntNode("2", 0, 0));
+
+            // Use helper to create the function def node
+            DefNode functionDef = createFunction(type, funcName, params, funcBody, eventName, eventArgs);
 
 
-        // Create function call increment(6)
-        List<ExprNode> args = List.of(new ExprIntNode("6",0,0));
-        StmtNode funcCall = new StmtFunctionCallNode(funcName, args,0,0);
+            // Evaluate the function declaration to register it in function enviroment
+            var defResult = defInterpreter.evalDef(envV, envF, envE, location, functionDef, store, imgStore);
 
-        // Evaluate the function call statement using stmtInterpreter.evalStmt
-        var callResult = stmtInterpreter.evalStmt(envV, envF, envE, location, funcCall, store, imgStore);
 
-        // Get the return value
-        Val returnVal = (Val) callResult.getValue0();
+            // Create function call increment(6)
+            List<ExprNode> args = List.of(new ExprIntNode("6",0,0));
+            StmtNode funcCall = new StmtFunctionCallNode(funcName, args,0,0);
 
-        // Your assertions here, for example:
-        assertNotNull(returnVal);
-        assertTrue(returnVal instanceof IntVal);
-        assertEquals(7, ((IntVal) returnVal).getValue());
+            // Evaluate the function call statement using stmtInterpreter.evalStmt
+            var callResult = stmtInterpreter.evalStmt(envV, envF, envE, location, funcCall, store, imgStore);
 
+            // Get the return value
+            Val returnVal = (Val) callResult.getValue0();
+
+            // Your assertions here, for example:
+            assertNotNull(returnVal);
+            assertTrue(returnVal instanceof IntVal);
+            assertEquals(7, ((IntVal) returnVal).getValue());
+
+        }
+
+        @Test
+        public void StmtFunctionPassByValueNode(){
+
+            /// Declare a variable: int x = 5
+            String varName = "x";
+            location = store.nextLocation();
+            envV.declare(varName, location);
+            IntVal val = new IntVal(5);
+            store.store(location, val);
+
+            // Define a function with param x (int), return type void
+            String paramName = "x";
+            TypeNode paramType = new TypeIntNode(0, 0);
+            List<Param> params = List.of(new Param(paramType, paramName, 0, 0));
+
+            // Function body: x = x + 1; (but no return, and return type is void)
+            ExprNode one = new ExprIntNode("1", 0, 0);
+            ExprNode xIdentifier = new ExprIdentifierNode(paramName, 0, 0);
+            ExprNode addExpr = new ExprBinopNode(xIdentifier, BinOp.ADD, one, 0, 0);
+            StmtNode assignment = new StmtAssignmentNode(paramName, addExpr, 0, 0);
+
+            // No return statement, just a side-effect inside the function
+            StmtNode funcBody = assignment;
+
+            // Define the function increment(x: Int): Void
+            String funcName = "incrementVoid";
+            String eventName = "ev1";
+            List<ExprNode> eventArgs = List.of(new ExprIntNode("2", 0, 0));
+
+            TypeNode voidType = new TypeVoidNode(0, 0);
+            DefNode functionDef = createFunction(voidType, funcName, params, funcBody, eventName, eventArgs);
+
+            // Register the function in the environment
+            defInterpreter.evalDef(envV, envF, envE, location, functionDef, store, imgStore);
+
+            // Call incrementVoid(x)
+            List<ExprNode> args = List.of(new ExprIdentifierNode(varName, 0, 0));
+            StmtNode funcCall = new StmtFunctionCallNode(funcName, args, 0, 0);
+
+            // Evaluate the function call
+            var callResult = stmtInterpreter.evalStmt(envV, envF, envE, location, funcCall, store, imgStore);
+
+            // The function is void, so return value should be null or VoidVal
+            Val returnVal = (Val) callResult.getValue0();
+            assertTrue(returnVal == null, "Expected null return from void function");
+
+            // Check that the original variable 'x' was NOT changed (pass-by-value)
+            IntVal finalVal = (IntVal) store.lookup(location);
+            assertEquals(5, finalVal.getValue(), "Expected variable x to remain unchanged due to pass-by-value");
+
+        }
+
+
+        public void StmtFunctionCallPassByReferenceNode(){
+            // Declare list variable x = [1, 3]
+            String varName = "x";
+            location = declareList(varName, List.of(
+                    new ExprIntNode("1", 0, 0),
+                    new ExprIntNode("3", 0, 0)
+            ));
+
+            // Function parameter: list x (type is list of int)
+            String paramName = "x";
+            TypeNode type = new TypeListNode(new TypeIntNode(0, 0), 0, 0); // List<Int>
+            List<Param> params = List.of(new Param(type, paramName, 0, 0));
+
+            // Function body: x[0] = x[0] + 1 (increment first element)
+            ExprNode indexExpr = new ExprIntNode("0", 0, 0);
+            ExprNode elemAtZero = new ExprListAccessNode(paramName, List.of(indexExpr), 0, 0);
+            ExprNode one = new ExprIntNode("1", 0, 0);
+            ExprNode newVal = new ExprBinopNode(elemAtZero, BinOp.ADD, one, 0, 0);
+            StmtNode assignment = new StmtListAssignmentNode(paramName, List.of(indexExpr), newVal, 0, 0);
+
+            // Function return type void (no return statement)
+            StmtNode funcBody = assignment; // just the assignment, no return
+
+            // Create function definition with void return type
+            TypeNode voidType = new TypeVoidNode(0,0);
+            String funcName = "incrementFirst";
+            String eventName = "ev1";
+            List<ExprNode> eventArgs = List.of();
+
+            DefNode functionDef = createFunction(voidType, funcName, params, funcBody, eventName, eventArgs);
+
+            // Register the function in the environment
+            defInterpreter.evalDef(envV, envF, envE, location, functionDef, store, imgStore);
+
+            // Call function incrementFirst(x)
+            List<ExprNode> args = List.of(new ExprIdentifierNode(varName, 0, 0));
+            StmtNode funcCall = new StmtFunctionCallNode(funcName, args, 0, 0);
+
+            // Evaluate the function call (should modify list x in place)
+            var callResult = stmtInterpreter.evalStmt(envV, envF, envE, location, funcCall, store, imgStore);
+
+            // Since function is void, return value should be null
+            Val returnVal = (Val) callResult.getValue0();
+            assertTrue( returnVal == null, "Expected null since void retun type");
+
+            // Check that the list x was modified: x[0] == 2 now (1 + 1)
+            ListVal updatedList = (ListVal) store.lookup(location);
+            List<Val> elements = updatedList.getElements();
+
+            assertEquals(2, ((IntVal) elements.get(0)).getValue(), "Expected first element incremented");
+            assertEquals(3, ((IntVal) elements.get(1)).getValue(), "Expected second element unchanged");
+
+        }
     }
+
 
     @Test
     public void StmtIfNodeTest(){
