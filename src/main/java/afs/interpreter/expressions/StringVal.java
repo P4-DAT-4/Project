@@ -19,4 +19,9 @@ public class StringVal implements Val{
         StringVal stringVal = (StringVal) o;
         return value == stringVal.value; // compare values
     }
+
+    @Override
+    public Val copy() {
+        return new StringVal(value);
+    }
 }

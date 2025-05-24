@@ -4,6 +4,7 @@ import afs.interpreter.expressions.*;
 import afs.interpreter.interfaces.*;
 import afs.nodes.expr.*;
 import afs.nodes.stmt.StmtNode;
+import afs.nodes.type.TypeNode;
 import afs.runtime.Shape;
 import com.sun.jdi.DoubleValue;
 import org.javatuples.Pair;
@@ -122,14 +123,15 @@ public class ExprInterpreter {
                 List<ExprNode> args = exprFunctionCallNode.getArguments();
 
                 //Look up function definition
-                Triplet<StmtNode, List<String>, VarEnvironment> funcData = envF.lookup(funcName);
+                var funcData = envF.lookup(funcName);
                 if (funcData == null) {
                     throw new RuntimeException("Undefined function: " + funcName);
                 }
                 // Extract function components
                 StmtNode funcBody = funcData.getValue0();
-                List<String> paramName = funcData.getValue1();
-                VarEnvironment funcDeclEnv = funcData.getValue2();
+                List<String> paramNames = funcData.getValue1();
+                List<TypeNode> paramTypes = funcData.getValue2();
+                VarEnvironment funcDeclEnv = funcData.getValue3();
 
                 // Evaluate each argument
                 List<Object> evaluatedArgs = new ArrayList<>();
@@ -146,16 +148,16 @@ public class ExprInterpreter {
                  //Create a new scope from function declaration enviroment
                 VarEnvironment newEnvV = funcDeclEnv.newScope();
 
-                // Bind parameterr to new location
-                for (int i = 0; i < paramName.size(); i++) {
-                    String param = paramName.get(i);
-                    Object argVal = evaluatedArgs.get(i);
-
-                    int newLoc = currentStore.nextLocation();
-                    newEnvV.declare(param, newLoc); // declare variable in evironnment
-                    currentStore.store(newLoc, argVal);
-
-                }
+//                // Bind parameterr to new location
+//                for (int i = 0; i < paramName.size(); i++) {
+//                    String param = paramName.get(i);
+//                    Object argVal = evaluatedArgs.get(i);
+//
+//                    int newLoc = currentStore.nextLocation();
+//                    newEnvV.declare(param, newLoc); // declare variable in evironnment
+//                    currentStore.store(newLoc, argVal);
+//
+//                }
                 // Evaluate function body with new enviroment and updates stores
                 var funcResult = stmtInterpreter.evalStmt(newEnvV, envF, envE, location, funcBody, currentStore, currentImgStore);
 
@@ -166,12 +168,27 @@ public class ExprInterpreter {
             }
             case ExprIdentifierNode exprIdentifierNode -> {
                 // Get variable name
+
                 String varName = exprIdentifierNode.getIdentifier();
                 // Get memory location
                 int varLocation = envV.lookup(varName);
                 // Look up the actual
                 Object value = store.lookup(varLocation);
-                yield new Triplet<>(value, store, imgStore);
+                System.out.printf(
+                        "[DEBUG] Lookup %s @ %d = %s%n",
+                        varName, varLocation, value
+                );
+
+                if (value instanceof RefVal refVal) {
+                    // RefVal means the variable holds a reference to the actual array (list)
+                    int refLoc = refVal.getLocation();
+                    Val derefValue = (Val) store.lookup(refLoc);
+                    // Return the dereferenced list AS IS (no copy), to reflect pass-by-reference semantics
+                    yield new Triplet<>(derefValue, store, imgStore);
+                } else {
+                    //  other values: return value directly (pass-by-value)
+                    yield new Triplet<>(value, store, imgStore);
+                }
             }
             case ExprIntNode exprIntNode -> {
                 // Extract integer value from the node
@@ -232,83 +249,78 @@ public class ExprInterpreter {
                 List<ExprNode> indexExprs = exprListAccessNode.getExpressions();
 
                 // Look up identifer memory location
-                int arrlocation = envV.lookup(varName);
+                int arrLocation = envV.lookup(varName);
 
                 // fetch actual list from store
-                Object listObj = store.lookup(arrlocation);
+                Val storedVal = (Val)store.lookup(arrLocation);
 
-                if(!(listObj instanceof ListVal)) {
+                ListVal listVal;
+
+                // Dereference if it is a RefVal (pass-by-reference for lists)
+                if (storedVal instanceof RefVal refVal) {
+                    int refLocation = refVal.getLocation();
+                    Val derefVal = (Val) store.lookup(refLocation);
+                    if (!(derefVal instanceof ListVal derefList)) {
+                        throw new RuntimeException("Variable " + varName + " (reference) does not point to a list");
+                    }
+                    listVal = derefList;
+                    arrLocation = refLocation; // Update arrLocation to referenced location for consistency if needed later
+                } else if (storedVal instanceof ListVal directList) {
+                    listVal = directList;
+                } else {
                     throw new RuntimeException("Variable " + varName + " is not a list");
                 }
 
-                ListVal listVal = (ListVal) listObj;
-                List<Val> currentList = listVal.getElements();
+                // Process each index
+                Val currentVal = listVal;
+
+
 
                 // evalaute each index expression and access nestet list
-                Object currentValue = null;
-                Store currentStore = store;
-                ImgStore currentImgStore = imgStore;
-
-                for(int i = 0; i < indexExprs.size(); i++){
-                    ExprNode indexExpr = indexExprs.get(i);
-
+                for (ExprNode indexExpr : indexExprs) {
                     // Evaluate index expression
-                    var evalResult = evalExpr(envV, envF, envE, location, indexExpr, store, imgStore);
-                    Object indexVal = evalResult.getValue0();
-                    currentStore = evalResult.getValue1();
-                    currentImgStore = evalResult.getValue2();
+                    var indexResult = evalExpr(envV, envF, envE, location, indexExpr, store, imgStore);
+                    Val indexVal = (Val) indexResult.getValue0();
 
-                    if (!(indexVal instanceof IntVal)){
-                        throw new RuntimeException("List index must be a number, got " + indexVal);
+
+                    if (!(indexVal instanceof IntVal)) {
+                        throw new RuntimeException("List index must be integer");
                     }
 
-                    int index = ((IntVal) indexVal).getValue();
+                    int idx = ((IntVal) indexVal).getValue();
 
-                    if (index < 0 || index >= currentList.size()){
-                        throw new RuntimeException("List index out of bounds. Got" + index + "For" + varName);
+                    // Access current level
+                    if (!(currentVal instanceof ListVal currentList)) {
+                        throw new RuntimeException("Attempted nested access on non-list value");
                     }
 
-                    currentValue = currentList.get(index);
-
-                    // if not on the last index, the value must be another list
-                    if(i < indexExprs.size() - 1){
-                        if(currentValue instanceof ListVal){
-                            currentList = ((ListVal) currentValue).getElements();
-                        } else {
-                            throw new RuntimeException("Nested access on non-list element at index" + index);
-                        }
+                    if (idx < 0 || idx >= currentList.getElements().size()) {
+                        throw new RuntimeException("Index " + idx + " out of bounds");
                     }
+
+                    currentVal = currentList.getElements().get(idx);
                 }
-
-                Val resultValue;
-
-                // return the final value accessed
-                if (currentValue instanceof ListVal){
-                    resultValue = ((ListVal) currentList).getElements().get(0);
-                } else {
-                    resultValue = (Val) currentValue;
-                }
-                yield new Triplet<>(resultValue, currentStore, currentImgStore);
+                yield new Triplet<>(currentVal, store, imgStore);
             }
             case ExprListDeclaration exprListDeclaration -> {
                 List<ExprNode> exprs = exprListDeclaration.getExpressions();
-                List<Val> results = new ArrayList<>();
-                Store currentStore = store;
-                ImgStore currentImgStore = imgStore;
+                List<Val> elements = new ArrayList<>();
 
-                for(ExprNode e: exprs){
-                    var res = evalExpr(envV, envF, envE, location, e, currentStore, currentImgStore);
-                    results.add((Val) res.getValue0());
-                    currentStore = res.getValue1();
-                    currentImgStore = res.getValue2();
+
+                // Evaluate all expressions (handling nested lists)
+                for (ExprNode e : exprs) {
+                    var res = evalExpr(envV, envF, envE, location, e, store, imgStore);
+                    Val val = (Val) res.getValue0();
+                    elements.add(val);
                 }
 
-                ListVal result = new ListVal(results);
+                ListVal result = new ListVal(elements);
 
-                // store result
-                currentStore.store(location, result);
+                // Store in a NEW location if top-level, or use existing if nested
+                int newLoc = (location == -1) ? store.nextLocation() : location;
+                store.store(newLoc, result);
 
-                yield new Triplet<>(result, currentStore, currentImgStore);
+                yield new Triplet<>(result, store, imgStore);
             }
             case ExprPlaceNode exprPlaceNode -> {
                 // Get the shape to place

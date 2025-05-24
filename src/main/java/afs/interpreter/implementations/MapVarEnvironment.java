@@ -6,7 +6,7 @@ import java.util.Map;
 
 public class MapVarEnvironment implements VarEnvironment {
     private final Map<String, Integer> _environment;
-    private final MapVarEnvironment parent;
+    private final VarEnvironment parent;
 
     public MapVarEnvironment() {
 

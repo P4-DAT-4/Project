@@ -1,5 +1,6 @@
 package afs.interpreter.expressions;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ListVal implements Val {
@@ -16,5 +17,14 @@ public class ListVal implements Val {
     @Override
     public String toString() {
         return elements.toString();
+    }
+
+    @Override
+    public Val copy() {
+        List<Val> copiedList = new ArrayList<>();
+        for (Val v : elements) {
+            copiedList.add(v.copy());  // recursive copy
+        }
+        return new ListVal(copiedList);
     }
 }

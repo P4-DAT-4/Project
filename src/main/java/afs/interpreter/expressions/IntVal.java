@@ -23,4 +23,9 @@ public class IntVal implements Val {
         IntVal intVal = (IntVal) o;
         return value == intVal.value; // compare values
     }
+
+    @Override
+    public Val copy() {
+        return new IntVal(value);
+    }
 }

@@ -5,6 +5,7 @@ import afs.runtime.Shape;
 import java.util.List;
 
 public interface Val {
+    Val copy();
     default int asInt(){
         if (this instanceof IntVal) {
             return ((IntVal) this).getValue();

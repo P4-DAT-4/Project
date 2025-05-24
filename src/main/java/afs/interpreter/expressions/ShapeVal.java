@@ -18,4 +18,9 @@ public class ShapeVal implements Val{
         return shape.toString();
     }
 
+    @Override
+    public Val copy() {
+        return new ShapeVal(shape);
+    }
+
 }

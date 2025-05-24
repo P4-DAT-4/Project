@@ -61,7 +61,7 @@ public class StmtInterpreterTest {
         // Declare x = 5
         int location = store.nextLocation();
         envV.declare("x", location);
-        store.store(location, 5);
+        store.store(location, new IntVal(5));
 
         // assign x = 10
         ExprNode expr = new ExprIntNode("10",0,0);
@@ -231,8 +231,43 @@ public class StmtInterpreterTest {
 
         }
 
-
+        @Test
         public void StmtFunctionCallPassByReferenceNode(){
+
+            String vizFuncName = "logListLength";
+            String vizParamName = "n";
+            TypeNode listType = new TypeListNode(new TypeIntNode(0, 0), 0, 0); // List<Int>
+            List<Param> vizParams = List.of(new Param(listType, vizParamName, 0, 0));
+
+            // Body: skip or some dummy action (here: skip, as we may not have print support)
+            StmtNode vizBody = new StmtSkipNode();
+
+            // Declare x = 5
+            int location = store.nextLocation();
+            String n = "n";
+            envV.declare(n, location);
+            store.store(location, 5);
+
+
+            // Create function definition with void return type
+            TypeNode voidType = new TypeVoidNode(0,0);
+            String funcName = "incrementFirst";
+            String eventName = "ev1";
+            List<ExprNode> eventArgs =  List.of(new ExprIdentifierNode("n", 0, 0));
+
+
+            EventNode eventDecl = new EventDeclarationNode(eventName, vizFuncName, eventArgs, 0, 0);
+            DefNode visualize = new DefVisualizeNode(vizFuncName, eventArgs, eventDecl, 0, 0);
+
+            DefNode vizFunction = new DefFunctionNode(voidType, vizFuncName, vizParams, vizBody,
+                    visualize,0,0);
+
+            // Register it
+            defInterpreter.evalDef(envV, envF, envE, location, vizFunction, store, imgStore);
+
+
+
+
             // Declare list variable x = [1, 3]
             String varName = "x";
             location = declareList(varName, List.of(
@@ -240,10 +275,22 @@ public class StmtInterpreterTest {
                     new ExprIntNode("3", 0, 0)
             ));
 
+            ListVal originalList = (ListVal) store.lookup(location);
+            assertEquals(1, ((IntVal)originalList.getElements().get(0)).getValue());
+            assertEquals(3, ((IntVal)originalList.getElements().get(1)).getValue());
+            System.out.println("Original list stored at location: " + location);
+
+
+
             // Function parameter: list x (type is list of int)
             String paramName = "x";
+
             TypeNode type = new TypeListNode(new TypeIntNode(0, 0), 0, 0); // List<Int>
             List<Param> params = List.of(new Param(type, paramName, 0, 0));
+            // DEBUG: Verify parameter type
+            assertTrue(params.get(0).getType() instanceof TypeListNode,
+                    "Parameter should be list type");
+
 
             // Function body: x[0] = x[0] + 1 (increment first element)
             ExprNode indexExpr = new ExprIntNode("0", 0, 0);
@@ -255,23 +302,36 @@ public class StmtInterpreterTest {
             // Function return type void (no return statement)
             StmtNode funcBody = assignment; // just the assignment, no return
 
-            // Create function definition with void return type
-            TypeNode voidType = new TypeVoidNode(0,0);
-            String funcName = "incrementFirst";
-            String eventName = "ev1";
-            List<ExprNode> eventArgs = List.of();
 
-            DefNode functionDef = createFunction(voidType, funcName, params, funcBody, eventName, eventArgs);
+            DefNode functionDef =  new DefFunctionNode(voidType, funcName, params, funcBody, vizFunction, 0, 0);
 
             // Register the function in the environment
             defInterpreter.evalDef(envV, envF, envE, location, functionDef, store, imgStore);
 
+
             // Call function incrementFirst(x)
             List<ExprNode> args = List.of(new ExprIdentifierNode(varName, 0, 0));
+            // DEBUG: Verify argument is identifier node
+            assertTrue(args.get(0) instanceof ExprIdentifierNode,
+                    "Argument must be variable reference");
+            assertEquals(varName, ((ExprIdentifierNode)args.get(0)).getIdentifier());
+
+
             StmtNode funcCall = new StmtFunctionCallNode(funcName, args, 0, 0);
+
+            // DEBUG: Print environment before call
+            System.out.println("Pre-call environment:");
+            System.out.println("  Variable locations: " + envV);
+            System.out.println("  Store contents: " + store);
+
 
             // Evaluate the function call (should modify list x in place)
             var callResult = stmtInterpreter.evalStmt(envV, envF, envE, location, funcCall, store, imgStore);
+
+            // DEBUG: Print environment after call
+            System.out.println("Post-call environment:");
+            System.out.println("  Variable locations: " + envV);
+            System.out.println("  Store contents: " + callResult.getValue1());
 
             // Since function is void, return value should be null
             Val returnVal = (Val) callResult.getValue0();
@@ -294,6 +354,7 @@ public class StmtInterpreterTest {
         location = store.nextLocation();
         String varName = "x";
         envV.declare(varName, location);
+        store.store(location, new IntVal(0));
 
         // if (true) then x = 1 else x = 2
         ExprNode exprThen = new ExprIntNode("1",0,0);

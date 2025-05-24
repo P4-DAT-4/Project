@@ -24,4 +24,9 @@ public class DoubleVal implements Val {
         return value == doubleVal.value; // compare values
     }
 
+    @Override
+    public Val copy() {
+        return new DoubleVal(value);
+    }
+
 }
