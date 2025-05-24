@@ -1,16 +1,12 @@
 package afs.SVGGenerator;
 
 import afs.interpreter.expressions.ShapeVal;
-import afs.interpreter.expressions.shape.Point;
-import afs.interpreter.expressions.shape.Shape;
-import afs.interpreter.expressions.shape.ShapeLine;
-import afs.interpreter.expressions.shape.ShapeCurve;
-import afs.interpreter.expressions.shape.ShapeText;
+import afs.interpreter.expressions.shape.*;
 import afs.interpreter.implementations.StackImgStore;
 import afs.interpreter.interfaces.ImgStore;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Demo {
     // Scale factor from 80 to 150

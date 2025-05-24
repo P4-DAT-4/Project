@@ -3,7 +3,6 @@ package afs.interpreter;
 import afs.interpreter.expressions.Val;
 import afs.interpreter.interfaces.*;
 import afs.nodes.expr.ExprFunctionCallNode;
-import afs.nodes.expr.ExprNode;
 import org.javatuples.Pair;
 
 public class EventHandler {
