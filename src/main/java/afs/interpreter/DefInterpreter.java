@@ -1,7 +1,6 @@
 package afs.interpreter;
 
 import afs.interpreter.expressions.Val;
-import afs.interpreter.implementations.MapVarEnvironment;
 import afs.interpreter.interfaces.*;
 import afs.nodes.def.*;
 import afs.nodes.expr.ExprNode;
@@ -47,11 +46,7 @@ public class DefInterpreter {
                 var body = defFunctionNode.getStatement();
                 var nextDef = defFunctionNode.getDefinition();
 
-                // Create a fresh environment for the function
-                VarEnvironment funcDeclEnv = new MapVarEnvironment();
-
-
-                // Declare function environment
+                // Declare function environment, give it a new environment
                 envF.declare(varName, new Triplet<>(body, paramNames, envV.newScope()));
 
                 // Evaluate the definition and return

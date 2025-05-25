@@ -393,16 +393,16 @@ public class ExprInterpreter {
             }
             case EQ -> {
                 switch (v1) {
-                    case IntVal intVal -> {
+                    case IntVal ignored -> {
                         yield new BoolVal(v1.asInt() == v2.asInt());
                     }
-                    case DoubleVal doubleVal -> {
+                    case DoubleVal ignored -> {
                         yield new BoolVal(v1.asDouble() == v2.asDouble());
                     }
-                    case BoolVal boolVal -> {
+                    case BoolVal ignored -> {
                         yield new BoolVal(v1.asBool() == v2.asBool());
                     }
-                    case StringVal stringVal -> {
+                    case StringVal ignored -> {
                         yield new BoolVal(v1.asString().equals(v2.asString()));
                     }
                     default -> throw new RuntimeException("No");

@@ -1,16 +1,16 @@
 package afs.syntactic_analysis;
 
 import afs.nodes.def.*;
-import afs.nodes.event.EventCompositionNode;
-import afs.nodes.event.EventDeclarationNode;
-import afs.nodes.event.EventNode;
+import afs.nodes.event.*;
 import afs.nodes.expr.*;
-import afs.nodes.prog.ProgNode;
+import afs.nodes.prog.*;
 import afs.nodes.stmt.*;
 import afs.nodes.type.*;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
 
 /* The required start of a Coco/R grammar file. "Program" specifies the starting symbol of the grammar. */
 
@@ -40,19 +40,43 @@ public class Parser {
         return errors.count > 0;
     }
 /* END STARTALL */
-/* BEGIN EVENTCODE */
-    private EventNode toCompEvent(List<EventNode> eventsReversed) {
-        if (eventsReversed.isEmpty()) {
-            throw new RuntimeException("Empty events list");
+/* BEGIN DEFCODE */
+    private DefNode toDefNode(List<DefNode> defs) {
+        if (defs.isEmpty()) {
+            throw new FatalError("Empty defs list");
         }
-        EventNode left = eventsReversed.getFirst();
+        DefNode left = defs.getFirst();
 
-        if (eventsReversed.size() == 1) {
+        if (defs.size() == 1) {
             return left;
         } else {
             int line = left.getLineNumber();
             int col = left.getColumnNumber();
-            List<EventNode> rest = eventsReversed.subList(1, eventsReversed.size());
+            List<DefNode> rest = defs.subList(1, defs.size());
+            DefNode right = toDefNode(rest);
+            return switch(left) {
+                case DefDeclarationNode defDeclarationNode -> new DefDeclarationNode(defDeclarationNode.getType(), defDeclarationNode.getIdentifier(), defDeclarationNode.getExpression(), right, line, col);
+                case DefFunctionNode defFunctionNode -> new DefFunctionNode(defFunctionNode.getType(), defFunctionNode.getIdentifier(), defFunctionNode.getParameters(), defFunctionNode.getStatement(), right, line, col);
+                case DefVisualizeNode defVisualizeNode -> {
+                    throw new FatalError("Visualize node MUST be placed last");
+                }
+            };
+        }
+    }
+/* END DEFCODE */
+/* BEGIN EVENTCODE */
+    private EventNode toCompEvent(List<EventNode> events) {
+        if (events.isEmpty()) {
+            throw new FatalError("Empty events list");
+        }
+        EventNode left = events.getFirst();
+
+        if (events.size() == 1) {
+            return left;
+        } else {
+            int line = left.getLineNumber();
+            int col = left.getColumnNumber();
+            List<EventNode> rest = events.subList(1, events.size());
             EventNode right = toCompEvent(rest);
             return new EventCompositionNode(left, right, line, col);
         }
@@ -130,7 +154,7 @@ public class Parser {
             result = switch (ch) {
                 case '!' -> new ExprUnopNode(result, UnOp.NOT, line, col);
                 case '-' -> new ExprUnopNode(result, UnOp.NEG, line, col);
-                default -> throw new RuntimeException("Unknown unary operator: " + ch);
+                default -> throw new FatalError("Unknown unary operator: " + ch);
             };
             index++;
         }
@@ -164,7 +188,7 @@ public class Parser {
                             ExprNode andNode = makeBinOpExpr(notLeftExpr, "&&", notRightExpr, line, column);
                             yield new ExprUnopNode(andNode, UnOp.NOT, line, column);
             }
-            default -> throw new RuntimeException("Unknown binary operator: " + op);
+            default -> throw new FatalError("Unknown binary operator: " + op);
         };
     }
 /* END EXPRCODE */
@@ -245,7 +269,7 @@ public class Parser {
 
 	DefNode  Def() {
 		DefNode  def;
-		def = null; 
+		def = null; List<DefNode> defs = new ArrayList<>(); 
 		while (!(StartOf(1))) {SynErr(57); Get();}
 		if (la.kind == 5) {
 			def = FnDef();
@@ -253,9 +277,20 @@ public class Parser {
 			def = ImgDef();
 		} else if (StartOf(2)) {
 			def = VarDef();
-		} else if (la.kind == 12) {
-			def = Visualize();
 		} else SynErr(58);
+		defs.add(def); 
+		while (StartOf(3)) {
+			if (la.kind == 5) {
+				def = FnDef();
+			} else if (la.kind == 9) {
+				def = ImgDef();
+			} else {
+				def = VarDef();
+			}
+			defs.add(def); 
+		}
+		def = Visualize();
+		defs.add(def); def = toDefNode(defs); 
 		return def;
 	}
 
@@ -278,8 +313,7 @@ public class Parser {
 		}
 		Expect(8);
 		StmtNode stmt = StmtBlock();
-		DefNode def = Def();
-		func = new DefFunctionNode(type, ident, params, stmt, def, line, col); 
+		func = new DefFunctionNode(type, ident, params, stmt, null, line, col); 
 		return func;
 	}
 
@@ -301,8 +335,7 @@ public class Parser {
 		}
 		Expect(8);
 		StmtNode decl = DeclBlock();
-		DefNode def = Def();
-		img = new DefFunctionNode(new TypeShapeNode(line, col), ident, params, decl, def, line, col); 
+		img = new DefFunctionNode(new TypeShapeNode(line, col), ident, params, decl, null, line, col); 
 		return img;
 	}
 
@@ -314,8 +347,7 @@ public class Parser {
 		Expect(10);
 		ExprNode expr = Expr();
 		Expect(11);
-		DefNode def = Def();
-		var = new DefDeclarationNode(type, ident, expr, def, line, col); 
+		var = new DefDeclarationNode(type, ident, expr, null, line, col); 
 		return var;
 	}
 
@@ -327,7 +359,7 @@ public class Parser {
 		Expect(4);
 		String ident = t.val; 
 		Expect(6);
-		if (StartOf(3)) {
+		if (StartOf(4)) {
 			ExprNode arg = Expr();
 			arguments.add(arg); 
 			while (la.kind == 7) {
@@ -368,7 +400,7 @@ public class Parser {
 		StmtNode  stmt;
 		List<StmtNode> stmts = new ArrayList<>(); 
 		Expect(15);
-		while (StartOf(4)) {
+		while (StartOf(5)) {
 			StmtNode innerStmt = Stmt();
 			stmts.add(innerStmt); 
 		}
@@ -381,7 +413,7 @@ public class Parser {
 		StmtNode  stmt;
 		List<StmtNode> decls = new ArrayList<>(); 
 		Expect(15);
-		while (StartOf(5)) {
+		while (StartOf(6)) {
 			StmtNode decl = Decl();
 			decls.add(decl); 
 		}
@@ -435,7 +467,7 @@ public class Parser {
 		Expect(4);
 		int line = t.line; int col = t.col; fname = t.val; 
 		Expect(6);
-		if (StartOf(3)) {
+		if (StartOf(4)) {
 			ExprNode arg = Expr();
 			arguments.add(arg); 
 			while (la.kind == 7) {
@@ -453,7 +485,7 @@ public class Parser {
 			Expect(4);
 			line = t.line; col = t.col; ident = t.val; 
 			Expect(6);
-			if (StartOf(3)) {
+			if (StartOf(4)) {
 				ExprNode arg = Expr();
 				arguments.add(arg); 
 				while (la.kind == 7) {
@@ -583,7 +615,7 @@ public class Parser {
 		StmtNode  stmt;
 		List<ExprNode> arguments = new ArrayList<>(); 
 		Expect(6);
-		if (StartOf(3)) {
+		if (StartOf(4)) {
 			ExprNode arg = Expr();
 			arguments.add(arg); 
 			while (la.kind == 7) {
@@ -601,11 +633,11 @@ public class Parser {
 	StmtNode  Decl() {
 		StmtNode  decl;
 		decl = new StmtSkipNode(); 
-		if (StartOf(6)) {
+		if (StartOf(7)) {
 			decl = DeclDecl();
 		} else if (la.kind == 19) {
 			decl = DeclIf();
-		} else if (StartOf(7)) {
+		} else if (StartOf(8)) {
 			ExprNode expr = DeclExpr();
 			Expect(11);
 			decl = new StmtReturnNode(expr, t.line, t.col); 
@@ -620,9 +652,9 @@ public class Parser {
 		Expect(4);
 		int line = t.line; int col = t.col; String ident = t.val; 
 		Expect(10);
-		if (StartOf(7)) {
+		if (StartOf(8)) {
 			declExpr = DeclExpr();
-		} else if (StartOf(3)) {
+		} else if (StartOf(4)) {
 			declExpr = Expr();
 		} else SynErr(66);
 		decl = new StmtDeclarationNode(type, ident, declExpr, null, line, col); 
@@ -866,7 +898,7 @@ public class Parser {
 	ExprNode  RelExpr() {
 		ExprNode  expr;
 		expr = ConcatExpr();
-		while (StartOf(8)) {
+		while (StartOf(9)) {
 			if (la.kind == 38) {
 				Get();
 			} else if (la.kind == 39) {
@@ -1022,7 +1054,7 @@ public class Parser {
 		ExprFunctionCallNode  funcCall;
 		List<ExprNode> exprList = new ArrayList<>(); 
 		Expect(6);
-		if (StartOf(3)) {
+		if (StartOf(4)) {
 			ExprNode arg = Expr();
 			exprList.add(arg); 
 			while (la.kind == 7) {
@@ -1041,7 +1073,7 @@ public class Parser {
 		List<ExprNode> exprs = new ArrayList<>(); 
 		Expect(17);
 		int line = t.line; int col = t.col; 
-		if (StartOf(3)) {
+		if (StartOf(4)) {
 			expr = Expr();
 			exprs.add(expr); 
 		}
@@ -1068,9 +1100,10 @@ public class Parser {
 	}
 
 	private static final boolean[][] set = {
-		{_T,_x,_x,_x, _x,_T,_x,_x, _x,_T,_x,_x, _T,_x,_x,_x, _x,_T,_x,_T, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _x,_x},
-		{_T,_x,_x,_x, _x,_T,_x,_x, _x,_T,_x,_x, _T,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _x,_x},
+		{_T,_x,_x,_x, _x,_T,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_T,_x,_T, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _x,_x},
+		{_T,_x,_x,_x, _x,_T,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _x,_x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _x,_x},
+		{_x,_x,_x,_x, _x,_T,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _x,_x},
 		{_x,_T,_T,_T, _T,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x},
 		{_x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_T, _x,_x,_T,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _x,_x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_T, _x,_x,_x,_x, _T,_T,_x,_T, _T,_x,_T,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _T,_T,_T,_T, _x,_x},

@@ -73,7 +73,6 @@ public class StmtInterpreter {
             }
             case StmtFunctionCallNode stmtFunctionCallNode -> {
                 String funcName = stmtFunctionCallNode.getIdentifier();
-                System.out.println("Function " + funcName);
                 List<ExprNode> args = stmtFunctionCallNode.getArguments();
                 var funcData = envF.lookup(funcName);
 
@@ -106,22 +105,16 @@ public class StmtInterpreter {
 
                     // Check if e_n evaluates to a list
                     if (exprVal instanceof ListVal) {
-                        System.out.println("Got listval");
                         // If e_n is not an identifier, throw an error as we cannot pass an array literal, for example
                         if (!(exprE_n instanceof ExprIdentifierNode ident)) {
                             throw new RuntimeException("Arrays are call-by-reference - cannot pass an array literal or an index of an array");
                         }
-                        System.out.println(ident);
                         // Declare a new variable in the environment, using the name of the parameter, and make it point to the location of the identifier
                         funcEnvV.declare(paramNames.get(n), envV.lookup(ident.getIdentifier()));
 
                         // Evaluate the new function call with one less argument
                         yield evalStmt(envV, envF, envE, location, functionCallNode, store, imgStore);
                     } else { // If e_n is not a list
-                        System.out.println("Got not listval");
-                        if (exprVal instanceof IntVal intVal) {
-                            System.out.println("Intval is " + intVal.asInt());
-                        }
                         // Declare a new parameter, assign it the location l
                         funcEnvV.declare(paramNames.get(n), location);
                         // Store the value of expression e_n at the location
@@ -141,7 +134,6 @@ public class StmtInterpreter {
                 Val exprVal = ExprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore).getValue0();
 
                 // Check if the expression is true or false
-                System.out.println("ExprVal is " + exprVal.asBool());
                 if (exprVal.asBool()) {
                     // Evaluate the then statement
                     yield evalStmt(envV.newScope(), envF, envE, location, thenStmt, store, imgStore);
