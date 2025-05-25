@@ -19,7 +19,7 @@ public class ReturnCheckerIntegrationTest extends ReturnChecker {
             "}"+
             "visualize a():" +
                 "t do a();";
-        ProgNode prog = ASTGenerator.GenerateFromString(input);
+        ProgNode prog = ASTGenerator.parseProgram(input);
         checkReturn(prog);
     }
 
@@ -32,7 +32,7 @@ public class ReturnCheckerIntegrationTest extends ReturnChecker {
                         "}"+
                         "visualize a():" +
                             "t do a();";
-        ProgNode prog = ASTGenerator.GenerateFromString(input);
+        ProgNode prog = ASTGenerator.parseProgram(input);
         checkReturn(prog);
     }
 
@@ -45,7 +45,7 @@ public class ReturnCheckerIntegrationTest extends ReturnChecker {
                 "}\n" +
                 "visualize a():\n" +
                     "t do a();\n";
-        ProgNode prog = ASTGenerator.GenerateFromString(input);
+        ProgNode prog = ASTGenerator.parseProgram(input);
         UnreachableCodeException exception = assertThrows(UnreachableCodeException.class, () -> {
             checkReturn(prog);
         });

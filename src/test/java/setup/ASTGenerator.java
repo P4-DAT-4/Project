@@ -1,19 +1,25 @@
 package setup;
 
+import afs.astprinter.Printer;
+import afs.astprinter.RecursiveGraphvizPrinter;
 import afs.nodes.expr.*;
 import afs.nodes.prog.ProgNode;
+import afs.nodes.stmt.StmtNode;
 import afs.syntactic_analysis.Parser;
 import afs.syntactic_analysis.Scanner;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 public class ASTGenerator {
-    public static ProgNode GenerateFromString(String input) {
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
-        Parser parser = new Parser(new Scanner(inputStream));
-        parser.Parse();
+    public static void main(String[] args)  {
+    }
 
+    public static ProgNode parseProgram(String input) {
+        InputStream stream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
+        Parser parser = new Parser(new Scanner(stream));
+        parser.Parse();
         return parser.mainNode;
     }
 

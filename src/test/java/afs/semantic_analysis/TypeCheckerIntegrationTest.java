@@ -24,7 +24,7 @@ public class TypeCheckerIntegrationTest {
                 "}"+
                 "visualize a(3, 2.5, false):" +
                     "t do a(3, 2.7, true);";
-        ProgNode prog = ASTGenerator.GenerateFromString(input);
+        ProgNode prog = ASTGenerator.parseProgram(input);
         typeChecker.checkProgram(prog);
     }
 
@@ -38,7 +38,7 @@ public class TypeCheckerIntegrationTest {
                 "}"+
                 "visualize a():" +
                     "t do a();";
-        ProgNode prog = ASTGenerator.GenerateFromString(input);
+        ProgNode prog = ASTGenerator.parseProgram(input);
         TypeCheckException exception = assertThrows(TypeCheckException.class, () -> {
             typeChecker.checkProgram(prog);
         });
@@ -54,7 +54,7 @@ public class TypeCheckerIntegrationTest {
             "}"+
             "visualize a():" +
                 "t do a();";
-        ProgNode prog = ASTGenerator.GenerateFromString(input);
+        ProgNode prog = ASTGenerator.parseProgram(input);
         typeChecker.checkProgram(prog);
     }
 
@@ -67,7 +67,7 @@ public class TypeCheckerIntegrationTest {
             "}"+
             "visualize a():" +
                 "t do a();";
-        ProgNode prog = ASTGenerator.GenerateFromString(input);
+        ProgNode prog = ASTGenerator.parseProgram(input);
         TypeCheckException exception = assertThrows(TypeCheckException.class, () -> {
             typeChecker.checkProgram(prog);
         });
@@ -83,7 +83,7 @@ public class TypeCheckerIntegrationTest {
                 "}"+
                 "visualize a():" +
                     "t do a();";
-        ProgNode prog = ASTGenerator.GenerateFromString(input);
+        ProgNode prog = ASTGenerator.parseProgram(input);
         TypeCheckException exception = assertThrows(TypeCheckException.class, () -> {
             typeChecker.checkProgram(prog);
         });
