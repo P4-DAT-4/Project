@@ -22,10 +22,12 @@ import afs.nodes.type.TypeIntNode;
 import afs.nodes.type.TypeListNode;
 import afs.nodes.type.TypeNode;
 import afs.nodes.type.TypeVoidNode;
+import org.javatuples.Triplet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -42,9 +44,8 @@ public class StmtInterpreterTest {
     private int location;
 
     @BeforeEach
-    public void setUp(){
+    public void setUp() {
         exprInterpreter = new ExprInterpreter();
-        stmtInterpreter =  new StmtInterpreter();
         defInterpreter = new DefInterpreter();
         envV = new MapVarEnvironment();
         envF = new MapFunEnvironment();
@@ -55,105 +56,204 @@ public class StmtInterpreterTest {
     }
 
 
-    @Test
-    public void StmtAssignmentNodeTest(){
-        // Declare x = 5
-        int location = store.nextLocation();
-        envV.declare("x", location);
-        store.declare(location, new IntVal(5));
+    @Nested
+    class StmtAssignmentNodeTest {
+        @Test
+        public void StmtAssignmentNode() {
+            // Declare x = 5
+            int location = store.nextLocation();
+            envV.declare("x", location);
+            store.declare(location, new IntVal(5));
 
-        // assign x = 10
-        ExprNode expr = new ExprIntNode("10",0,0);
-        StmtNode assignment = new StmtAssignmentNode("x",expr ,0,0);
+            // assign x = 10
+            ExprNode expr = new ExprIntNode("10", 0, 0);
+            StmtNode assignment = new StmtAssignmentNode("x", expr, 0, 0);
 
-        var result = stmtInterpreter.evalStmt(envV, envF, envE, location, assignment, store, imgStore);
+            var result = StmtInterpreter.evalStmt(envV, envF, envE, location, assignment, store, imgStore);
 
-        IntVal val = (IntVal) result.getValue1().lookup(location);
+            IntVal val = (IntVal) result.getValue1().lookup(location);
 
-        assertTrue(val instanceof IntVal, "Expected value to be of type IntVal");
-        assertEquals(new IntVal(10), val, "Expected 10");
+            assertTrue(val instanceof IntVal, "Expected value to be of type IntVal");
+            assertEquals(new IntVal(10), val, "Expected 10");
+
+        }
+
+        @Test
+        public void StmtAssignmentPassByValueNode() {
+            //  Declare x = 5
+            int locX = store.nextLocation();
+            envV.declare("x", locX);
+            store.declare(locX, new IntVal(5));
+
+            // Declare y = x (pass by value, so copy value of x)
+            int locY = store.nextLocation();
+            envV.declare("y", locY);
+            // Lookup x's value and copy it
+            Val xVal = store.lookup(locX);
+            store.declare(locY, xVal);
+
+            //  Assign x = 6
+            ExprNode expr6 = new ExprIntNode("6", 0, 0);
+            StmtNode assignX = new StmtAssignmentNode("x", expr6, 0, 0);
+            var result = StmtInterpreter.evalStmt(envV, envF, envE, locX, assignX, store, imgStore);
+            Store updatedStore = result.getValue1();
+
+            // Check y is still 5
+            Val yVal = updatedStore.lookup(locY);
+            assertEquals(new IntVal(5), yVal, "Expected y to remain 5");
+
+            // Also check x updated to 6
+            Val newXVal = updatedStore.lookup(locX);
+            assertEquals(new IntVal(6), newXVal, "Expected x to be updated to 6");
+        }
+
+        @Test
+        public void StmtAssignmentPassByReferenceNode() {
+            // Declare [int] x = [2, 3]
+            location = declareList("x", List.of(
+                    new ExprIntNode("2", 0, 0),
+                    new ExprIntNode("3", 0, 0)
+            ));
+
+            // Declare [int] y = x
+            // Simulate pass-by-reference by making y point to the same location as x
+            int locX = envV.lookup("x");
+            envV.declare("y", locX);  // y references the same location as x
+
+            // Assign x[0] = 1
+            List<ExprNode> indexExprs = List.of(new ExprIntNode("0", 0, 0));
+            ExprNode newVal = new ExprIntNode("1", 0, 0);
+            StmtNode listAssignment = new StmtListAssignmentNode("x", indexExprs, newVal, 0, 0);
+
+            var result = stmtInterpreter.evalStmt(envV, envF, envE, location, listAssignment, store, imgStore);
+
+            // Validate that y reflects the update, because it references same list
+            ListVal valY = (ListVal) result.getValue1().lookup(envV.lookup("y"));
+            List<Val> elements = valY.getValue();
+
+            assertEquals(new IntVal(1), elements.get(0), "Expected first element to be updated to 1");
+            assertEquals(new IntVal(3), elements.get(1), "Expected second element unchanged");
+
+        }
+    }
+
+
+    @Nested
+    class StmtCompositionNodeTest {
+        @Test
+        public void StmtCompositionNode() {
+            // Setup: declare int variable x = 0
+            location = store.nextLocation();
+            String varName = "x";
+            envV.declare(varName, location);
+            store.declare(location, new IntVal(0));
+
+            // First statement: x = 5;
+            ExprNode valueX = new ExprIntNode("5", 0, 0);
+            StmtNode assignX = new StmtAssignmentNode(varName, valueX, 0, 0);
+
+            // Second statement: return x;
+            ExprNode idX = new ExprIdentifierNode(varName, 0, 0);
+            StmtNode returnStmt = new StmtReturnNode(idX, 0, 0);
+
+            // Compose: assignX; return x;
+            StmtNode composition = new StmtCompositionNode(assignX, returnStmt, 0, 0);
+
+            // Evaluate composition
+            var result = StmtInterpreter.evalStmt(envV, envF, envE, location, composition, store, imgStore);
+
+            // Result should be return value 5
+            Val retVal = (Val) result.getValue0();
+            assertTrue(retVal instanceof IntVal, "Return value should be IntVal");
+            assertEquals(new IntVal(5), retVal, "Return value should be 5");
+
+            // Store should reflect x = 5
+            Val storedX = (Val) result.getValue1().lookup(location);
+            assertEquals(new IntVal(5), storedX, "Stored value of x should be 5");
+
+
+        }
+
+        @Test
+        public void StmtCompositionScopeNodeTest() {
+            // if (true) { int x = 5; }  // declare x inside if block
+            StmtNode ifStmt = new StmtIfNode(
+                    new ExprIntNode("1", 0, 0),  // condition = true
+                    new StmtDeclarationNode(
+                            new TypeIntNode(0, 0),   // int type
+                            "x",
+                            new ExprIntNode("5", 0, 0),
+                            new StmtSkipNode(),      // no next statement inside if block
+                            0, 0
+                    ),
+                    new StmtSkipNode(),            // else skip
+                    0, 0
+            );
+
+            // Compose: if statement + assignment x = 10 outside if block
+            StmtNode stmt = new StmtCompositionNode(
+                    ifStmt,
+                    new StmtAssignmentNode("x", new ExprIntNode("10", 0, 0), 0, 0),
+                    0, 0
+            );
+
+
+            // The assignment to x should fail (x out of scope)
+            assertThrows(RuntimeException.class, () -> {
+                StmtInterpreter.evalStmt(envV, envF, envE, location, stmt, store, imgStore);
+            }, "Expected RuntimeException when assigning to variable outside its scope");
+
+
+        }
+
 
     }
 
 
     @Test
-    public void StmtCompositionNodeTest(){
-        // Setup: declare int variable x = 0
-        location = store.nextLocation();
-        String varName = "x";
-        envV.declare(varName, location);
-        store.declare(location, new IntVal(0));
-
-        // First statement: x = 5;
-        ExprNode valueX = new ExprIntNode("5", 0, 0);
-        StmtNode assignX = new StmtAssignmentNode(varName, valueX, 0, 0);
-
-        // Second statement: return x;
-        ExprNode idX = new ExprIdentifierNode(varName, 0, 0);
-        StmtNode returnStmt = new StmtReturnNode(idX, 0, 0);
-
-        // Compose: assignX; return x;
-        StmtNode composition = new StmtCompositionNode(assignX, returnStmt, 0, 0);
-
-        // Evaluate composition
-        var result = stmtInterpreter.evalStmt(envV, envF, envE, location, composition, store, imgStore);
-
-        // Result should be return value 5
-        Val retVal = (Val) result.getValue0();
-        assertTrue(retVal instanceof IntVal, "Return value should be IntVal");
-        assertEquals(new IntVal(5), retVal, "Return value should be 5");
-
-        // Store should reflect x = 5
-        Val storedX = (Val) result.getValue1().lookup(location);
-        assertEquals(new IntVal(5), storedX, "Stored value of x should be 5");
-
-
-
-    }
-
-    @Test
-    public void StmtDeclarationNodeTest(){
+    public void StmtDeclarationNodeTest() {
         // Declare int x = 50;
-        ExprNode expr = new ExprIntNode("50",0,0);
+        ExprNode expr = new ExprIntNode("50", 0, 0);
         StmtNode skip = new StmtSkipNode();
-        TypeNode type = new TypeIntNode(0,0);
+        TypeNode type = new TypeIntNode(0, 0);
         String varName = "x";
-        StmtNode stmt = new StmtDeclarationNode(type, varName, expr, skip, 0,0);
+        StmtNode stmt = new StmtDeclarationNode(type, varName, expr, skip, 0, 0);
 
-        var result = stmtInterpreter.evalStmt(envV, envF, envE, location, stmt, store, imgStore);
+        int location = store.nextLocation();
+        var result = StmtInterpreter.evalStmt(envV, envF, envE, location, stmt, store, imgStore);
 
-        location = envV.lookup(varName);
-        Val val = (Val) result.getValue1().lookup(location);
+        Store updatedStore = result.getValue1();
+
+        // Now lookup x in the updated environment
+        int varLocation = envV.lookup(varName);
+
+        Val val = (Val) updatedStore.lookup(varLocation);
         assertEquals(new IntVal(50), val, "Expected 50");
-
 
 
     }
 
 
     @Nested
-    class StmtFunctionCallNodeTest{
+    class StmtFunctionCallNodeTest {
         @Test
-        public void StmtFunctionNode(){
-
+        public void StmtFunctionNode() {
             // Setup function parmeter x
-            String paramName =  "x";
-            TypeNode type = new TypeIntNode(0,0);
-            List<Param> params = List.of ( new Param(type,paramName,0,0));
+            String paramName = "x";
+            TypeNode type = new TypeIntNode(0, 0);
+            List<Param> params = List.of(new Param(type, paramName, 0, 0));
 
             // Setup function body return x + 1
             ExprNode paramExpr = new ExprIdentifierNode(paramName, 0, 0);
-            ExprNode value = new ExprIntNode("1",0,0);
-            ExprNode bodyExpr = new ExprBinopNode(paramExpr, BinOp.ADD, value, 0,0);
+            ExprNode value = new ExprIntNode("1", 0, 0);
+            ExprNode bodyExpr = new ExprBinopNode(paramExpr, BinOp.ADD, value, 0, 0);
             StmtNode funcBody = new StmtReturnNode(bodyExpr, 0, 0);
-
 
 
             // Declare n = 5
             int location = store.nextLocation();
             String n = "n";
             envV.declare(n, location);
-
             store.declare(location, new IntVal(5));
             // Create function definition
             String funcName = "increment";
@@ -167,10 +267,10 @@ public class StmtInterpreterTest {
             // Evaluate the function declaration to register it in function enviroment
             var defResult = defInterpreter.evalDef(envV, envF, envE, location, functionDef, store, imgStore);
 
-
             // Create function call increment(6)
-            List<ExprNode> args = List.of(new ExprIntNode("6",0,0));
-            StmtNode funcCall = new StmtFunctionCallNode(funcName, args,0,0);
+
+            List<ExprNode> args = List.of(new ExprIntNode("6", 0, 0));
+            StmtNode funcCall = new StmtFunctionCallNode(funcName, args, 0, 0);
 
             // Evaluate the function call statement using stmtInterpreter.evalStmt
             var callResult = stmtInterpreter.evalStmt(envV, envF, envE, location, funcCall, store, imgStore);
@@ -186,7 +286,7 @@ public class StmtInterpreterTest {
         }
 
         @Test
-        public void StmtFunctionPassByValueNode(){
+        public void StmtFunctionPassByValueNode() {
 
             /// Declare a variable: int x = 5
             String varName = "x";
@@ -219,7 +319,7 @@ public class StmtInterpreterTest {
             // Define the function increment(x: Int): Void
             String funcName = "incrementVoid";
             String eventName = "ev1";
-            List<ExprNode> eventArgs =  List.of(new ExprIdentifierNode(n, 0, 0));
+            List<ExprNode> eventArgs = List.of(new ExprIdentifierNode(n, 0, 0));
             TypeNode voidType = new TypeVoidNode(0, 0);
             DefNode functionDef = createFunction(voidType, funcName, params, funcBody, eventName, eventArgs);
 
@@ -244,7 +344,7 @@ public class StmtInterpreterTest {
         }
 
         @Test
-        public void StmtFunctionCallPassByReferenceNode(){
+        public void StmtFunctionCallPassByReferenceNode() {
 
 
             String vizFuncName = "logListLength";
@@ -264,22 +364,20 @@ public class StmtInterpreterTest {
 
 
             // Create function definition with void return type
-            TypeNode voidType = new TypeVoidNode(0,0);
+            TypeNode voidType = new TypeVoidNode(0, 0);
             String funcName = "incrementFirst";
             String eventName = "ev1";
-            List<ExprNode> eventArgs =  List.of(new ExprIdentifierNode(n, 0, 0));
+            List<ExprNode> eventArgs = List.of(new ExprIdentifierNode(n, 0, 0));
 
 
             EventNode eventDecl = new EventDeclarationNode(eventName, vizFuncName, eventArgs, 0, 0);
             DefNode visualize = new DefVisualizeNode(vizFuncName, eventArgs, eventDecl, 0, 0);
 
             DefNode vizFunction = new DefFunctionNode(voidType, vizFuncName, vizParams, vizBody,
-                    visualize,0,0);
+                    visualize, 0, 0);
 
             // Register it
             defInterpreter.evalDef(envV, envF, envE, location, vizFunction, store, imgStore);
-
-
 
 
             // Declare list variable x = [1, 3]
@@ -290,10 +388,9 @@ public class StmtInterpreterTest {
             ));
 
             ListVal originalList = (ListVal) store.lookup(location);
-            assertEquals(1, ((IntVal)originalList.getValue().get(0)).getValue());
-            assertEquals(3, ((IntVal)originalList.getValue().get(1)).getValue());
+            assertEquals(1, ((IntVal) originalList.getValue().get(0)).getValue());
+            assertEquals(3, ((IntVal) originalList.getValue().get(1)).getValue());
             System.out.println("Original list stored at location: " + location);
-
 
 
             // Function parameter: list x (type is list of int)
@@ -317,7 +414,7 @@ public class StmtInterpreterTest {
             StmtNode funcBody = assignment; // just the assignment, no return
 
 
-            DefNode functionDef =  new DefFunctionNode(voidType, funcName, params, funcBody, vizFunction, 0, 0);
+            DefNode functionDef = new DefFunctionNode(voidType, funcName, params, funcBody, vizFunction, 0, 0);
 
             // Register the function in the environment
             defInterpreter.evalDef(envV, envF, envE, location, functionDef, store, imgStore);
@@ -328,12 +425,10 @@ public class StmtInterpreterTest {
             // DEBUG: Verify argument is identifier node
             assertTrue(args.get(0) instanceof ExprIdentifierNode,
                     "Argument must be variable reference");
-            assertEquals(varName, ((ExprIdentifierNode)args.get(0)).getIdentifier());
+            assertEquals(varName, ((ExprIdentifierNode) args.get(0)).getIdentifier());
 
 
             StmtNode funcCall = new StmtFunctionCallNode(funcName, args, 0, 0);
-
-
 
 
             // Evaluate the function call (should modify list x in place)
@@ -342,7 +437,7 @@ public class StmtInterpreterTest {
 
             // Since function is void, return value should be null
             Val returnVal = (Val) callResult.getValue0();
-            assertTrue( returnVal == null, "Expected null since void retun type");
+            assertTrue(returnVal == null, "Expected null since void retun type");
 
             // Check that the list x was modified: x[0] == 2 now (1 + 1)
             ListVal updatedList = (ListVal) store.lookup(location);
@@ -356,7 +451,7 @@ public class StmtInterpreterTest {
 
 
     @Test
-    public void StmtIfNodeTest(){
+    public void StmtIfNodeTest() {
         // Declare x
         location = store.nextLocation();
         String varName = "x";
@@ -364,15 +459,15 @@ public class StmtInterpreterTest {
         store.declare(location, new IntVal(0));
 
         // if (true) then x = 1 else x = 2
-        ExprNode exprThen = new ExprIntNode("1",0,0);
-        StmtNode thenStmt = new StmtAssignmentNode(varName, exprThen, 0,0);
-        ExprNode exprElse = new ExprIntNode("2",0,0);
-        StmtNode elseStmt = new StmtAssignmentNode(varName, exprElse, 0,0);
-        ExprNode bool = new ExprBoolNode("true",0,0);
-        StmtNode ifStmt = new StmtIfNode(bool,thenStmt,elseStmt,0,0);
+        ExprNode exprThen = new ExprIntNode("1", 0, 0);
+        StmtNode thenStmt = new StmtAssignmentNode(varName, exprThen, 0, 0);
+        ExprNode exprElse = new ExprIntNode("2", 0, 0);
+        StmtNode elseStmt = new StmtAssignmentNode(varName, exprElse, 0, 0);
+        ExprNode bool = new ExprBoolNode("true", 0, 0);
+        StmtNode ifStmt = new StmtIfNode(bool, thenStmt, elseStmt, 0, 0);
 
         var result = stmtInterpreter.evalStmt(envV, envF, envE, location, ifStmt, store, imgStore);
-        Val value =  (Val) result.getValue1().lookup(location);
+        Val value = (Val) result.getValue1().lookup(location);
         assertEquals(new IntVal(1), value, "Expected 1");
 
 
@@ -380,10 +475,10 @@ public class StmtInterpreterTest {
 
 
     @Nested
-    class StmtListAssignmentNodeTest{
+    class StmtListAssignmentNodeTest {
 
         @Test
-        public void StmtListAssignmentNode1D(){
+        public void StmtListAssignmentNode1D() {
             String varName = "myList";
             location = declareList(varName, List.of(
                     new ExprIntNode("1", 0, 0),
@@ -392,9 +487,9 @@ public class StmtInterpreterTest {
             ));
 
             // Assign to myList[1] = 10;
-            List<ExprNode> indexExprs = List.of(new ExprIntNode("1",0,0));
-            ExprNode newVal = new ExprIntNode("10",0,0);
-            StmtNode listAssingment = new StmtListAssignmentNode(varName, indexExprs, newVal, 0,0);
+            List<ExprNode> indexExprs = List.of(new ExprIntNode("1", 0, 0));
+            ExprNode newVal = new ExprIntNode("10", 0, 0);
+            StmtNode listAssingment = new StmtListAssignmentNode(varName, indexExprs, newVal, 0, 0);
 
             // run list assignmemnt
             var result2 = stmtInterpreter.evalStmt(envV, envF, envE, location, listAssingment, store, imgStore);
@@ -411,7 +506,7 @@ public class StmtInterpreterTest {
         }
 
         @Test
-        public void StmtListAssignmentNode2D(){
+        public void StmtListAssignmentNode2D() {
             // Prepare nested expressions as List of List<ExprNode>
             List<List<ExprNode>> nestedExprs = List.of(
                     List.of(new ExprIntNode("1", 0, 0), new ExprIntNode("2", 0, 0)),
@@ -457,7 +552,7 @@ public class StmtInterpreterTest {
         }
 
         @Test
-        public void StmtListAssignmentNodeOutOfBounds(){
+        public void StmtListAssignmentNodeOutOfBounds() {
 
             // Prepare list: [1, 3, 6]
             String varName = "myList";
@@ -483,13 +578,13 @@ public class StmtInterpreterTest {
 
 
     @Test
-    public void StmtReturnNodeTest(){
+    public void StmtReturnNodeTest() {
         ExprNode returnExpr = new ExprIntNode("10", 0, 0);
-        StmtNode returnStmt = new StmtReturnNode(returnExpr,0,0);
+        StmtNode returnStmt = new StmtReturnNode(returnExpr, 0, 0);
 
         // Evaluate return statment
         var result = stmtInterpreter.evalStmt(envV, envF, envE, location, returnStmt, store, imgStore);
-        Val returnVal =  (Val) result.getValue0();
+        Val returnVal = (Val) result.getValue0();
 
         assertTrue(returnVal instanceof IntVal, "Returned value should be IntVal");
         assertEquals(new IntVal(10), returnVal, "Returned value should be 10");
@@ -498,7 +593,7 @@ public class StmtInterpreterTest {
 
 
     @Test
-    public void StmtSkipNodeTest(){
+    public void StmtSkipNodeTest() {
         StmtNode skipStmt = new StmtSkipNode();
 
         // Evaluate the skip statement
@@ -510,7 +605,7 @@ public class StmtInterpreterTest {
     }
 
     @Test
-    public void StmtWhileNodeTest(){
+    public void StmtWhileNodeTest() {
         // Declare x = 0
         location = store.nextLocation();
         String varName = "x";
@@ -519,18 +614,18 @@ public class StmtInterpreterTest {
         store.declare(location, val);
 
         // While (x < 3)
-        ExprNode left = new ExprIdentifierNode(varName, 0,0);
-        ExprNode right = new ExprIntNode("3",0,0);
-        ExprNode condition = new ExprBinopNode(left, BinOp.LT, right, 0,0);
+        ExprNode left = new ExprIdentifierNode(varName, 0, 0);
+        ExprNode right = new ExprIntNode("3", 0, 0);
+        ExprNode condition = new ExprBinopNode(left, BinOp.LT, right, 0, 0);
 
         // Body x = x + 1;
-        ExprNode leftI = new ExprIdentifierNode(varName, 0,0);
-        ExprNode rightI = new ExprIntNode("1",0,0);
-        ExprNode incrementExpr = new ExprBinopNode(leftI, BinOp.ADD, rightI, 0,0);
-        StmtNode body = new StmtAssignmentNode(varName, incrementExpr, 0,0);
+        ExprNode leftI = new ExprIdentifierNode(varName, 0, 0);
+        ExprNode rightI = new ExprIntNode("1", 0, 0);
+        ExprNode incrementExpr = new ExprBinopNode(leftI, BinOp.ADD, rightI, 0, 0);
+        StmtNode body = new StmtAssignmentNode(varName, incrementExpr, 0, 0);
 
         // Whil loop node
-        StmtNode whileStmt = new StmtWhileNode(condition,body,0,0);
+        StmtNode whileStmt = new StmtWhileNode(condition, body, 0, 0);
         var result = stmtInterpreter.evalStmt(envV, envF, envE, location, whileStmt, store, imgStore);
 
         Val finalVal = (Val) result.getValue1().lookup(location);

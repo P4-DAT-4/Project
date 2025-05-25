@@ -1,5 +1,6 @@
 package afs.interpreter;
 
+import afs.interpreter.expressions.ListVal;
 import afs.interpreter.expressions.Val;
 import afs.interpreter.implementations.MapVarEnvironment;
 import afs.interpreter.interfaces.*;
@@ -30,14 +31,18 @@ public class DefInterpreter {
                 // Evaluate the expression
                 Val value = ExprInterpreter.evalExpr(envV, envF, envE, location, expr, store, imgStore).getValue0();
 
-                // Update the environment
-                envV.declare(varName, location);
-
-                // Update the store
-                store.declare(location, value);
+                if (value instanceof ListVal) {
+                    // Pass by reference: bind varName to the existing location of the list
+                    envV.declare(varName, location);
+                } else {
+                    // Pass by value: store a copy at a new location
+                    envV.declare(varName, location);
+                    store.declare(location, value);
+                    location = store.nextLocation();
+                }
 
                 // Evaluate the definition and return
-                yield evalDef(envV, envF, envE, ++location, nextDef, store, imgStore);
+                yield evalDef(envV, envF, envE, location, nextDef, store, imgStore);
             }
             case DefFunctionNode defFunctionNode -> {
                 String varName = defFunctionNode.getIdentifier();
@@ -48,11 +53,7 @@ public class DefInterpreter {
                 var body = defFunctionNode.getStatement();
                 var nextDef = defFunctionNode.getDefinition();
 
-                // Create a fresh environment for the function
-                VarEnvironment funcDeclEnv = new MapVarEnvironment();
-
-
-                // Declare function environment
+                // Declare function environment, give it a new environment
                 envF.declare(varName, new Triplet<>(body, paramNames, envV.newScope()));
 
                 // Evaluate the definition and return
@@ -64,7 +65,7 @@ public class DefInterpreter {
                 var nextEvent = defVisualizeNode.getEvent();
 
                 // Update the event environment
-                var updatedEnvE = eventInterpreter.evalEvent(nextEvent, envE);
+                var updatedEnvE = EventInterpreter.evalEvent(nextEvent, envE);
 
 
                 // Create function call
@@ -74,7 +75,6 @@ public class DefInterpreter {
                 StmtInterpreter.evalStmt(envV, envF, updatedEnvE, location, functionCallAsStmt, store, imgStore);
 
                 // Return the stores
-                yield Pair.with(store, imgStore);
                 yield Pair.with(store, imgStore);
             }
         };

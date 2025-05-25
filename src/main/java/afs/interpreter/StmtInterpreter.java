@@ -27,24 +27,33 @@ public class StmtInterpreter {
             case StmtAssignmentNode stmtAssignmentNode -> {
                 String varName = stmtAssignmentNode.getIdentifier();
                 var exprNode = stmtAssignmentNode.getExpression();
+                System.out.println("Assigning to " + varName + " in env: " + envV);
 
                 // Check for events
                 EventHandler.check(envV, envF, envE, location, varName, store, imgStore);
-
                 // Evaluate the expression
                 Val value = ExprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore).getValue0();
-
-                // Update store
-                store.declare(envV.lookup(varName), value);
-
-                // Return
-                yield new Triplet<>(null, store, imgStore);
+                try {
+                    int targetLoc = envV.lookup(varName);
+                    System.out.println("Found " + varName + " at location " + targetLoc);
+                    if (value instanceof ListVal && exprNode instanceof ExprIdentifierNode) {
+                        int sourceLoc = envV.lookup(((ExprIdentifierNode) exprNode).getIdentifier());
+                        envV.declare(varName, sourceLoc);
+                        System.out.println("Assigned " + varName + " to source location " + sourceLoc + " (ListVal)");
+                    } else {
+                        store.declare(targetLoc, value);
+                        System.out.println("Assigned " + value + " to " + varName + " at location " + targetLoc);
+                    }
+                    yield new Triplet<>(null, store, imgStore);
+                } catch (RuntimeException e) {
+                    throw new RuntimeException("Variable '" + varName + "' not found in environment", e);
+                }
             }
             case StmtCompositionNode stmtCompositionNode -> {
                 var s1 = stmtCompositionNode.getLeftStatement();
 
                 // Evaluate the first statement
-                Val value = evalStmt(envV.newScope(), envF, envE, location, s1, store, imgStore).getValue0();
+                Val value = evalStmt(envV, envF, envE, location, s1, store, imgStore).getValue0();
 
                 // Comp-2: s1 is a non-epsilon value
                 if (value != null) {
@@ -54,7 +63,7 @@ public class StmtInterpreter {
                 var s2 = stmtCompositionNode.getRightStatement();
 
                 // Comp-1: Evaluate s2 as s1 evaluated to epsilon
-                yield evalStmt(envV.newScope(), envF, envE, location, s2, store, imgStore);
+                yield evalStmt(envV, envF, envE, location, s2, store, imgStore);
             }
             case StmtDeclarationNode stmtDeclarationNode -> {
                 String varName = stmtDeclarationNode.getIdentifier();
@@ -64,40 +73,61 @@ public class StmtInterpreter {
                 // Evaluate the expression
                 Val value = ExprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore).getValue0();
 
-                // Create a copy of the current var env and declare a new variable in that
-                VarEnvironment newEnvV = envV.newScope();
-                newEnvV.declare(varName, location);
-
-                // Update the store
-                store.declare(location, value);
+                // Declare in current environment
+                if (value instanceof ListVal) {
+                    // Pass-by-reference behavior
+                    if (exprNode instanceof ExprIdentifierNode identifierNode) {
+                        String sourceVar = identifierNode.getIdentifier();
+                        int existingLoc = envV.lookup(sourceVar);  // same memory
+                        envV.declare(varName, existingLoc);        // bind varName to same loc
+                    } else {
+                        // array literal — must allocate new location
+                        int newLoc = store.nextLocation();
+                        envV.declare(varName, newLoc);
+                        store.declare(newLoc, value);
+                    }
+                } else {
+                    // Pass-by-value behavior
+                    int newLoc = store.nextLocation();
+                    envV.declare(varName, newLoc);
+                    store.declare(newLoc, value);
+                }
 
                 // Evaluate the statement and return
-                yield evalStmt(newEnvV, envF, envE, ++location, nextStmt, store, imgStore);
+                yield evalStmt(envV, envF, envE, store.nextLocation(), nextStmt, store, imgStore);
             }
+            /*
             case StmtFunctionCallNode stmtFunctionCallNode -> {
                 String funcName = stmtFunctionCallNode.getIdentifier();
                 List<ExprNode> args = stmtFunctionCallNode.getArguments();
                 var funcData = envF.lookup(funcName);
 
+                if (funcData == null) {
+                    throw new RuntimeException("Function '" + funcName + "' not found");
+                }
+
+                VarEnvironment funcEnvV = funcData.getValue2().newScope();
+                System.out.println("Created funcEnvV: " + funcEnvV);
+
                 // Base case
                 if (args.isEmpty()) {
+                    System.out.println("Base case: Evaluating body in funcEnvV = " + funcEnvV);
                     // Check for events
                     EventHandler.check(envV, envF, envE, location, funcName, store, imgStore);
                     // Call function by evaluating the statement in the function
                     StmtNode funcBody = funcData.getValue0();
-                    yield StmtInterpreter.evalStmt(funcData.getValue2(), envF, envE, location, funcBody, store, imgStore);
+                    yield StmtInterpreter.evalStmt(funcEnvV, envF, envE, location, funcBody, store, imgStore);
                 } else {
                     int line = stmtFunctionCallNode.getLineNumber();
                     int col = stmtFunctionCallNode.getColumnNumber();
 
                     // Get parameters
                     List<String> paramNames = funcData.getValue1();
-
-                    VarEnvironment funcEnvV = funcData.getValue2();
+                    //VarEnvironment funcEnvV = funcData.getValue2().newScope();
 
                     // Get expression e_n and evaluate it
                     ExprNode exprE_n = args.getLast();
-                    Val exprVal = ExprInterpreter.evalExpr(envV, envF, envE, location, exprE_n, store, imgStore).getValue0();
+                    Val exprVal = ExprInterpreter.evalExpr(funcEnvV, envF, envE, location, exprE_n, store, imgStore).getValue0();
 
                     List<ExprNode> newArgs = new ArrayList<>(args);
                     // Create a new function call with one less argument
@@ -115,24 +145,79 @@ public class StmtInterpreter {
                         }
                         System.out.println(ident);
                         // Declare a new variable in the environment, using the name of the parameter, and make it point to the location of the identifier
-                        funcEnvV.declare(paramNames.get(n), envV.lookup(ident.getIdentifier()));
+                        funcEnvV.declare(paramNames.get(n), funcEnvV.lookup(ident.getIdentifier()));
 
                         // Evaluate the new function call with one less argument
-                        yield evalStmt(envV, envF, envE, location, functionCallNode, store, imgStore);
+                        yield evalStmt(funcEnvV, envF, envE, location, functionCallNode, store, imgStore);
                     } else { // If e_n is not a list
                         System.out.println("Got not listval");
                         if (exprVal instanceof IntVal intVal) {
                             System.out.println("Intval is " + intVal.asInt());
                         }
+                        int paramLocation = store.nextLocation();
                         // Declare a new parameter, assign it the location l
-                        funcEnvV.declare(paramNames.get(n), location);
+                        funcEnvV.declare(paramNames.get(n), paramLocation);
                         // Store the value of expression e_n at the location
-                        store.declare(location, exprVal);
-
+                        store.declare(paramLocation, exprVal);
+                        System.out.println("Bound " + paramNames.get(n) + " to location " + paramLocation + " with value " + exprVal);
                         // Evaluate the new function call with one less argument and with new location
-                        yield evalStmt(envV, envF, envE, ++location, functionCallNode, store, imgStore);
+                        yield evalStmt(funcEnvV, envF, envE, store.nextLocation(), functionCallNode, store, imgStore);
                     }
                 }
+            }*/
+
+            case StmtFunctionCallNode stmtFunctionCallNode -> {
+                String funcName = stmtFunctionCallNode.getIdentifier();
+                List<ExprNode> args = stmtFunctionCallNode.getArguments();
+                var funcData = envF.lookup(funcName);
+                if (funcData == null) {
+                    throw new RuntimeException("Function '" + funcName + "' not found");
+                }
+                VarEnvironment funcEnvV = funcData.getValue2().newScope();
+                System.out.println("Created funcEnvV: " + funcEnvV);
+
+                // Process all arguments
+                List<String> paramNames = funcData.getValue1();
+                if (args.size() != paramNames.size()) {
+                    throw new RuntimeException("Argument count mismatch for function " + funcName);
+                }
+
+
+                for (int i = 0; i < args.size(); i++) {
+                    ExprNode arg = args.get(i);
+                    String paramName = paramNames.get(i);
+                    var result = ExprInterpreter.evalExpr(envV, envF, envE, location, arg, store, imgStore);
+                    Val exprVal = result.getValue0();
+
+
+                    int line = stmtFunctionCallNode.getLineNumber();
+                    if (exprVal instanceof ListVal) {
+                        if (!(arg instanceof ExprIdentifierNode ident)) {
+                            throw new RuntimeException("Arrays are call-by-reference - cannot pass an array literal or an index of an array at line " + line);
+                        }
+                        String identName = ident.getIdentifier();
+                        try {
+                            int loc = envV.lookup(identName);
+                            funcEnvV.declare(paramName, loc);
+                            System.out.println("Bound " + paramName + " to location " + loc + " (ListVal)");
+                        } catch (RuntimeException e) {
+                            throw new RuntimeException("Variable '" + identName + "' not found in environment at line " + line, e);
+                        }
+                    } else {
+                        int paramLocation = store.nextLocation();
+                        funcEnvV.declare(paramName, paramLocation);
+                        store.declare(paramLocation, exprVal);
+                        System.out.println("Bound " + paramName + " to location " + paramLocation + " with value " + exprVal);
+                        System.out.println("funcEnvV after declare: " + funcEnvV);
+                    }
+                    location = store.nextLocation();
+                }
+
+                // Evaluate the function body
+                System.out.println("Evaluating body in funcEnvV = " + funcEnvV);
+                EventHandler.check(envV, envF, envE, location, funcName, store, imgStore);
+                StmtNode funcBody = funcData.getValue0();
+                yield StmtInterpreter.evalStmt(funcEnvV, envF, envE, location, funcBody, store, imgStore);
             }
             case StmtIfNode stmtIfNode -> {
                 var exprNode = stmtIfNode.getExpression();
@@ -201,12 +286,11 @@ public class StmtInterpreter {
             }
             case StmtReturnNode stmtReturnNode -> {
                 var exprNode = stmtReturnNode.getExpression();
-
+                System.out.println("Evaluating return expression in env: " + envV);
                 // Evaluate the expression
                 var value = ExprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore).getValue0();
 
                 // Return the value
-                yield new Triplet<>(value, store, imgStore);
                 yield new Triplet<>(value, store, imgStore);
             }
             case StmtSkipNode stmtSkipNode -> new Triplet<>(null, store, imgStore);

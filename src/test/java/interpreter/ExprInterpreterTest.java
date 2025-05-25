@@ -9,7 +9,6 @@ import afs.interpreter.expressions.*;
 import afs.interpreter.implementations.*;
 import afs.interpreter.interfaces.*;
 import afs.nodes.expr.*;
-import afs.runtime.Shape;
 import org.junit.jupiter.api.BeforeEach;
 
 import org.junit.jupiter.api.Nested;
@@ -243,7 +242,7 @@ public class ExprInterpreterTest{
         }
 
         // concat shape
-        public void ExprConcatShapeCurveNode(){
+     //   public void ExprConcatShapeCurveNode(){
 //            ExprNode shapeExpr1 = new ExprLineNode(List.of(
 //                    new ExprDoubleNode("0", 0, 0),
 //                    new ExprDoubleNode("0", 0, 0),
@@ -290,7 +289,7 @@ public class ExprInterpreterTest{
         }
 
 
-        public void ExprConcatShapeLineNode(){
+     //   public void ExprConcatShapeLineNode(){
 //            ExprNode shapeExpr1 = new ExprLineNode(List.of(
 //                    new ExprDoubleNode("0", 0, 0),
 //                    new ExprDoubleNode("0", 0, 0),
@@ -331,11 +330,10 @@ public class ExprInterpreterTest{
 //
 //            assertEquals(2, first.getCoordinates().size(), "Line 1 should have 2 points");
 //            assertEquals(3, second.getCoordinates().size(), "Line 2 should have 3 points");
-        }
+      //  }
 
 
-
-    }
+   //  }
 
 
     @Nested
@@ -380,7 +378,7 @@ public class ExprInterpreterTest{
 
             // Simulate declaring variable
             envV.declare(varName, location);
-            store.store(location, value);
+            store.declare(location, value);
 
             ExprIdentifierNode identifierExpr = new ExprIdentifierNode(varName, 0, 0);
             var result = exprInterpreter.evalExpr(envV, envF, envE, location, identifierExpr, store, imgStore);
@@ -398,7 +396,7 @@ public class ExprInterpreterTest{
 
             // Simulate declaring variable
             envV.declare(varName, location);
-            store.store(location, value);
+            store.declare(location, value);
 
             ExprIdentifierNode identifierExpr = new ExprIdentifierNode(varName, 0, 0);
             var result = exprInterpreter.evalExpr(envV, envF, envE, location, identifierExpr, store, imgStore);
@@ -416,7 +414,7 @@ public class ExprInterpreterTest{
 
             // Simulate declaring variable
             envV.declare(varName, location);
-            store.store(location, value);
+            store.declare(location, value);
 
             ExprIdentifierNode identifierExpr = new ExprIdentifierNode(varName, 0, 0);
             var result = exprInterpreter.evalExpr(envV, envF, envE, location, identifierExpr, store, imgStore);
@@ -449,7 +447,7 @@ public class ExprInterpreterTest{
             assertTrue(listVal instanceof ListVal, "Expected a ListVal");
 
             // Check content of ListVal
-            List<Val> evaluatedElements = listVal.getElements();
+            List<Val> evaluatedElements = listVal.getValue();
             assertEquals(3, evaluatedElements.size(), "Expected list of size 3");
 
             assertEquals(1, ((IntVal) evaluatedElements.get(0)).getValue(), "Expected to have 1");
@@ -484,11 +482,11 @@ public class ExprInterpreterTest{
             List<ExprNode> outerList = List.of(innerExpr1, innerExpr2);
             ExprListDeclaration nestedList = new ExprListDeclaration(outerList, 0, 0);
 
-            var result = exprInterpreter.evalExpr(envV, envF, envE, location, nestedList, store, imgStore);
+            var result = ExprInterpreter.evalExpr(envV, envF, envE, location, nestedList, store, imgStore);
 
             // Top-level result
             ListVal outerListVal = (ListVal) result.getValue0();
-            List<Val> outerElements = outerListVal.getElements();
+            List<Val> outerElements = outerListVal.getValue();
             assertEquals(2, outerElements.size(), "Expected outer list to have 2 elements");
 
             for (Val val : outerElements) {
@@ -499,14 +497,14 @@ public class ExprInterpreterTest{
             ListVal firstInner = (ListVal) outerElements.get(0);
             ListVal secondInner = (ListVal) outerElements.get(1);
 
-            assertEquals(2, firstInner.getElements().size(), "Expected first inner to have size 2");
-            assertEquals(2, secondInner.getElements().size(), "Expected second innter to have size 2");
+            assertEquals(2, firstInner.getValue().size(), "Expected first inner to have size 2");
+            assertEquals(2, secondInner.getValue().size(), "Expected second innter to have size 2");
 
-            assertEquals(1, ((IntVal) firstInner.getElements().get(0)).getValue(), "Expected 1");
-            assertEquals(2, ((IntVal) firstInner.getElements().get(1)).getValue(), "Expected 2");
+            assertEquals(1, ((IntVal) firstInner.getValue().get(0)).getValue(), "Expected 1");
+            assertEquals(2, ((IntVal) firstInner.getValue().get(1)).getValue(), "Expected 2");
 
-            assertEquals(3, ((IntVal) secondInner.getElements().get(0)).getValue(), "Expected 3");
-            assertEquals(4, ((IntVal) secondInner.getElements().get(1)).getValue(), "Expected 4");
+            assertEquals(3, ((IntVal) secondInner.getValue().get(0)).getValue(), "Expected 3");
+            assertEquals(4, ((IntVal) secondInner.getValue().get(1)).getValue(), "Expected 4");
 
             // Store check
             Val stored = (Val) result.getValue1().lookup(location);
@@ -530,18 +528,18 @@ public class ExprInterpreterTest{
             );
 
             ExprListDeclaration listDeclaration = new ExprListDeclaration(exprs, 0,0);
-            var resultListDecl = exprInterpreter.evalExpr(envV, envF, envE, location, listDeclaration, store, imgStore);
+            var resultListDecl = ExprInterpreter.evalExpr(envV, envF, envE, location, listDeclaration, store, imgStore);
 
             ListVal listVal = (ListVal) resultListDecl.getValue0();
             String varName = "myList";
             envV.declare(varName, location);
-            store.store(location, listVal);
+            store.declare(location, listVal);
 
             // Acces with index 1
             ExprNode indexExpr = new ExprIntNode("1", 0, 0);
             ExprListAccessNode listAccessNode = new ExprListAccessNode(varName, List.of(indexExpr), 0, 0);
 
-            var resultListAccess = exprInterpreter.evalExpr(envV, envF, envE, location, listAccessNode, store, imgStore);
+            var resultListAccess = ExprInterpreter.evalExpr(envV, envF, envE, location, listAccessNode, store, imgStore);
             assertTrue(resultListAccess.getValue0() instanceof IntVal, "Expected result to be IntVal");
             assertEquals(3, ((IntVal) resultListAccess.getValue0()).getValue(), "Expected value to be 3");
 
@@ -558,12 +556,12 @@ public class ExprInterpreterTest{
             );
 
             ExprListDeclaration listDeclaration = new ExprListDeclaration(exprs, 0,0);
-            var resultListDecl = exprInterpreter.evalExpr(envV, envF, envE, location, listDeclaration, store, imgStore);
+            var resultListDecl = ExprInterpreter.evalExpr(envV, envF, envE, location, listDeclaration, store, imgStore);
 
             ListVal listVal = (ListVal) resultListDecl.getValue0();
             String varName = "myList";
             envV.declare(varName, location);
-            store.store(location, listVal);
+            store.declare(location, listVal);
 
             // Invalid access: index 5 (out of bounds)
             ExprNode invalidIndexExpr = new ExprIntNode("5", 0, 0);
@@ -597,10 +595,10 @@ public class ExprInterpreterTest{
             ExprListDeclaration subList2 = new ExprListDeclaration(innerList2, 0, 0);
 
             // Evaluate sublists
-            var resultSubList1 = exprInterpreter.evalExpr(envV, envF, envE, location, subList1, store, imgStore);
+            var resultSubList1 = ExprInterpreter.evalExpr(envV, envF, envE, location, subList1, store, imgStore);
             Store updatedStore = resultSubList1.getValue1();
             ImgStore currentImgStore = resultSubList1.getValue2();
-            var resultSubList2 = exprInterpreter.evalExpr(envV, envF, envE, location, subList2, updatedStore , currentImgStore);
+            var resultSubList2 = ExprInterpreter.evalExpr(envV, envF, envE, location, subList2, updatedStore , currentImgStore);
 
             ListVal evaluatedSubList1 = (ListVal) resultSubList1.getValue0();
             ListVal evaluatedSubList2 = (ListVal) resultSubList2.getValue0();
@@ -612,14 +610,14 @@ public class ExprInterpreterTest{
             String varName = "matrix";
             envV.declare(varName, location);
             updatedStore = resultSubList2.getValue1();
-            updatedStore.store(location, outerList);
+            updatedStore.declare(location, outerList);
 
             // Access matrix[1][0], which should be 3
             ExprNode outerIndex = new ExprIntNode("1", 0, 0);  // second row
             ExprNode innerIndex = new ExprIntNode("0", 0, 0);  // first element
             ExprListAccessNode accessNode = new ExprListAccessNode(varName, List.of(outerIndex, innerIndex), 0, 0);
 
-            var result = exprInterpreter.evalExpr(envV, envF, envE, location, accessNode, updatedStore, imgStore);
+            var result = ExprInterpreter.evalExpr(envV, envF, envE, location, accessNode, updatedStore, imgStore);
 
 
             assertTrue(result.getValue0() instanceof IntVal, "Expected IntVal from matrix[1][0]");
@@ -630,19 +628,19 @@ public class ExprInterpreterTest{
         }
 
 
-    @Test
-    public void exprTextNodeTest(){
-//        ExprNode textExpr = new ExprStringNode("'Hello'", 0, 0);
-//        ExprNode expr = new ExprTextNode(textExpr, 0, 0);
+//    @Test
+//    public void exprTextNodeTest(){
+////        ExprNode textExpr = new ExprStringNode("'Hello'", 0, 0);
+////        ExprNode expr = new ExprTextNode(textExpr, 0, 0);
+////
+////        var result = exprInterpreter.evalExpr(envV, envF, envE, location, expr, store, imgStore);
+////        ShapeVal shapeVal = (ShapeVal) result.getValue0();
+////        Store updatedStore = result.getValue1();
+////        ImgStore updatedImgStore = result.getValue2();
+////
+////        assertTrue(shapeVal instanceof ShapeVal, "Expected StringVal from ExprTextNode evaluation");
 //
-//        var result = exprInterpreter.evalExpr(envV, envF, envE, location, expr, store, imgStore);
-//        ShapeVal shapeVal = (ShapeVal) result.getValue0();
-//        Store updatedStore = result.getValue1();
-//        ImgStore updatedImgStore = result.getValue2();
-//
-//        assertTrue(shapeVal instanceof ShapeVal, "Expected StringVal from ExprTextNode evaluation");
-
-    }
+//    }
 
 
 
