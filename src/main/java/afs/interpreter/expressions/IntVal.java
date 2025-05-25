@@ -1,6 +1,6 @@
 package afs.interpreter.expressions;
 
-public class IntVal implements Val {
+public final class IntVal implements Val {
     private final int value;
 
     public IntVal(int value){
@@ -22,10 +22,5 @@ public class IntVal implements Val {
         if (o == null || getClass() != o.getClass()) return false; // null or different type
         IntVal intVal = (IntVal) o;
         return value == intVal.value; // compare values
-    }
-
-    @Override
-    public Val copy() {
-        return new IntVal(value);
     }
 }

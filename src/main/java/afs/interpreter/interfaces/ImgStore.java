@@ -1,8 +1,10 @@
 package afs.interpreter.interfaces;
 
-import afs.semantic_analysis.types.AFSType;
+import afs.interpreter.expressions.ShapeVal;
 
 public interface ImgStore {
-    void push(AFSType shape);
-    AFSType pop();
+    void push(ShapeVal shape);
+    ShapeVal pop();
+    boolean isEmpty();
+    int size();
 }

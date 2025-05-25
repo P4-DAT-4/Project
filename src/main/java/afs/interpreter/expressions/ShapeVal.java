@@ -1,26 +1,29 @@
 package afs.interpreter.expressions;
 
-import afs.runtime.Shape;
+import afs.interpreter.expressions.shape.Shape;
 
-public class ShapeVal implements Val{
-    private final Shape shape;
+import java.util.ArrayList;
+import java.util.List;
 
-    public ShapeVal(Shape shape) {
-        this.shape = shape;
+public final class ShapeVal implements Val{
+    private final List<Shape> shapes;
+
+    public ShapeVal(List<Shape> shapes) {
+        this.shapes = shapes;
     }
 
-    public Shape getShape() {
-        return shape;
+    public ShapeVal(Shape... shapes) {
+        this.shapes = new ArrayList<>(List.of(shapes));
     }
 
-    @Override
-    public String toString() {
-        return shape.toString();
+    public ShapeVal(Val... shapeVals) {
+        this.shapes = new ArrayList<>();
+        for (Val val : shapeVals) {
+            this.shapes.addAll(((ShapeVal) val).getValue());
+        }
     }
 
-    @Override
-    public Val copy() {
-        return new ShapeVal(shape);
+    public List<Shape> getValue() {
+        return shapes;
     }
-
 }

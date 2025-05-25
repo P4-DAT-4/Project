@@ -1,6 +1,6 @@
 package afs.interpreter.expressions;
 
-public class DoubleVal implements Val {
+public final class DoubleVal implements Val {
     private final double value;
 
     public DoubleVal(double value){

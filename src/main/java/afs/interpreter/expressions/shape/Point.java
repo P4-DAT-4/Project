@@ -1,8 +1,4 @@
-package afs.interpreter.expressions;
-
-import afs.interpreter.*;
-import afs.nodes.expr.ExprNode;
-import org.javatuples.Pair;
+package afs.interpreter.expressions.shape;
 
 public class Point {
     public final double x, y;
@@ -18,9 +14,4 @@ public class Point {
     public double getY(){
         return y;
     }
-
-
-
-
-
 }

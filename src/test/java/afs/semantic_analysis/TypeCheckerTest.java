@@ -1,20 +1,22 @@
 //package afs.semantic_analysis;
 //
-//import java.util.ArrayList;
-//import java.util.List;
-//
+//import afs.nodes.def.*;
 //import afs.nodes.event.EventDeclarationNode;
 //import afs.nodes.event.EventNode;
+//import afs.nodes.expr.*;
+//import afs.nodes.stmt.*;
+//import afs.nodes.type.*;
+//import afs.semantic_analysis.exceptions.TypeCheckException;
+//import afs.semantic_analysis.types.AFSType;
+//import afs.semantic_analysis.types.FunctionType;
+//import afs.semantic_analysis.types.ListType;
+//import afs.semantic_analysis.types.SimpleType;
 //import org.junit.jupiter.api.BeforeEach;
 //import org.junit.jupiter.api.Nested;
 //import org.junit.jupiter.api.Test;
 //
-//import afs.semantic_analysis.exceptions.TypeCheckException;
-//import afs.semantic_analysis.types.*;
-//import afs.nodes.def.*;
-//import afs.nodes.expr.*;
-//import afs.nodes.stmt.*;
-//import afs.nodes.type.*;
+//import java.util.ArrayList;
+//import java.util.List;
 //
 //import static org.junit.jupiter.api.Assertions.*;
 //
