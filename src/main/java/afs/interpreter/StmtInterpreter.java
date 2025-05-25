@@ -142,7 +142,7 @@ public class StmtInterpreter {
                         // Pass-by-value: create a new location and copy value
                         int newLoc = store.nextLocation();
                         newEnvV.declare(paramName, newLoc);
-                        store.store(newLoc, val.copy());
+                        store.store(newLoc, val);  //copy
                     }
                 }
 

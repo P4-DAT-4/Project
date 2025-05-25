@@ -56,6 +56,7 @@ public class StmtInterpreterTest {
         location = 0;
     }
 
+
     @Test
     public void StmtAssignmentNodeTest(){
         // Declare x = 5
@@ -149,10 +150,17 @@ public class StmtInterpreterTest {
             StmtNode funcBody = new StmtReturnNode(bodyExpr, 0, 0);
 
 
+
+            // Declare n = 5
+            int location = store.nextLocation();
+            String n = "n";
+            envV.declare(n, location);
+
+            store.store(location, new IntVal(5));
             // Create function definition
             String funcName = "increment";
             String eventName = "ev1";
-            List<ExprNode> eventArgs = List.of(new ExprIntNode("2", 0, 0));
+            List<ExprNode> eventArgs = List.of(new ExprIdentifierNode(n, 0, 0));
 
             // Use helper to create the function def node
             DefNode functionDef = createFunction(type, funcName, params, funcBody, eventName, eventArgs);
@@ -203,11 +211,17 @@ public class StmtInterpreterTest {
             // No return statement, just a side-effect inside the function
             StmtNode funcBody = assignment;
 
+            // Declare n = 5
+            int location = store.nextLocation();
+            String n = "n";
+            envV.declare(n, location);
+
+            store.store(location, new IntVal(5));
+
             // Define the function increment(x: Int): Void
             String funcName = "incrementVoid";
             String eventName = "ev1";
-            List<ExprNode> eventArgs = List.of(new ExprIntNode("2", 0, 0));
-
+            List<ExprNode> eventArgs =  List.of(new ExprIdentifierNode(n, 0, 0));
             TypeNode voidType = new TypeVoidNode(0, 0);
             DefNode functionDef = createFunction(voidType, funcName, params, funcBody, eventName, eventArgs);
 
@@ -233,6 +247,7 @@ public class StmtInterpreterTest {
 
         @Test
         public void StmtFunctionCallPassByReferenceNode(){
+
 
             String vizFuncName = "logListLength";
             String vizParamName = "n";
@@ -325,7 +340,6 @@ public class StmtInterpreterTest {
 
             // Evaluate the function call (should modify list x in place)
             var callResult = stmtInterpreter.evalStmt(envV, envF, envE, location, funcCall, store, imgStore);
-
 
 
             // Since function is void, return value should be null
