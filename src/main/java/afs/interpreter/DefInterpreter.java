@@ -1,6 +1,7 @@
 package afs.interpreter;
 
 import afs.interpreter.expressions.Val;
+import afs.interpreter.implementations.MapVarEnvironment;
 import afs.interpreter.interfaces.*;
 import afs.nodes.def.*;
 import afs.nodes.expr.ExprNode;

@@ -31,9 +31,8 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class StmtInterpreterTest {
-    private EventInterpreter eventInterpreter;
-    private ExprInterpreter exprInterpreter;
-    private DefInterpreter defInterpreter;
+    private static ExprInterpreter exprInterpreter;
+    private static DefInterpreter defInterpreter;
     private StmtInterpreter stmtInterpreter;
     private VarEnvironment envV;
     private FunEnvironment envF;
@@ -44,10 +43,9 @@ public class StmtInterpreterTest {
 
     @BeforeEach
     public void setUp(){
-        eventInterpreter = new EventInterpreter();
-        exprInterpreter = new ExprInterpreter(stmtInterpreter);
-        stmtInterpreter =  new StmtInterpreter(exprInterpreter);
-        defInterpreter = new DefInterpreter(stmtInterpreter, exprInterpreter, eventInterpreter);
+        exprInterpreter = new ExprInterpreter();
+        stmtInterpreter =  new StmtInterpreter();
+        defInterpreter = new DefInterpreter();
         envV = new MapVarEnvironment();
         envF = new MapFunEnvironment();
         envE = new MapEventEnvironment();
@@ -62,7 +60,7 @@ public class StmtInterpreterTest {
         // Declare x = 5
         int location = store.nextLocation();
         envV.declare("x", location);
-        store.store(location, new IntVal(5));
+        store.declare(location, new IntVal(5));
 
         // assign x = 10
         ExprNode expr = new ExprIntNode("10",0,0);
@@ -84,7 +82,7 @@ public class StmtInterpreterTest {
         location = store.nextLocation();
         String varName = "x";
         envV.declare(varName, location);
-        store.store(location, new IntVal(0));
+        store.declare(location, new IntVal(0));
 
         // First statement: x = 5;
         ExprNode valueX = new ExprIntNode("5", 0, 0);
@@ -156,7 +154,7 @@ public class StmtInterpreterTest {
             String n = "n";
             envV.declare(n, location);
 
-            store.store(location, new IntVal(5));
+            store.declare(location, new IntVal(5));
             // Create function definition
             String funcName = "increment";
             String eventName = "ev1";
@@ -195,7 +193,7 @@ public class StmtInterpreterTest {
             location = store.nextLocation();
             envV.declare(varName, location);
             IntVal val = new IntVal(5);
-            store.store(location, val);
+            store.declare(location, val);
 
             // Define a function with param x (int), return type void
             String paramName = "x";
@@ -216,7 +214,7 @@ public class StmtInterpreterTest {
             String n = "n";
             envV.declare(n, location);
 
-            store.store(location, new IntVal(5));
+            store.declare(location, new IntVal(5));
 
             // Define the function increment(x: Int): Void
             String funcName = "incrementVoid";
@@ -262,7 +260,7 @@ public class StmtInterpreterTest {
             String n = "n";
             envV.declare(n, location);
 
-            store.store(location, new IntVal(5));
+            store.declare(location, new IntVal(5));
 
 
             // Create function definition with void return type
@@ -292,8 +290,8 @@ public class StmtInterpreterTest {
             ));
 
             ListVal originalList = (ListVal) store.lookup(location);
-            assertEquals(1, ((IntVal)originalList.getElements().get(0)).getValue());
-            assertEquals(3, ((IntVal)originalList.getElements().get(1)).getValue());
+            assertEquals(1, ((IntVal)originalList.getValue().get(0)).getValue());
+            assertEquals(3, ((IntVal)originalList.getValue().get(1)).getValue());
             System.out.println("Original list stored at location: " + location);
 
 
@@ -348,7 +346,7 @@ public class StmtInterpreterTest {
 
             // Check that the list x was modified: x[0] == 2 now (1 + 1)
             ListVal updatedList = (ListVal) store.lookup(location);
-            List<Val> elements = updatedList.getElements();
+            List<Val> elements = updatedList.getValue();
 
             assertEquals(2, ((IntVal) elements.get(0)).getValue(), "Expected first element incremented");
             assertEquals(3, ((IntVal) elements.get(1)).getValue(), "Expected second element unchanged");
@@ -363,7 +361,7 @@ public class StmtInterpreterTest {
         location = store.nextLocation();
         String varName = "x";
         envV.declare(varName, location);
-        store.store(location, new IntVal(0));
+        store.declare(location, new IntVal(0));
 
         // if (true) then x = 1 else x = 2
         ExprNode exprThen = new ExprIntNode("1",0,0);
@@ -403,7 +401,7 @@ public class StmtInterpreterTest {
 
             // validate updated list
             ListVal updatedList = (ListVal) result2.getValue1().lookup(location);
-            List<Val> elements = updatedList.getElements();
+            List<Val> elements = updatedList.getValue();
 
             assertEquals(3, elements.size(), "Expected updated list size to remain 3");
             assertEquals(new IntVal(1), elements.get(0), "Expected first element unchanged");
@@ -439,20 +437,20 @@ public class StmtInterpreterTest {
 
             // Validate updated list
             ListVal updatedOuterList = (ListVal) result2.getValue1().lookup(location);
-            List<Val> outerElements = updatedOuterList.getElements();
+            List<Val> outerElements = updatedOuterList.getValue();
 
             assertEquals(2, outerElements.size(), "Outer list size should remain 2");
 
             // First row should be unchanged: [1, 2]
             ListVal firstRow = (ListVal) outerElements.get(0);
-            List<Val> firstRowElems = firstRow.getElements();
+            List<Val> firstRowElems = firstRow.getValue();
             assertEquals(new IntVal(1), firstRowElems.get(0), "Unchanged element in first row, first column");
             assertEquals(new IntVal(2), firstRowElems.get(1), "Unchanged element in first row, second column");
 
 
             // Second row: [10, 4] after update
             ListVal secondRow = (ListVal) outerElements.get(1);
-            List<Val> secondRowElems = secondRow.getElements();
+            List<Val> secondRowElems = secondRow.getValue();
             assertEquals(new IntVal(10), secondRowElems.get(0), "Updated element in second row, first column");
             assertEquals(new IntVal(4), secondRowElems.get(1), "Unchanged element in second row, second column");
 
@@ -518,7 +516,7 @@ public class StmtInterpreterTest {
         String varName = "x";
         envV.declare(varName, location);
         IntVal val = new IntVal(0);
-        store.store(location, val);
+        store.declare(location, val);
 
         // While (x < 3)
         ExprNode left = new ExprIdentifierNode(varName, 0,0);
@@ -549,7 +547,7 @@ public class StmtInterpreterTest {
 
         location = store.nextLocation();
         envV.declare(varName, location);
-        store.store(location, listVal);
+        store.declare(location, listVal);
         return location;
     }
 
@@ -566,7 +564,7 @@ public class StmtInterpreterTest {
 
         location = store.nextLocation();
         envV.declare(varName, location);
-        store.store(location, listVal);
+        store.declare(location, listVal);
 
         return location;
     }

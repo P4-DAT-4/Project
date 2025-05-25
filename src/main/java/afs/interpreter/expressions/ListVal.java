@@ -19,12 +19,6 @@ public final class ListVal implements Val {
         return elements.toString();
     }
 
-    @Override
-    public Val copy() {
-        List<Val> copiedList = new ArrayList<>();
-        for (Val v : elements) {
-            copiedList.add(v.copy());  // recursive copy
-        }
-        return new ListVal(copiedList);
-    }
+
+
 }

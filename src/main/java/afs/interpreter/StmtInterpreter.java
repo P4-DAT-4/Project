@@ -42,7 +42,6 @@ public class StmtInterpreter {
             }
             case StmtCompositionNode stmtCompositionNode -> {
                 var s1 = stmtCompositionNode.getLeftStatement();
-                var s2 = stmtCompositionNode.getRightStatement();
 
                 // Evaluate the first statement
                 Val value = evalStmt(envV.newScope(), envF, envE, location, s1, store, imgStore).getValue0();
