@@ -6,6 +6,7 @@ import afs.interpreter.implementations.StackImgStore;
 import afs.interpreter.interfaces.ImgStore;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Demo {
@@ -19,6 +20,62 @@ public class Demo {
 
     public static void main(String[] args) {
         ImgStore imgStore = new StackImgStore();
+
+        // Test: Many shapes (grid visualization)
+        List<Shape> gridTest = new ArrayList<>();
+        for (int i = 0; i < 20; i++) {
+            for (int j = 0; j < 20; j++) {
+                double x = 5 + i * 7;
+                double y = 5 + j * 7;
+                // Small box
+                gridTest.add(new ShapeLine(new Point(x, y), new Point(x + 5, y)));
+                gridTest.add(new ShapeLine(new Point(x + 5, y), new Point(x + 5, y + 5)));
+                gridTest.add(new ShapeLine(new Point(x + 5, y + 5), new Point(x, y + 5)));
+                gridTest.add(new ShapeLine(new Point(x, y + 5), new Point(x, y)));
+            }
+        }
+        imgStore.push(new ShapeVal(gridTest));
+
+        //Data structure visualizations
+        // Test: Binary tree structure
+        List<Shape> treeShapes = new ArrayList<>();
+        // Root
+        treeShapes.add(new ShapeText("5", List.of(new Point(75, 20))));
+        // Left child
+        treeShapes.add(new ShapeText("3", List.of(new Point(50, 50))));
+        treeShapes.add(new ShapeLine(new Point(70, 25), new Point(55, 45)));
+        // Right child
+        treeShapes.add(new ShapeText("8", List.of(new Point(100, 50))));
+        treeShapes.add(new ShapeLine(new Point(80, 25), new Point(95, 45)));
+        // Grandchildren
+        treeShapes.add(new ShapeText("1", List.of(new Point(35, 80))));
+        treeShapes.add(new ShapeLine(new Point(45, 55), new Point(40, 75)));
+        treeShapes.add(new ShapeText("4", List.of(new Point(65, 80))));
+        treeShapes.add(new ShapeLine(new Point(55, 55), new Point(60, 75)));
+        imgStore.push(new ShapeVal(treeShapes));
+
+        // Test: Array sorting animation frames
+        List<Integer> array = Arrays.asList(5, 3, 8, 1, 9);
+        for (int i = 0; i < array.size() - 1; i++) {
+            List<Shape> frame = new ArrayList<>();
+            // Draw array boxes
+            for (int j = 0; j < array.size(); j++) {
+                double x = 20 + j * 25;
+                // Box outline
+                frame.add(new ShapeLine(new Point(x, 50), new Point(x + 20, 50)));
+                frame.add(new ShapeLine(new Point(x + 20, 50), new Point(x + 20, 70)));
+                frame.add(new ShapeLine(new Point(x + 20, 70), new Point(x, 70)));
+                frame.add(new ShapeLine(new Point(x, 70), new Point(x, 50)));
+                // Value
+                frame.add(new ShapeText(String.valueOf(array.get(j)),
+                        List.of(new Point(x + 10, 60))));
+            }
+            // Highlight comparing elements
+            double highlightX = 20 + i * 25;
+            frame.add(new ShapeLine(new Point(highlightX, 48),
+                    new Point(highlightX + 45, 48)));
+            imgStore.push(new ShapeVal(frame));
+        }
 
         // 21 Simple line
         Shape line = new ShapeLine(scalePoint(15, 40), scalePoint(65, 40));
@@ -232,7 +289,6 @@ public class Demo {
         try {
             SVGGenerator.generateToFile(imgStore, 150, 150, "testOutput");
             System.out.println("SVG files generated successfully!");
-            System.out.println("Generated files: testOutput0.svg through testOutput6.svg");
         } catch (Exception e) {
             e.printStackTrace();
         }
