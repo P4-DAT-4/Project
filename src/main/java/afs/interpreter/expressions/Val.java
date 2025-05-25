@@ -4,7 +4,7 @@ import afs.interpreter.expressions.shape.Shape;
 
 import java.util.List;
 
-public interface Val {
+public sealed interface Val permits BoolVal, DoubleVal, IntVal, ListVal, ShapeVal, StringVal{
     default int asInt(){
         if (this instanceof IntVal) {
             return ((IntVal) this).getValue();

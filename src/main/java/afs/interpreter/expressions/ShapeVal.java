@@ -5,7 +5,7 @@ import afs.interpreter.expressions.shape.Shape;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ShapeVal implements Val{
+public final class ShapeVal implements Val{
     private final List<Shape> shapes;
 
     public ShapeVal(List<Shape> shapes) {

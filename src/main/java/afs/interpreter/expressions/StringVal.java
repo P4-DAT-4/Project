@@ -1,6 +1,6 @@
 package afs.interpreter.expressions;
 
-public class StringVal implements Val{
+public final class StringVal implements Val{
     private final String value;
 
     public StringVal(String value){
