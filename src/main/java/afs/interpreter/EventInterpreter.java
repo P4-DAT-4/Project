@@ -10,7 +10,7 @@ import afs.nodes.expr.ExprNode;
 import java.util.List;
 
 public class EventInterpreter {
-    public EventEnvironment evalEvent(EventNode event, EventEnvironment envE) {
+    public static EventEnvironment evalEvent(EventNode event, EventEnvironment envE) {
         return switch (event) {
             case EventCompositionNode eventCompositionNode -> {
                 var e1 = eventCompositionNode.getLeftEvent();

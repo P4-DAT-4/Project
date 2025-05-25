@@ -1,16 +1,12 @@
 package setup.EVENT;
 
-import afs.nodes.def.*;
-import afs.nodes.event.*;
+import afs.nodes.event.EventCompositionNode;
+import afs.nodes.event.EventDeclarationNode;
+import afs.nodes.event.EventNode;
 import afs.nodes.expr.*;
-import afs.nodes.prog.*;
-import afs.nodes.stmt.*;
-import afs.nodes.type.*;
 
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.List;
 
 /* The required start of a Coco/R grammar file. "Program" specifies the starting symbol of the grammar. */
 

@@ -14,7 +14,7 @@ public class MapStore implements Store {
     }
 
     @Override
-    public void declare(int location, Val value) {
+    public void bind(int location, Val value) {
         _environment.put(location, value);
     }
 

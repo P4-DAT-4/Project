@@ -1,12 +1,9 @@
 package interpreter;
 
 import afs.interpreter.DefInterpreter;
-import afs.interpreter.EventInterpreter;
 import afs.interpreter.ExprInterpreter;
 import afs.interpreter.StmtInterpreter;
 import afs.interpreter.expressions.IntVal;
-import afs.interpreter.expressions.ListVal;
-import afs.interpreter.expressions.StringVal;
 import afs.interpreter.expressions.Val;
 import afs.interpreter.implementations.*;
 import afs.interpreter.interfaces.*;
@@ -31,10 +28,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class StmtInterpreterTest {
-    private EventInterpreter eventInterpreter;
-    private ExprInterpreter exprInterpreter;
-    private DefInterpreter defInterpreter;
-    private StmtInterpreter stmtInterpreter;
     private VarEnvironment envV;
     private FunEnvironment envF;
     private EventEnvironment envE;
@@ -44,10 +37,6 @@ public class StmtInterpreterTest {
 
     @BeforeEach
     public void setUp(){
-        eventInterpreter = new EventInterpreter();
-        exprInterpreter = new ExprInterpreter(stmtInterpreter);
-        stmtInterpreter =  new StmtInterpreter(exprInterpreter);
-        defInterpreter = new DefInterpreter(stmtInterpreter, exprInterpreter, eventInterpreter);
         envV = new MapVarEnvironment();
         envF = new MapFunEnvironment();
         envE = new MapEventEnvironment();
@@ -59,31 +48,28 @@ public class StmtInterpreterTest {
     @Test
     public void StmtAssignmentNodeTest(){
         // Declare x = 5
-        int location = store.nextLocation();
         envV.declare("x", location);
-        store.store(location, new IntVal(5));
+        store.bind(location, new IntVal(5));
 
         // assign x = 10
         ExprNode expr = new ExprIntNode("10",0,0);
         StmtNode assignment = new StmtAssignmentNode("x",expr ,0,0);
 
-        var result = stmtInterpreter.evalStmt(envV, envF, envE, location, assignment, store, imgStore);
+        StmtInterpreter.evalStmt(envV, envF, envE, location, assignment, store, imgStore);
 
-        IntVal val = (IntVal) result.getValue1().lookup(location);
+        Val val = store.lookup(location);
 
-        assertTrue(val instanceof IntVal, "Expected value to be of type IntVal");
+        assertInstanceOf(IntVal.class, val, "Expected value to be of type IntVal");
         assertEquals(new IntVal(10), val, "Expected 10");
-
     }
 
 
     @Test
     public void StmtCompositionNodeTest(){
         // Setup: declare int variable x = 0
-        location = store.nextLocation();
         String varName = "x";
         envV.declare(varName, location);
-        store.store(location, new IntVal(0));
+        store.bind(location, new IntVal(0));
 
         // First statement: x = 5;
         ExprNode valueX = new ExprIntNode("5", 0, 0);
@@ -97,11 +83,11 @@ public class StmtInterpreterTest {
         StmtNode composition = new StmtCompositionNode(assignX, returnStmt, 0, 0);
 
         // Evaluate composition
-        var result = stmtInterpreter.evalStmt(envV, envF, envE, location, composition, store, imgStore);
+        var result = StmtInterpreter.evalStmt(envV, envF, envE, location, composition, store, imgStore);
 
         // Result should be return value 5
         Val retVal = (Val) result.getValue0();
-        assertTrue(retVal instanceof IntVal, "Return value should be IntVal");
+        assertInstanceOf(IntVal.class, retVal, "Return value should be IntVal");
         assertEquals(new IntVal(5), retVal, "Return value should be 5");
 
         // Store should reflect x = 5
@@ -121,7 +107,7 @@ public class StmtInterpreterTest {
         String varName = "x";
         StmtNode stmt = new StmtDeclarationNode(type, varName, expr, skip, 0,0);
 
-        var result = stmtInterpreter.evalStmt(envV, envF, envE, location, stmt, store, imgStore);
+        var result = StmtInterpreter.evalStmt(envV, envF, envE, location, stmt, store, imgStore);
 
         location = envV.lookup(varName);
         Val val = (Val) result.getValue1().lookup(location);
@@ -159,15 +145,15 @@ public class StmtInterpreterTest {
 
 
             // Evaluate the function declaration to register it in function enviroment
-            var defResult = defInterpreter.evalDef(envV, envF, envE, location, functionDef, store, imgStore);
+            var defResult = DefInterpreter.evalDef(envV, envF, envE, location, functionDef, store, imgStore);
 
 
             // Create function call increment(6)
             List<ExprNode> args = List.of(new ExprIntNode("6",0,0));
             StmtNode funcCall = new StmtFunctionCallNode(funcName, args,0,0);
 
-            // Evaluate the function call statement using stmtInterpreter.evalStmt
-            var callResult = stmtInterpreter.evalStmt(envV, envF, envE, location, funcCall, store, imgStore);
+            // Evaluate the function call statement using StmtInterpreter.evalStmt
+            var callResult = StmtInterpreter.evalStmt(envV, envF, envE, location, funcCall, store, imgStore);
 
             // Get the return value
             Val returnVal = (Val) callResult.getValue0();
@@ -184,10 +170,9 @@ public class StmtInterpreterTest {
 
             /// Declare a variable: int x = 5
             String varName = "x";
-            location = store.nextLocation();
             envV.declare(varName, location);
             IntVal val = new IntVal(5);
-            store.store(location, val);
+            store.bind(location, val);
 
             // Define a function with param x (int), return type void
             String paramName = "x";
@@ -212,14 +197,14 @@ public class StmtInterpreterTest {
             DefNode functionDef = createFunction(voidType, funcName, params, funcBody, eventName, eventArgs);
 
             // Register the function in the environment
-            defInterpreter.evalDef(envV, envF, envE, location, functionDef, store, imgStore);
+            DefInterpreter.evalDef(envV, envF, envE, location, functionDef, store, imgStore);
 
             // Call incrementVoid(x)
             List<ExprNode> args = List.of(new ExprIdentifierNode(varName, 0, 0));
             StmtNode funcCall = new StmtFunctionCallNode(funcName, args, 0, 0);
 
             // Evaluate the function call
-            var callResult = stmtInterpreter.evalStmt(envV, envF, envE, location, funcCall, store, imgStore);
+            var callResult = StmtInterpreter.evalStmt(envV, envF, envE, location, funcCall, store, imgStore);
 
             // The function is void, so return value should be null or VoidVal
             Val returnVal = (Val) callResult.getValue0();
@@ -243,11 +228,10 @@ public class StmtInterpreterTest {
             StmtNode vizBody = new StmtSkipNode();
 
             // Declare n = 5
-            int location = store.nextLocation();
             String n = "n";
             envV.declare(n, location);
 
-            store.store(location, new IntVal(5));
+            store.bind(location, new IntVal(5));
 
 
             // Create function definition with void return type
@@ -264,10 +248,7 @@ public class StmtInterpreterTest {
                     visualize,0,0);
 
             // Register it
-            defInterpreter.evalDef(envV, envF, envE, location, vizFunction, store, imgStore);
-
-
-
+            DefInterpreter.evalDef(envV, envF, envE, location, vizFunction, store, imgStore);
 
             // Declare list variable x = [1, 3]
             String varName = "x";
@@ -276,12 +257,10 @@ public class StmtInterpreterTest {
                     new ExprIntNode("3", 0, 0)
             ));
 
-            ListVal originalList = (ListVal) store.lookup(location);
-            assertEquals(1, ((IntVal)originalList.getElements().get(0)).getValue());
-            assertEquals(3, ((IntVal)originalList.getElements().get(1)).getValue());
+            Val originalList = store.lookup(location);
+            assertEquals(1, originalList.asList().get(0).asInt());
+            assertEquals(3, originalList.asList().get(1).asInt());
             System.out.println("Original list stored at location: " + location);
-
-
 
             // Function parameter: list x (type is list of int)
             String paramName = "x";
@@ -307,24 +286,18 @@ public class StmtInterpreterTest {
             DefNode functionDef =  new DefFunctionNode(voidType, funcName, params, funcBody, vizFunction, 0, 0);
 
             // Register the function in the environment
-            defInterpreter.evalDef(envV, envF, envE, location, functionDef, store, imgStore);
-
+            DefInterpreter.evalDef(envV, envF, envE, location, functionDef, store, imgStore);
 
             // Call function incrementFirst(x)
             List<ExprNode> args = List.of(new ExprIdentifierNode(varName, 0, 0));
             // DEBUG: Verify argument is identifier node
-            assertTrue(args.get(0) instanceof ExprIdentifierNode,
-                    "Argument must be variable reference");
-            assertEquals(varName, ((ExprIdentifierNode)args.get(0)).getIdentifier());
-
+            assertInstanceOf(ExprIdentifierNode.class, args.getFirst(), "Argument must be variable reference");
+            assertEquals(varName, ((ExprIdentifierNode)args.getFirst()).getIdentifier());
 
             StmtNode funcCall = new StmtFunctionCallNode(funcName, args, 0, 0);
 
-
-
-
             // Evaluate the function call (should modify list x in place)
-            var callResult = stmtInterpreter.evalStmt(envV, envF, envE, location, funcCall, store, imgStore);
+            var callResult = StmtInterpreter.evalStmt(envV, envF, envE, location, funcCall, store, imgStore);
 
 
 
@@ -333,8 +306,8 @@ public class StmtInterpreterTest {
             assertTrue( returnVal == null, "Expected null since void retun type");
 
             // Check that the list x was modified: x[0] == 2 now (1 + 1)
-            ListVal updatedList = (ListVal) store.lookup(location);
-            List<Val> elements = updatedList.getElements();
+            Val updatedList = store.lookup(location);
+            List<Val> elements = updatedList.asList();
 
             assertEquals(2, ((IntVal) elements.get(0)).getValue(), "Expected first element incremented");
             assertEquals(3, ((IntVal) elements.get(1)).getValue(), "Expected second element unchanged");
@@ -346,10 +319,9 @@ public class StmtInterpreterTest {
     @Test
     public void StmtIfNodeTest(){
         // Declare x
-        location = store.nextLocation();
         String varName = "x";
         envV.declare(varName, location);
-        store.store(location, new IntVal(0));
+        store.bind(location, new IntVal(0));
 
         // if (true) then x = 1 else x = 2
         ExprNode exprThen = new ExprIntNode("1",0,0);
@@ -359,7 +331,7 @@ public class StmtInterpreterTest {
         ExprNode bool = new ExprBoolNode("true",0,0);
         StmtNode ifStmt = new StmtIfNode(bool,thenStmt,elseStmt,0,0);
 
-        var result = stmtInterpreter.evalStmt(envV, envF, envE, location, ifStmt, store, imgStore);
+        var result = StmtInterpreter.evalStmt(envV, envF, envE, location, ifStmt, store, imgStore);
         Val value =  (Val) result.getValue1().lookup(location);
         assertEquals(new IntVal(1), value, "Expected 1");
 
@@ -385,11 +357,11 @@ public class StmtInterpreterTest {
             StmtNode listAssingment = new StmtListAssignmentNode(varName, indexExprs, newVal, 0,0);
 
             // run list assignmemnt
-            var result2 = stmtInterpreter.evalStmt(envV, envF, envE, location, listAssingment, store, imgStore);
+            var result2 = StmtInterpreter.evalStmt(envV, envF, envE, location, listAssingment, store, imgStore);
 
             // validate updated list
-            ListVal updatedList = (ListVal) result2.getValue1().lookup(location);
-            List<Val> elements = updatedList.getElements();
+            Val updatedList = result2.getValue1().lookup(location);
+            List<Val> elements = updatedList.asList();
 
             assertEquals(3, elements.size(), "Expected updated list size to remain 3");
             assertEquals(new IntVal(1), elements.get(0), "Expected first element unchanged");
@@ -421,24 +393,24 @@ public class StmtInterpreterTest {
             StmtNode listAssignment = new StmtListAssignmentNode(varName, indexExprs, newVal, 0, 0);
 
             // Run list assignment
-            var result2 = stmtInterpreter.evalStmt(envV, envF, envE, location, listAssignment, store, imgStore);
+            var result2 = StmtInterpreter.evalStmt(envV, envF, envE, location, listAssignment, store, imgStore);
 
             // Validate updated list
-            ListVal updatedOuterList = (ListVal) result2.getValue1().lookup(location);
-            List<Val> outerElements = updatedOuterList.getElements();
+            Val updatedOuterList = result2.getValue1().lookup(location);
+            List<Val> outerElements = updatedOuterList.asList();
 
             assertEquals(2, outerElements.size(), "Outer list size should remain 2");
 
             // First row should be unchanged: [1, 2]
-            ListVal firstRow = (ListVal) outerElements.get(0);
-            List<Val> firstRowElems = firstRow.getElements();
+            Val firstRow = outerElements.get(0);
+            List<Val> firstRowElems = firstRow.asList();
             assertEquals(new IntVal(1), firstRowElems.get(0), "Unchanged element in first row, first column");
             assertEquals(new IntVal(2), firstRowElems.get(1), "Unchanged element in first row, second column");
 
 
             // Second row: [10, 4] after update
-            ListVal secondRow = (ListVal) outerElements.get(1);
-            List<Val> secondRowElems = secondRow.getElements();
+            Val secondRow = outerElements.get(1);
+            List<Val> secondRowElems = secondRow.asList();
             assertEquals(new IntVal(10), secondRowElems.get(0), "Updated element in second row, first column");
             assertEquals(new IntVal(4), secondRowElems.get(1), "Unchanged element in second row, second column");
 
@@ -462,7 +434,7 @@ public class StmtInterpreterTest {
 
             // Assert exception thrown
             assertThrows(IndexOutOfBoundsException.class, () -> {
-                stmtInterpreter.evalStmt(envV, envF, envE, location, listAssignment, store, imgStore);
+                StmtInterpreter.evalStmt(envV, envF, envE, location, listAssignment, store, imgStore);
             }, "Expected out-of-bounds assignment to throw IndexOutOfBoundsException");
 
         }
@@ -476,7 +448,7 @@ public class StmtInterpreterTest {
         StmtNode returnStmt = new StmtReturnNode(returnExpr,0,0);
 
         // Evaluate return statment
-        var result = stmtInterpreter.evalStmt(envV, envF, envE, location, returnStmt, store, imgStore);
+        var result = StmtInterpreter.evalStmt(envV, envF, envE, location, returnStmt, store, imgStore);
         Val returnVal =  (Val) result.getValue0();
 
         assertTrue(returnVal instanceof IntVal, "Returned value should be IntVal");
@@ -490,7 +462,7 @@ public class StmtInterpreterTest {
         StmtNode skipStmt = new StmtSkipNode();
 
         // Evaluate the skip statement
-        var result = stmtInterpreter.evalStmt(envV, envF, envE, location, skipStmt, store, imgStore);
+        var result = StmtInterpreter.evalStmt(envV, envF, envE, location, skipStmt, store, imgStore);
 
         // The value should be null since skip returns null as the first tuple value
         assertNull(result.getValue0(), "Expected null as return value for skip statement");
@@ -500,11 +472,10 @@ public class StmtInterpreterTest {
     @Test
     public void StmtWhileNodeTest(){
         // Declare x = 0
-        location = store.nextLocation();
         String varName = "x";
         envV.declare(varName, location);
         IntVal val = new IntVal(0);
-        store.store(location, val);
+        store.bind(location, val);
 
         // While (x < 3)
         ExprNode left = new ExprIdentifierNode(varName, 0,0);
@@ -519,7 +490,7 @@ public class StmtInterpreterTest {
 
         // Whil loop node
         StmtNode whileStmt = new StmtWhileNode(condition,body,0,0);
-        var result = stmtInterpreter.evalStmt(envV, envF, envE, location, whileStmt, store, imgStore);
+        var result = StmtInterpreter.evalStmt(envV, envF, envE, location, whileStmt, store, imgStore);
 
         Val finalVal = (Val) result.getValue1().lookup(location);
         assertEquals(new IntVal(3), finalVal, "Expected 3");
@@ -530,12 +501,11 @@ public class StmtInterpreterTest {
 
     private int declareList(String varName, List<ExprNode> exprs) {
         ExprNode listDeclar = new ExprListDeclaration(exprs, 0, 0);
-        var result = exprInterpreter.evalExpr(envV, envF, envE, location, listDeclar, store, imgStore);
-        Val listVal = (ListVal) result.getValue0();
+        var result = ExprInterpreter.evalExpr(envV, envF, envE, location, listDeclar, store, imgStore);
+        Val listVal = result.getValue0();
 
-        location = store.nextLocation();
-        envV.declare(varName, location);
-        store.store(location, listVal);
+        envV.declare(varName, ++location);
+        store.bind(location, listVal);
         return location;
     }
 
@@ -547,12 +517,11 @@ public class StmtInterpreterTest {
 
         ExprNode nestedListDecl = new ExprListDeclaration(outerList, 0, 0);
 
-        var result = exprInterpreter.evalExpr(envV, envF, envE, location, nestedListDecl, store, imgStore);
-        Val listVal = (ListVal) result.getValue0();
+        var result = ExprInterpreter.evalExpr(envV, envF, envE, location, nestedListDecl, store, imgStore);
+        Val listVal = result.getValue0();
 
-        location = store.nextLocation();
-        envV.declare(varName, location);
-        store.store(location, listVal);
+        envV.declare(varName, ++location);
+        store.bind(location, listVal);
 
         return location;
     }
@@ -570,10 +539,4 @@ public class StmtInterpreterTest {
 
         return new DefFunctionNode(returnType, funcName, params, body, visualize, 0, 0);
     }
-
-
-
-
-
-
 }

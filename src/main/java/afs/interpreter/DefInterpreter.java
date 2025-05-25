@@ -1,11 +1,11 @@
 package afs.interpreter;
 
 import afs.interpreter.expressions.Val;
+import afs.interpreter.implementations.MapVarEnvironment;
 import afs.interpreter.interfaces.*;
 import afs.nodes.def.*;
 import afs.nodes.expr.ExprNode;
 import afs.nodes.stmt.StmtFunctionCallNode;
-import afs.nodes.type.TypeNode;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
@@ -33,7 +33,7 @@ public class DefInterpreter {
                 envV.declare(varName, location);
 
                 // Update the store
-                store.declare(location, value);
+                store.bind(location, value);
 
                 // Evaluate the definition and return
                 yield evalDef(envV, envF, envE, ++location, nextDef, store, imgStore);
@@ -63,7 +63,7 @@ public class DefInterpreter {
                 var nextEvent = defVisualizeNode.getEvent();
 
                 // Update the event environment
-                var updatedEnvE = eventInterpreter.evalEvent(nextEvent, envE);
+                var updatedEnvE = EventInterpreter.evalEvent(nextEvent, envE);
 
 
                 // Create function call
@@ -73,7 +73,6 @@ public class DefInterpreter {
                 StmtInterpreter.evalStmt(envV, envF, updatedEnvE, location, functionCallAsStmt, store, imgStore);
 
                 // Return the stores
-                yield Pair.with(store, imgStore);
                 yield Pair.with(store, imgStore);
             }
         };

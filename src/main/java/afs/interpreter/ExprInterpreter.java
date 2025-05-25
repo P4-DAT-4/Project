@@ -108,7 +108,7 @@ public class ExprInterpreter {
                         // Declare a new parameter, assign it the location l
                         funcEnvV.declare(paramNames.get(n), location);
                         // Store the value of expression e_n at the location
-                        store.declare(location, exprVal);
+                        store.bind(location, exprVal);
 
                         // Evaluate the new function call with one less argument and with new location
                         yield evalExpr(envV, envF, envE, ++location, functionCallNode, store, imgStore);
@@ -181,14 +181,11 @@ public class ExprInterpreter {
                 // Evaluate all expressions (handling nested lists)
                 for (ExprNode e : exprs) {
                     var res = evalExpr(envV, envF, envE, location, e, store, imgStore);
-                    Val val = (Val) res.getValue0();
+                    Val val = res.getValue0();
                     elements.add(val);
                 }
 
                 ListVal result = new ListVal(elements);
-
-                // store result
-                currentStore.declare(location, result);
 
                 yield new Triplet<>(result, store, imgStore);
             }

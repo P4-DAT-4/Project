@@ -1,10 +1,8 @@
 package setup;
 
-import afs.astprinter.Printer;
-import afs.astprinter.RecursiveGraphvizPrinter;
 import afs.nodes.def.DefNode;
 import afs.nodes.event.EventNode;
-import afs.nodes.expr.*;
+import afs.nodes.expr.ExprNode;
 import afs.nodes.prog.ProgNode;
 import afs.nodes.stmt.StmtNode;
 import afs.nodes.type.TypeNode;

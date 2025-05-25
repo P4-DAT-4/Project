@@ -25,9 +25,4 @@ public final class BoolVal implements Val {
         BoolVal boolVal = (BoolVal) o;
         return value == boolVal.value; // compare values
     }
-
-    @Override
-    public Val copy() {
-        return new BoolVal(value);
-    }
 }

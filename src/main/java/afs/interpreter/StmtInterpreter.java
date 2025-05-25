@@ -5,11 +5,8 @@ import afs.interpreter.expressions.ListVal;
 import afs.interpreter.expressions.Val;
 import afs.interpreter.interfaces.*;
 import afs.nodes.expr.ExprIdentifierNode;
-import afs.nodes.expr.ExprIdentifierNode;
 import afs.nodes.expr.ExprNode;
 import afs.nodes.stmt.*;
-import afs.nodes.type.TypeListNode;
-import afs.nodes.type.TypeNode;
 import org.javatuples.Triplet;
 
 import java.util.ArrayList;
@@ -35,7 +32,7 @@ public class StmtInterpreter {
                 Val value = ExprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore).getValue0();
 
                 // Update store
-                store.declare(envV.lookup(varName), value);
+                store.bind(envV.lookup(varName), value);
 
                 // Return
                 yield new Triplet<>(null, store, imgStore);
@@ -69,7 +66,7 @@ public class StmtInterpreter {
                 newEnvV.declare(varName, location);
 
                 // Update the store
-                store.declare(location, value);
+                store.bind(location, value);
 
                 // Evaluate the statement and return
                 yield evalStmt(newEnvV, envF, envE, ++location, nextStmt, store, imgStore);
@@ -128,7 +125,7 @@ public class StmtInterpreter {
                         // Declare a new parameter, assign it the location l
                         funcEnvV.declare(paramNames.get(n), location);
                         // Store the value of expression e_n at the location
-                        store.declare(location, exprVal);
+                        store.bind(location, exprVal);
 
                         // Evaluate the new function call with one less argument and with new location
                         yield evalStmt(envV, envF, envE, ++location, functionCallNode, store, imgStore);
@@ -175,7 +172,7 @@ public class StmtInterpreter {
 
                     // Create a new listVal and store it at the location
                     ListVal listVal = new ListVal(varVal.asList());
-                    store.declare(envV.lookup(varName), listVal);
+                    store.bind(envV.lookup(varName), listVal);
                     yield new Triplet<>(null, store, imgStore);
                 } else {
                     // Get value at index e_1 in x
@@ -187,7 +184,7 @@ public class StmtInterpreter {
                     StmtNode node = new StmtListAssignmentNode(varName, indexExprs.subList(1, indexExprs.size()), valueExpr, line, col);
 
                     // Set x to point to val
-                    store.declare(envV.lookup(varName), val);
+                    store.bind(envV.lookup(varName), val);
 
                     // Evaluate the new stmt list assignment node
                     evalStmt(envV, envF, envE, location, node, store, imgStore);
@@ -196,7 +193,7 @@ public class StmtInterpreter {
                     ListVal listVal = new ListVal(varVal.asList());
                     listVal.asList().set(e1.asInt(), store.lookup(envV.lookup(varName)));
                     // Set x to listVal
-                    store.declare(envV.lookup(varName), listVal);
+                    store.bind(envV.lookup(varName), listVal);
                     yield new Triplet<>(null, store, imgStore);
                 }
             }
@@ -207,7 +204,6 @@ public class StmtInterpreter {
                 var value = ExprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore).getValue0();
 
                 // Return the value
-                yield new Triplet<>(value, store, imgStore);
                 yield new Triplet<>(value, store, imgStore);
             }
             case StmtSkipNode stmtSkipNode -> new Triplet<>(null, store, imgStore);
