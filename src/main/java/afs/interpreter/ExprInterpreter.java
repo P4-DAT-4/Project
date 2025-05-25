@@ -63,7 +63,6 @@ public class ExprInterpreter {
             }
             case ExprFunctionCallNode exprFunctionCallNode -> {
                 String funcName = exprFunctionCallNode.getIdentifier();
-                System.out.println("Function " + funcName);
                 List<ExprNode> args = exprFunctionCallNode.getArguments();
                 var funcData = envF.lookup(funcName);
 
@@ -80,7 +79,6 @@ public class ExprInterpreter {
 
                     // Get parameters
                     List<String> paramNames = funcData.getValue1();
-                    System.out.println("Number of parameter names" + paramNames.size());
 
                     VarEnvironment funcEnvV = funcData.getValue2();
 
@@ -94,7 +92,6 @@ public class ExprInterpreter {
 
                     // Index of the last argument
                     int n = args.size() - 1;
-                    System.out.println("N: " + n);
 
                     // Check if e_n evaluates to a list
                     if (exprVal instanceof ListVal) {
@@ -102,7 +99,6 @@ public class ExprInterpreter {
                         if (!(exprE_n instanceof ExprIdentifierNode ident)) {
                             throw new RuntimeException("Arrays are call-by-reference - cannot pass an array literal or an index of an array");
                         }
-                        System.out.println(ident);
                         // Declare a new variable in the environment, using the name of the parameter, and make it point to the location of the identifier
                         funcEnvV.declare(paramNames.get(n), envV.lookup(ident.getIdentifier()));
 
@@ -110,7 +106,6 @@ public class ExprInterpreter {
                         yield evalExpr(envV, envF, envE, location, functionCallNode, store, imgStore);
                     } else { // If e_n is not a list
                         // Declare a new parameter, assign it the location l
-                        System.out.println("Declaring: " + paramNames.get(n));
                         funcEnvV.declare(paramNames.get(n), location);
                         // Store the value of expression e_n at the location
                         store.declare(location, exprVal);
@@ -124,7 +119,6 @@ public class ExprInterpreter {
                 // Get variable name
                 String varName = exprIdentifierNode.getIdentifier();
                 // Get memory location
-                //System.out.printf("Line %d, col %d ", exprIdentifierNode.getLineNumber(), exprIdentifierNode.getColumnNumber());
                 int varLocation = envV.lookup(varName);
                 // Look up the actual
                 Val value = store.lookup(varLocation);
@@ -397,7 +391,6 @@ public class ExprInterpreter {
             }
             case LT -> {
                 if (v1 instanceof IntVal) {
-                    System.out.printf("LT, v1: %d, v2: %d", v1.asInt(), v2.asInt());
                     yield new BoolVal(v1.asInt() < v2.asInt());
                 } else {
                     yield new BoolVal(v1.asDouble() < v2.asDouble());
@@ -422,7 +415,6 @@ public class ExprInterpreter {
             }
             case AND -> new BoolVal(v1.asBool() && v2.asBool());
             case CONCAT -> {
-                System.out.println("Concatenating");
                 if (v1 instanceof StringVal) {
                     yield new StringVal(v1.asString() + v2.asString());
                 } else if (v1 instanceof ListVal) {
@@ -432,7 +424,6 @@ public class ExprInterpreter {
                 } else {
                     List<Shape> elements = new ArrayList<>(v1.asShape());
                     elements.addAll(v2.asShape());
-                    System.out.println(String.format("V1 size: %d, V2 size: %d, elements size: %d", v1.asShape().size(), v2 .asShape().size(), elements.size()));
                     yield new ShapeVal(elements);
                 }
             }
