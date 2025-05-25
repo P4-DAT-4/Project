@@ -34,19 +34,43 @@ COMPILER Program
         return errors.count > 0;
     }
 /* END STARTALL */
-/* BEGIN EVENTCODE */
-    private EventNode toCompEvent(List<EventNode> eventsReversed) {
-        if (eventsReversed.isEmpty()) {
-            throw new RuntimeException("Empty events list");
+/* BEGIN DEFCODE */
+    private DefNode toDefNode(List<DefNode> defs) {
+        if (defs.isEmpty()) {
+            throw new FatalError("Empty defs list");
         }
-        EventNode left = eventsReversed.getFirst();
+        DefNode left = defs.getFirst();
 
-        if (eventsReversed.size() == 1) {
+        if (defs.size() == 1) {
             return left;
         } else {
             int line = left.getLineNumber();
             int col = left.getColumnNumber();
-            List<EventNode> rest = eventsReversed.subList(1, eventsReversed.size());
+            List<DefNode> rest = defs.subList(1, defs.size());
+            DefNode right = toDefNode(rest);
+            return switch(left) {
+                case DefDeclarationNode defDeclarationNode -> new DefDeclarationNode(defDeclarationNode.getType(), defDeclarationNode.getIdentifier(), defDeclarationNode.getExpression(), right, line, col);
+                case DefFunctionNode defFunctionNode -> new DefFunctionNode(defFunctionNode.getType(), defFunctionNode.getIdentifier(), defFunctionNode.getParameters(), defFunctionNode.getStatement(), right, line, col);
+                case DefVisualizeNode defVisualizeNode -> {
+                    throw new FatalError("Visualize node MUST be placed last");
+                }
+            };
+        }
+    }
+/* END DEFCODE */
+/* BEGIN EVENTCODE */
+    private EventNode toCompEvent(List<EventNode> events) {
+        if (events.isEmpty()) {
+            throw new FatalError("Empty events list");
+        }
+        EventNode left = events.getFirst();
+
+        if (events.size() == 1) {
+            return left;
+        } else {
+            int line = left.getLineNumber();
+            int col = left.getColumnNumber();
+            List<EventNode> rest = events.subList(1, events.size());
             EventNode right = toCompEvent(rest);
             return new EventCompositionNode(left, right, line, col);
         }
@@ -124,7 +148,7 @@ COMPILER Program
             result = switch (ch) {
                 case '!' -> new ExprUnopNode(result, UnOp.NOT, line, col);
                 case '-' -> new ExprUnopNode(result, UnOp.NEG, line, col);
-                default -> throw new RuntimeException("Unknown unary operator: " + ch);
+                default -> throw new FatalError("Unknown unary operator: " + ch);
             };
             index++;
         }
@@ -158,7 +182,7 @@ COMPILER Program
                             ExprNode andNode = makeBinOpExpr(notLeftExpr, "&&", notRightExpr, line, column);
                             yield new ExprUnopNode(andNode, UnOp.NOT, line, column);
             }
-            default -> throw new RuntimeException("Unknown binary operator: " + op);
+            default -> throw new FatalError("Unknown binary operator: " + op);
         };
     }
 /* END EXPRCODE */
@@ -196,12 +220,17 @@ Prog<out ProgNode prog> =
 
 /* BEGIN DEF */
 /*-----------------------------------Definitions-----------------------------------*/
-Def<out DefNode def> = (. def = null; .)
+Def<out DefNode def> = (. def = null; List<DefNode> defs = new ArrayList<>(); .)
     SYNC
     ( FnDef<out def>
     | ImgDef<out def>
-    | VarDef<out def>
-    | Visualize<out def> )
+    | VarDef<out def> ) (. defs.add(def); .)
+    {
+    ( FnDef<out def>
+    | ImgDef<out def>
+    | VarDef<out def> ) (. defs.add(def); .)
+    }
+    Visualize<out def> (. defs.add(def); def = toDefNode(defs); .)
 .
 
 FnDef<out DefNode func> = (. List<Param> params = new ArrayList<>(); .)
@@ -212,8 +241,7 @@ FnDef<out DefNode func> = (. List<Param> params = new ArrayList<>(); .)
     {"," Param<out param> (. params.add(param); .)
     }]
     ")"
-    StmtBlock<out StmtNode stmt>
-    Def<out DefNode def> (. func = new DefFunctionNode(type, ident, params, stmt, def, line, col); .)
+    StmtBlock<out StmtNode stmt> (. func = new DefFunctionNode(type, ident, params, stmt, null, line, col); .)
 .
 
 ImgDef<out DefNode img> = (. List<Param> params = new ArrayList<>(); .)
@@ -224,8 +252,7 @@ ImgDef<out DefNode img> = (. List<Param> params = new ArrayList<>(); .)
     {"," Param<out param> (. params.add(param); .)
     }]
     ")"
-    DeclBlock<out StmtNode decl>
-    Def<out DefNode def> (. img = new DefFunctionNode(new TypeShapeNode(line, col), ident, params, decl, def, line, col); .)
+    DeclBlock<out StmtNode decl> (. img = new DefFunctionNode(new TypeShapeNode(line, col), ident, params, decl, null, line, col); .)
 .
 
 Param<out Param param> =
@@ -239,8 +266,7 @@ VarDef<out DefNode var> =
     IDENT (. int line = t.line; int col = t.col; String ident = t.val; .)
     "="
     Expr<out ExprNode expr>
-    ";"
-    Def<out DefNode def> (. var = new DefDeclarationNode(type, ident, expr, def, line, col); .)
+    ";" (. var = new DefDeclarationNode(type, ident, expr, null, line, col); .)
 .
 
 /*-----------------------------------Visualize-----------------------------------*/

@@ -1,6 +1,6 @@
 # Updated structure: each key maps to a custom object with .Deps and .MainRule
 $sectionsInfo = @{
-    "DEF"      = @{ Deps = @("STARTALL", "EVENTCODE", "STMTCODE", "DECLCODE", "EXPRCODE", "MIDDLEALL", "DEF", "EVENT", "STMT", "DECL", "DECLEXPR", "EXPR", "TYPE", "ENDALL"); MainRule = "Def"; ProgramNode = "DefNode" }
+    "DEF"      = @{ Deps = @("STARTALL", "DEFCODE", "EVENTCODE", "STMTCODE", "DECLCODE", "EXPRCODE", "MIDDLEALL", "DEF", "EVENT", "STMT", "DECL", "DECLEXPR", "EXPR", "TYPE", "ENDALL"); MainRule = "Def"; ProgramNode = "DefNode" }
     "EXPR"     = @{ Deps = @("STARTALL", "EXPRCODE", "MIDDLEALL", "EXPR", "ENDALL"); MainRule = "Expr"; ProgramNode = "ExprNode" }
     "TYPE"     = @{ Deps = @("STARTALL", "MIDDLEALL", "TYPE", "ENDALL"); MainRule = "Type"; ProgramNode = "TypeNode" }
     "DECLEXPR" = @{ Deps = @("STARTALL", "EXPRCODE", "MIDDLEALL", "DECLEXPR", "EXPR", "ENDALL"); MainRule = "DeclExpr"; ProgramNode = "ExprNode" }
@@ -78,10 +78,21 @@ foreach ($sectionName in $sectionsInfo.Keys) {
         }
     } | Set-Content -Encoding UTF8 $outputFile
 
-    # 🧼 Clean up whitespace: strip leading and trailing spaces from every line
-    (Get-Content $outputFile) |
-            ForEach-Object { $_.Trim() } |
-            Set-Content -Encoding UTF8 $outputFile
+    # Clean up only leading and trailing blank lines
+    $content = Get-Content $outputFile
+
+    # Remove blank lines at the start
+    while ($content.Count -gt 0 -and $content[0].Trim() -eq "") {
+        $content = $content[1..($content.Count - 1)]
+    }
+
+    # Remove blank lines at the end
+    while ($content.Count -gt 0 -and $content[-1].Trim() -eq "") {
+        $content = $content[0..($content.Count - 2)]
+    }
+
+    # Write back the trimmed content
+    $content | Set-Content -Encoding UTF8 $outputFile
 
     $projectRoot = Split-Path -Parent $ScriptDir  # Assuming $ScriptDir is ./cocor
     $javaOutputDir = Join-Path $projectRoot "src/test/java/setup/$sectionName"

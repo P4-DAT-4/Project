@@ -1,10 +1,10 @@
 package setup.DECL;
 
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.HashMap;
 
 class Token {
 	public int kind;    // token kind
