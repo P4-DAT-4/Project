@@ -9,7 +9,7 @@ which will be explained when met first in context.  */
 /* [] Brackets mean that the string is written zero or one times.  */
 /* {} Curly brackets mean that the string is repeated zero or more times  */
 /* () is a grouping used alongside |. The parenthesis contains a series of strings separated by |. This means that exactly one of the strings is chosen. */
-/* BEGIN ALL */
+/* BEGIN STARTALL */
 /* Imports here are inserted at the top of the generated lexer and parser. */
 import afs.nodes.def.*;
 import afs.nodes.event.*;
@@ -33,8 +33,8 @@ COMPILER Program
     public boolean hasErrors() {
         return errors.count > 0;
     }
-/* END ALL */
-/* BEGIN EVENT */
+/* END STARTALL */
+/* BEGIN EVENTCODE */
     private EventNode toCompEvent(List<EventNode> eventsReversed) {
         if (eventsReversed.isEmpty()) {
             throw new RuntimeException("Empty events list");
@@ -51,8 +51,8 @@ COMPILER Program
             return new EventCompositionNode(left, right, line, col);
         }
     }
-/* END EVENT */
-/* BEGIN STMT */
+/* END EVENTCODE */
+/* BEGIN STMTCODE */
     private StmtNode toCompStmt(List<StmtNode> stmts) {
         if (stmts.isEmpty()) {
             return new StmtSkipNode();
@@ -76,8 +76,8 @@ COMPILER Program
             }
         }
     }
-/* END STMT */
-/* BEGIN DECL */
+/* END STMTCODE */
+/* BEGIN DECLCODE */
     private StmtNode declToCompStmt(List<StmtNode> stmts) {
         if (stmts.isEmpty()) {
             return new StmtSkipNode();
@@ -114,8 +114,8 @@ COMPILER Program
             return stmt;
         }
     }
-/* END DECL */
-/* BEGIN EXPR */
+/* END DECLCODE */
+/* BEGIN EXPRCODE */
     private ExprNode makeUnOpExpr(List<Character> unaries, ExprNode base, int line, int col) {
         ExprNode result = base;
         int index = 0;
@@ -161,9 +161,9 @@ COMPILER Program
             default -> throw new RuntimeException("Unknown binary operator: " + op);
         };
     }
-/* END EXPR */
+/* END EXPRCODE */
 
-/* BEGIN ALL */
+/* BEGIN MIDDLEALL */
 /*------------------------------------------------------------------------*/
 /* The following section contains the token specification of AFS.*/
 CHARACTERS
@@ -186,10 +186,10 @@ IGNORE '\r' + '\n' + '\t' /* These characters are ignored by the lexer */
 /* The rest of the file contains the grammar for AFS.  */
 PRODUCTIONS
 
-/* END ALL */
+/* END MIDDLEALL */
 Program = Prog<out mainNode>
 .
-/*------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------*/
 Prog<out ProgNode prog> =
     Def<out DefNode def> (. prog = new ProgNode(def); .)
 .
@@ -627,6 +627,6 @@ Type<out TypeNode type> = (. type = null; .)
     | "[" Type<out TypeNode innerType> "]" (. type = new TypeListNode(innerType, t.line, t.col); .) )
 .
 /* END TYPE */
-/* BEGIN ALL */
-END Program. // Must refer to the same non-terminal as "COMPILER" at the top.
-/* END ALL */
+/* BEGIN ENDALL */
+END Program . // Must refer to the same non-terminal as "COMPILER" at the top.
+/* END ENDALL */

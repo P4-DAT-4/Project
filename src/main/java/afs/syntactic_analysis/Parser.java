@@ -39,7 +39,8 @@ public class Parser {
     public boolean hasErrors() {
         return errors.count > 0;
     }
-
+/* END STARTALL */
+/* BEGIN EVENTCODE */
     private EventNode toCompEvent(List<EventNode> eventsReversed) {
         if (eventsReversed.isEmpty()) {
             throw new RuntimeException("Empty events list");
@@ -56,7 +57,8 @@ public class Parser {
             return new EventCompositionNode(left, right, line, col);
         }
     }
-
+/* END EVENTCODE */
+/* BEGIN STMTCODE */
     private StmtNode toCompStmt(List<StmtNode> stmts) {
         if (stmts.isEmpty()) {
             return new StmtSkipNode();
@@ -80,7 +82,8 @@ public class Parser {
             }
         }
     }
-
+/* END STMTCODE */
+/* BEGIN DECLCODE */
     private StmtNode declToCompStmt(List<StmtNode> stmts) {
         if (stmts.isEmpty()) {
             return new StmtSkipNode();
@@ -105,7 +108,6 @@ public class Parser {
             }
         }
     }
-
     private StmtNode addReturnIfDeclaration(StmtNode stmt) {
         if (stmt instanceof StmtDeclarationNode) {
             int line = stmt.getLineNumber();
@@ -118,7 +120,8 @@ public class Parser {
             return stmt;
         }
     }
-
+/* END DECLCODE */
+/* BEGIN EXPRCODE */
     private ExprNode makeUnOpExpr(List<Character> unaries, ExprNode base, int line, int col) {
         ExprNode result = base;
         int index = 0;
@@ -164,15 +167,9 @@ public class Parser {
             default -> throw new RuntimeException("Unknown binary operator: " + op);
         };
     }
+/* END EXPRCODE */
 
-    private List<ExprNode> coordsToList(List<ExprListDeclaration> coords) {
-        List<ExprNode> exprs = new ArrayList<>();
-        for (ExprListDeclaration coord : coords) {
-            exprs.addAll(coord.getExpressions());
-        }
-        return exprs;
-    }
-
+/* BEGIN MIDDLEALL */
 /*------------------------------------------------------------------------*/
 /* The following section contains the token specification of AFS.*/
 
