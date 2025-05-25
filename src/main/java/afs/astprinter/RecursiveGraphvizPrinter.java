@@ -15,7 +15,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class RecursiveGraphvizPrinter implements PrinterInterface {
+public class RecursiveGraphvizPrinter implements Printer {
     private StringBuilder nodes = new StringBuilder();
     private StringBuilder edges = new StringBuilder();
     private int counter = 0;

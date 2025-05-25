@@ -3,6 +3,8 @@ package afs;
 // import afs.astprinter.RecursiveGraphvizPrinter;
 
 import afs.SVGGenerator.SVGGenerator;
+import afs.astprinter.Printer;
+import afs.astprinter.RecursiveGraphvizPrinter;
 import afs.interpreter.ProgramInterpreter;
 import afs.interpreter.interfaces.ImgStore;
 import afs.nodes.prog.ProgNode;
@@ -12,9 +14,7 @@ import afs.syntactic_analysis.Parser;
 import afs.syntactic_analysis.Scanner;
 import org.javatuples.Pair;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class Main {
     private final static ArgumentHandler argumentHandler = new ArgumentHandler();
@@ -68,6 +68,8 @@ public class Main {
 
             if (printFile != null) {
                 System.out.println("Printing to: " + printFile);
+                Printer printer = new RecursiveGraphvizPrinter();
+                printer.print(program, printFile, true);
             }
         } catch (Exception e) {
             System.out.println("Exception was thrown:");
