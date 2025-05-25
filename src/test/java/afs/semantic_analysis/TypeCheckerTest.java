@@ -1034,5 +1034,29 @@ public class TypeCheckerTest extends TypeChecker {
             AFSType returnType = typeChecker.processTypeNode(type);
             assertEquals(returnType, SimpleType.DOUBLE);
         }
+        @Test
+        public void TypeShapeNode() {
+            TypeShapeNode type = new TypeShapeNode(1, 1);
+            AFSType returnType = typeChecker.processTypeNode(type);
+            assertEquals(returnType, SimpleType.SHAPE);
+        }
+        @Test
+        public void TypeVoidNode() {
+            TypeVoidNode type = new TypeVoidNode(1, 1);
+            AFSType returnType = typeChecker.processTypeNode(type);
+            assertEquals(returnType, SimpleType.VOID);
+        }
+        @Test
+        public void TypeListNode() {
+            // Single dimension list
+            TypeListNode singleListType = new TypeListNode(new TypeIntNode(1, 1), 1, 1);
+            AFSType singleListReturnType = typeChecker.processTypeNode(singleListType);
+            assertEquals(singleListReturnType, new ListType(SimpleType.INT));
+
+            // Multi dimension list
+            TypeListNode multiListType = new TypeListNode(new TypeDoubleNode(1, 1), 1, 1);
+            AFSType multiListReturnType = typeChecker.processTypeNode(multiListType);
+            assertEquals(multiListReturnType, new ListType(SimpleType.DOUBLE));
+        }
     }
 }
