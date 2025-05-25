@@ -242,18 +242,19 @@ public class StmtInterpreterTest {
             // Body: skip or some dummy action (here: skip, as we may not have print support)
             StmtNode vizBody = new StmtSkipNode();
 
-            // Declare x = 5
+            // Declare n = 5
             int location = store.nextLocation();
             String n = "n";
             envV.declare(n, location);
-            store.store(location, 5);
+
+            store.store(location, new IntVal(5));
 
 
             // Create function definition with void return type
             TypeNode voidType = new TypeVoidNode(0,0);
             String funcName = "incrementFirst";
             String eventName = "ev1";
-            List<ExprNode> eventArgs =  List.of(new ExprIdentifierNode("n", 0, 0));
+            List<ExprNode> eventArgs =  List.of(new ExprIdentifierNode(n, 0, 0));
 
 
             EventNode eventDecl = new EventDeclarationNode(eventName, vizFuncName, eventArgs, 0, 0);
@@ -319,19 +320,13 @@ public class StmtInterpreterTest {
 
             StmtNode funcCall = new StmtFunctionCallNode(funcName, args, 0, 0);
 
-            // DEBUG: Print environment before call
-            System.out.println("Pre-call environment:");
-            System.out.println("  Variable locations: " + envV);
-            System.out.println("  Store contents: " + store);
+
 
 
             // Evaluate the function call (should modify list x in place)
             var callResult = stmtInterpreter.evalStmt(envV, envF, envE, location, funcCall, store, imgStore);
 
-            // DEBUG: Print environment after call
-            System.out.println("Post-call environment:");
-            System.out.println("  Variable locations: " + envV);
-            System.out.println("  Store contents: " + callResult.getValue1());
+
 
             // Since function is void, return value should be null
             Val returnVal = (Val) callResult.getValue0();
