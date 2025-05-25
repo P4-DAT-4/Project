@@ -27,7 +27,7 @@ public class ExprInterpreter {
                 var r2 = evalExpr(envV, envF, envE, location, e2, store, imgStore);
 
                 var op = exprBinopNode.getOp();
-                var val = evalBinopExpr(r1.getValue0(), op, r2.getValue0());
+                Val val = evalBinopExpr((Val) r1.getValue0(), op, (Val) r2.getValue0());
                 yield new Triplet<>(val, r2.getValue1(), r2.getValue2());
             }
             case ExprBoolNode exprBoolNode -> {
@@ -176,23 +176,21 @@ public class ExprInterpreter {
             }
             case ExprListDeclaration exprListDeclaration -> {
                 List<ExprNode> exprs = exprListDeclaration.getExpressions();
-                List<Val> results = new ArrayList<>();
-                Store currentStore = store;
-                ImgStore currentImgStore = imgStore;
+                List<Val> elements = new ArrayList<>();
 
-                for(ExprNode e: exprs){
-                    var res = evalExpr(envV, envF, envE, location, e, currentStore, currentImgStore);
-                    results.add((Val) res.getValue0());
-                    currentStore = res.getValue1();
-                    currentImgStore = res.getValue2();
+                // Evaluate all expressions (handling nested lists)
+                for (ExprNode e : exprs) {
+                    var res = evalExpr(envV, envF, envE, location, e, store, imgStore);
+                    Val val = (Val) res.getValue0();
+                    elements.add(val);
                 }
 
-                ListVal result = new ListVal(results);
+                ListVal result = new ListVal(elements);
 
                 // store result
                 currentStore.declare(location, result);
 
-                yield new Triplet<>(result, currentStore, currentImgStore);
+                yield new Triplet<>(result, store, imgStore);
             }
             case ExprPlaceNode exprPlaceNode -> {
                 // Get the shape to place

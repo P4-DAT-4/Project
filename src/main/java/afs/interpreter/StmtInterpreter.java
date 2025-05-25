@@ -5,8 +5,11 @@ import afs.interpreter.expressions.ListVal;
 import afs.interpreter.expressions.Val;
 import afs.interpreter.interfaces.*;
 import afs.nodes.expr.ExprIdentifierNode;
+import afs.nodes.expr.ExprIdentifierNode;
 import afs.nodes.expr.ExprNode;
 import afs.nodes.stmt.*;
+import afs.nodes.type.TypeListNode;
+import afs.nodes.type.TypeNode;
 import org.javatuples.Triplet;
 
 import java.util.ArrayList;
@@ -204,6 +207,7 @@ public class StmtInterpreter {
                 var value = ExprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore).getValue0();
 
                 // Return the value
+                yield new Triplet<>(value, store, imgStore);
                 yield new Triplet<>(value, store, imgStore);
             }
             case StmtSkipNode stmtSkipNode -> new Triplet<>(null, store, imgStore);

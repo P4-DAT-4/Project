@@ -3,7 +3,9 @@ package afs.interpreter;
 import afs.interpreter.expressions.Val;
 import afs.interpreter.interfaces.*;
 import afs.nodes.def.*;
+import afs.nodes.expr.ExprNode;
 import afs.nodes.stmt.StmtFunctionCallNode;
+import afs.nodes.type.TypeNode;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
@@ -41,8 +43,13 @@ public class DefInterpreter {
                 List<Param> params = defFunctionNode.getParameters();
                 // declare() requires list of strings
                 List<String> paramNames = params.stream().map(Param::getIdentifier).toList();
+
                 var body = defFunctionNode.getStatement();
                 var nextDef = defFunctionNode.getDefinition();
+
+                // Create a fresh environment for the function
+                VarEnvironment funcDeclEnv = new MapVarEnvironment();
+
 
                 // Declare function environment
                 envF.declare(varName, new Triplet<>(body, paramNames, envV.newScope()));
@@ -52,11 +59,12 @@ public class DefInterpreter {
             }
             case DefVisualizeNode defVisualizeNode -> {
                 String funName = defVisualizeNode.getIdentifier();
-                var args = defVisualizeNode.getArguments();
+                List<ExprNode> args = defVisualizeNode.getArguments();
                 var nextEvent = defVisualizeNode.getEvent();
 
                 // Update the event environment
-                var updatedEnvE = new EventInterpreter().evalEvent(nextEvent, envE);
+                var updatedEnvE = eventInterpreter.evalEvent(nextEvent, envE);
+
 
                 // Create function call
                 var functionCallAsStmt = new StmtFunctionCallNode(funName, args, -1, -1);
@@ -65,6 +73,7 @@ public class DefInterpreter {
                 StmtInterpreter.evalStmt(envV, envF, updatedEnvE, location, functionCallAsStmt, store, imgStore);
 
                 // Return the stores
+                yield Pair.with(store, imgStore);
                 yield Pair.with(store, imgStore);
             }
         };
