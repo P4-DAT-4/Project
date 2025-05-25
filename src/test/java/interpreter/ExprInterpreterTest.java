@@ -2,6 +2,7 @@ package interpreter;
 
 import afs.interpreter.ExprInterpreter;
 import afs.interpreter.expressions.*;
+import afs.interpreter.expressions.shape.ShapeText;
 import afs.interpreter.implementations.*;
 import afs.interpreter.interfaces.*;
 import afs.nodes.expr.*;
@@ -39,10 +40,10 @@ public class ExprInterpreterTest{
         public void ExprBoolNode(){
             ExprBoolNode expr = new ExprBoolNode("false", 0, 0);
             var result = ExprInterpreter.evalExpr(envV, envF, envE, location, expr, store, imgStore );
-            BoolVal value = (BoolVal) result.getValue0();
+            Val value = result.getValue0();
 
-            assertTrue(value instanceof BoolVal, "Expected result to an Bool");
-            assertEquals(false,  ((BoolVal) value).getValue(), "Expected false");
+            assertInstanceOf(BoolVal.class, value, "Expected result to an Bool");
+            assertFalse(value.asBool(), "Expected false");
 
         }
 
@@ -50,10 +51,10 @@ public class ExprInterpreterTest{
         public void ExprDoubleNode(){
             ExprDoubleNode expr = new ExprDoubleNode("8.10", 0, 0);
             var result = ExprInterpreter.evalExpr(envV, envF, envE, location, expr, store, imgStore );
-            DoubleVal value = (DoubleVal) result.getValue0();
+            Val value = result.getValue0();
 
-            assertTrue(value instanceof DoubleVal, "Expected result to an Double");
-            assertEquals(8.10,  ((DoubleVal) value).getValue(), "Expected 8.10");
+            assertInstanceOf(DoubleVal.class, value, "Expected result to an Double");
+            assertEquals(8.10, value.asDouble(), "Expected 8.10");
 
         }
 
@@ -61,20 +62,20 @@ public class ExprInterpreterTest{
         public void ExprIntNode(){
             ExprIntNode expr = new ExprIntNode("50", 0, 0);
             var result = ExprInterpreter.evalExpr(envV, envF, envE, location, expr, store, imgStore );
-            IntVal value = (IntVal) result.getValue0();
+            Val value = result.getValue0();
 
-            assertTrue(value instanceof IntVal, "Expected result to an Integer");
-            assertEquals(50,  ((IntVal) value).getValue(), "Expected 50");
+            assertInstanceOf(IntVal.class, value, "Expected result to an Integer");
+            assertEquals(50,  value.asInt(), "Expected 50");
         }
 
         @Test
         public void ExprStringNode(){
             ExprStringNode expr = new ExprStringNode("'good'", 0, 0);
             var result = ExprInterpreter.evalExpr(envV, envF, envE, location, expr, store, imgStore );
-            StringVal value = (StringVal) result.getValue0();
+            Val value = result.getValue0();
 
-            assertTrue(value instanceof StringVal, "Expected result to an String");
-            assertEquals("good",  ((StringVal) value).getValue(), "Expected good");
+            assertInstanceOf(StringVal.class, value, "Expected result to an String");
+            assertEquals("good",  value.asString(), "Expected good");
         }
 
 
@@ -90,24 +91,25 @@ public class ExprInterpreterTest{
             ExprNode expr = new ExprBinopNode(left, BinOp.ADD, right,0,0);
 
             var result = ExprInterpreter.evalExpr(envV, envF, envE, location, expr, store, imgStore );
-            IntVal value = (IntVal) result.getValue0();
+            Val value = result.getValue0();
 
-            assertTrue(value instanceof IntVal, "Expected result to an Integer");
-            assertEquals(3,  ((IntVal) value).getValue(), "Expected 1 + 3 to equal 3");
+            assertInstanceOf(IntVal.class, value, "Expected result to an Integer");
+            assertEquals(3,  value.asInt(), "Expected 1 + 3 to equal 3");
 
         }
 
-        // minus
+        @Test
         public void ExprSubNode(){
+            // Arrange
             ExprNode left = new ExprIntNode("1",0,0);
             ExprNode right = new ExprIntNode("2",0,0);
             ExprNode expr = new ExprBinopNode(left, BinOp.SUB, right,0,0);
 
             var result = ExprInterpreter.evalExpr(envV, envF, envE, location, expr, store, imgStore );
-            IntVal value = (IntVal) result.getValue0();
+            Val value = result.getValue0();
 
-            assertTrue(value instanceof IntVal, "Expected result to an Integer");
-            assertEquals(-2,  ((IntVal) value).getValue(), "Expected 1 - 3 to equal 3");
+            assertInstanceOf(IntVal.class, value, "Expected result to an Integer");
+            assertEquals(-1,  value.asInt(), "Expected 1 - 2 to equal -1");
 
         }
 
@@ -119,10 +121,10 @@ public class ExprInterpreterTest{
             ExprNode expr = new ExprBinopNode(left, BinOp.MUL, right,0,0);
 
             var result = ExprInterpreter.evalExpr(envV, envF, envE, location, expr, store, imgStore );
-            Object value = result.getValue0();
+            Val value = result.getValue0();
 
-            assertTrue(value instanceof DoubleVal, "Expected result to an Double");
-            assertEquals(5,  ((DoubleVal) value).getValue(), "Expected 2 + 2.5 to equal 5");
+            assertInstanceOf(DoubleVal.class, value, "Expected result to an Double");
+            assertEquals(5, value.asDouble(), "Expected 2 + 2.5 to equal 5");
 
         }
 
@@ -134,10 +136,10 @@ public class ExprInterpreterTest{
             ExprNode expr = new ExprBinopNode(left, BinOp.DIV, right,0,0);
 
             var result = ExprInterpreter.evalExpr(envV, envF, envE, location, expr, store, imgStore );
-            IntVal value = (IntVal) result.getValue0();
+            Val value = result.getValue0();
 
-            assertTrue(value instanceof IntVal, "Expected result to an Int");
-            assertEquals(5,  ((IntVal) value).getValue(), "Expected 10 / 2 to equal 5");
+            assertInstanceOf(IntVal.class, value, "Expected result to an Int");
+            assertEquals(5,  value.asInt(), "Expected 10 / 2 to equal 5");
 
         }
 
@@ -149,12 +151,10 @@ public class ExprInterpreterTest{
             ExprNode expr = new ExprBinopNode(left, BinOp.LT, right,0,0);
 
             var result = ExprInterpreter.evalExpr(envV, envF, envE, location, expr, store, imgStore );
-            BoolVal value = (BoolVal) result.getValue0();
+            Val value = result.getValue0();
 
-            assertTrue(value instanceof BoolVal, "Expected result to an Bool");
-            assertEquals(true, ((BoolVal) value).getValue(), "Expected 3 < 4 to equal true");
-//                                             ^ Comma moved inside the parentheses
-
+            assertInstanceOf(BoolVal.class, value, "Expected result to an Bool");
+            assertTrue(value.asBool(), "Expected 3 < 4 to equal true");
         }
 
 
@@ -165,10 +165,10 @@ public class ExprInterpreterTest{
             ExprNode expr = new ExprBinopNode(left, BinOp.EQ, right,0,0);
 
             var result = ExprInterpreter.evalExpr(envV, envF, envE, location, expr, store, imgStore );
-            BoolVal value = (BoolVal)  result.getValue0();
+            Val value = result.getValue0();
 
-            assertTrue(value instanceof BoolVal, "Expected result to an Bool, False");
-            assertEquals(false,  ((BoolVal) value).getValue(), "Expected 3 to not equal 4");
+            assertInstanceOf(BoolVal.class, value, "Expected result to an Bool, False");
+            assertFalse(value.asBool(), "Expected 3 to not equal 4");
 
         }
 
@@ -179,10 +179,10 @@ public class ExprInterpreterTest{
             ExprNode expr = new ExprBinopNode(left, BinOp.AND, right,0,0);
 
             var result = ExprInterpreter.evalExpr(envV, envF, envE, location, expr, store, imgStore );
-            BoolVal value = (BoolVal) result.getValue0();
+            Val value = result.getValue0();
 
-            assertTrue(value instanceof BoolVal, "Expected result to an Bool, False");
-            assertEquals(false,  ((BoolVal) value).getValue(), "Expected false to false AND true");
+            assertInstanceOf(BoolVal.class, value, "Expected result to an Bool, False");
+            assertFalse(value.asBool(), "Expected false to false AND true");
 
         }
 
@@ -194,10 +194,10 @@ public class ExprInterpreterTest{
             ExprNode expr = new ExprBinopNode(left, BinOp.CONCAT, right,0,0);
 
             var result = ExprInterpreter.evalExpr(envV, envF, envE, location, expr, store, imgStore );
-            StringVal value = (StringVal)  result.getValue0();
+            Val value = result.getValue0();
 
-            assertTrue(value instanceof StringVal, "Expected result to be String");
-            assertEquals("snemand",  ((StringVal) value).getValue(), "Expected snemand from sne mand");
+            assertInstanceOf(StringVal.class, value, "Expected result to be String");
+            assertEquals("snemand", value.asString(), "Expected 'snemand' from 'sne' ++ 'mand'");
         }
 
         // concat liste
@@ -239,120 +239,51 @@ public class ExprInterpreterTest{
 
         @Test
         public void ExprConcatShapeLineNode(){
+            // Arrange
             String line1 = "line (0.0, 0.0) to (1.0, 1.0) to (2.0, 2.0)";
-            ExprNode lineExpr1 = ASTGenerator.parseDeclExpr(line1);
-            Val lineVal1 = ExprInterpreter.evalExpr(envV, envF, envE, location, lineExpr1, store, imgStore).getValue0();
-            int lineElements1 = lineVal1.asShape().size();
-            
-            assertInstanceOf(ShapeVal.class, lineVal1);
-
             String line2 = "line (2.0, 2.0) to (3.0, 3.0)";
+            ExprNode lineExpr1 = ASTGenerator.parseDeclExpr(line1);
             ExprNode lineExpr2 = ASTGenerator.parseDeclExpr(line2);
-            Val lineVal2 = ExprInterpreter.evalExpr(envV, envF, envE, location, lineExpr2, store, imgStore).getValue0();
-            int lineElements2 = lineVal2.asShape().size();
-
-            assertInstanceOf(ShapeVal.class, lineVal2);
-            
             ExprNode concat = new ExprBinopNode(lineExpr1, BinOp.CONCAT, lineExpr2, 0, 0);
+
+            // Act
+            Val lineVal1 = ExprInterpreter.evalExpr(envV, envF, envE, location, lineExpr1, store, imgStore).getValue0();
+            Val lineVal2 = ExprInterpreter.evalExpr(envV, envF, envE, location, lineExpr2, store, imgStore).getValue0();
             Val resultVal = ExprInterpreter.evalExpr(envV, envF, envE, location, concat, store, imgStore).getValue0();
+            int lineElements1 = lineVal1.asShape().size();
+            int lineElements2 = lineVal2.asShape().size();
             int resultElements = resultVal.asShape().size();
-            
+
+            // Assert
+            assertInstanceOf(ShapeVal.class, lineVal1);
+            assertInstanceOf(ShapeVal.class, lineVal2);
             assertInstanceOf(ShapeVal.class, resultVal);
             assertEquals(lineElements1 + lineElements2, resultElements);
-            
-//            ExprNode shapeExpr1 = new ExprLineNode(List.of(
-//                    new ExprDoubleNode("0", 0, 0),
-//                    new ExprDoubleNode("0", 0, 0),
-//                    new ExprDoubleNode("1", 0, 0),
-//                    new ExprDoubleNode("1", 0, 0),
-//                    new ExprDoubleNode("2", 0, 0),
-//                    new ExprDoubleNode("2", 0, 0)
-//
-//            ), 0, 0);
-//
-//
-//            ExprNode shapeExpr2 = new ExprLineNode(List.of(
-//                    new ExprDoubleNode("2", 0, 0),
-//                    new ExprDoubleNode("2", 0, 0),
-//                    new ExprDoubleNode("3", 0, 0),
-//                    new ExprDoubleNode("3", 0, 0)
-//            ), 0, 0);
-//
-//            // Build concat expression: shape1 ++ shape2
-//            ExprNode concatExpr = new ExprBinopNode(shapeExpr1, BinOp.CONCAT, shapeExpr2, 0, 0);
-//
-//            // Evaluate
-//            var result = exprInterpreter.evalExpr(envV, envF, envE, location, concatExpr, store, imgStore);
-//            Val val = (Val) result.getValue0();
-//
-//            assertTrue(val instanceof ShapeVal, "Expected ShapeVal");
-//
-//            ShapeVal shapeVal = (ShapeVal) val;
-//            Shape resultShape = shapeVal.getShape();
-//            List<Shape.Segment> segments = resultShape.getSegments();
-//
-//            // Assertions
-//            assertEquals(2, segments.size(), "Expected 2 segments after concat");
-//
-//            Shape.Segment first = segments.get(0);
-//            Shape.Segment second = segments.get(1);
-//
-//            assertEquals(Shape.Segment.SegmentType.CURVE, first.getType(), "First should be Curve");
-//            assertEquals(Shape.Segment.SegmentType.LINE, second.getType(), "Second should be Line");
-//
-//
-//            assertEquals(3, first.getCoordinates().size(), "Curve should have 3 points");
-//            assertEquals(2, second.getCoordinates().size(), "Line 2 should have 3 points");
         }
-
 
         public void ExprConcatShapeCurveNode(){
-//            ExprNode shapeExpr1 = new ExprLineNode(List.of(
-//                    new ExprDoubleNode("0", 0, 0),
-//                    new ExprDoubleNode("0", 0, 0),
-//                    new ExprDoubleNode("1", 0, 0),
-//                    new ExprDoubleNode("1", 0, 0)
-//            ), 0, 0);
-//
-//
-//            ExprNode shapeExpr2 = new ExprLineNode(List.of(
-//                    new ExprDoubleNode("2", 0, 0),
-//                    new ExprDoubleNode("2", 0, 0),
-//                    new ExprDoubleNode("3", 0, 0),
-//                    new ExprDoubleNode("3", 0, 0)
-//            ), 0, 0);
-//
-//            // Build concat expression: shape1 ++ shape2
-//            ExprNode concatExpr = new ExprBinopNode(shapeExpr1, BinOp.CONCAT, shapeExpr2, 0, 0);
-//
-//            // Evaluate
-//            var result = ExprInterpreter.evalExpr(envV, envF, envE, location, concatExpr, store, imgStore);
-//            Val val = (Val) result.getValue0();
-//
-//            assertTrue(val instanceof ShapeVal, "Expected ShapeVal");
-//
-//            ShapeVal shapeVal = (ShapeVal) val;
-//            Shape resultShape = shapeVal.getShape();
-//            List<Shape.Segment> segments = resultShape.getSegments();
-//
-//            // Assertions
-//            assertEquals(2, segments.size(), "Expected 2 segments after concat");
-//
-//            Shape.Segment first = segments.get(0);
-//            Shape.Segment second = segments.get(1);
-//
-//            assertEquals(Shape.Segment.SegmentType.LINE, first.getType(), "First should be LINE");
-//            assertEquals(Shape.Segment.SegmentType.LINE, second.getType(), "Second should be Line");
-//
-//
-//            assertEquals(2, first.getCoordinates().size(), "Line 1 should have 2 points");
-//            assertEquals(3, second.getCoordinates().size(), "Line 2 should have 3 points");
+            // Arrange
+            String curve1 = "curve (0.0, 0.0) to (1.0, 1.0) to (2.0, 2.0)";
+            String curve2 = "curve (2.0, 2.0) to (3.0, 3.0) to (4.0, 4.0) to (5.0, 5.0) to (6.0, 6.0)";
+            ExprNode curveExpr1 = ASTGenerator.parseDeclExpr(curve1);
+            ExprNode curveExpr2 = ASTGenerator.parseDeclExpr(curve2);
+            ExprNode concat = new ExprBinopNode(curveExpr1, BinOp.CONCAT, curveExpr2, 0, 0);
+
+            // Act
+            Val lineVal1 = ExprInterpreter.evalExpr(envV, envF, envE, location, curveExpr1, store, imgStore).getValue0();
+            Val lineVal2 = ExprInterpreter.evalExpr(envV, envF, envE, location, curveExpr2, store, imgStore).getValue0();
+            Val resultVal = ExprInterpreter.evalExpr(envV, envF, envE, location, concat, store, imgStore).getValue0();
+            int curveElements1 = lineVal1.asShape().size();
+            int curveElements2 = lineVal2.asShape().size();
+            int resultElements = resultVal.asShape().size();
+
+            // Assert
+            assertInstanceOf(ShapeVal.class, lineVal1);
+            assertInstanceOf(ShapeVal.class, lineVal2);
+            assertInstanceOf(ShapeVal.class, resultVal);
+            assertEquals(curveElements1 + curveElements2, resultElements);
         }
-
-
-
     }
-
 
     @Nested
     class ExprUnopNodeTest {
@@ -363,10 +294,10 @@ public class ExprInterpreterTest{
             ExprNode expr = new ExprUnopNode(left, UnOp.NEG,0,0);
 
             var result = ExprInterpreter.evalExpr(envV, envF, envE, location, expr, store, imgStore );
-            Object value = result.getValue0();
+            Val value = result.getValue0();
 
-            assertTrue(value instanceof IntVal, "Expected result to be Integer");
-            assertEquals(-7,  ((IntVal) value).getValue(), "Expected -7 from 7");
+            assertInstanceOf(IntVal.class, value, "Expected result to be Integer");
+            assertEquals(-7,  value.asInt(), "Expected -7 from 7");
 
         }
 
@@ -376,9 +307,10 @@ public class ExprInterpreterTest{
             ExprNode node = new ExprBoolNode("true",0,0);
             ExprNode expr = new ExprUnopNode(node,UnOp.NOT, 0, 0);
             var result = ExprInterpreter.evalExpr(envV, envF, envE, location, expr, store, imgStore );
-            Object value = result.getValue0();
-            assertTrue(value instanceof BoolVal, "Expected result to an Bool, False");
-            assertEquals(false,  ((BoolVal) value).getValue(), "Expected false to neg true");
+            Val value = result.getValue0();
+
+            assertInstanceOf(BoolVal.class, value, "Expected result to an Bool, False");
+            assertFalse(value.asBool(), "Expected false to neg true");
 
 
         }
@@ -401,7 +333,7 @@ public class ExprInterpreterTest{
             ExprIdentifierNode identifierExpr = new ExprIdentifierNode(varName, 0, 0);
             var result = ExprInterpreter.evalExpr(envV, envF, envE, location, identifierExpr, store, imgStore);
 
-            assertTrue(result.getValue0() instanceof IntVal, "Expected an IntVal");
+            assertInstanceOf(IntVal.class, result.getValue0(), "Expected an IntVal");
             assertEquals(new IntVal(42), result.getValue0(), "Expected value to be 42");
         }
 
@@ -410,7 +342,8 @@ public class ExprInterpreterTest{
 
             // set up test data
             String varName = "x";
-            StringVal value = new StringVal("Hej");
+            String strValue = "test";
+            StringVal value = new StringVal(strValue);
 
             // Simulate declaring variable
             envV.declare(varName, location);
@@ -420,7 +353,7 @@ public class ExprInterpreterTest{
             var result = ExprInterpreter.evalExpr(envV, envF, envE, location, identifierExpr, store, imgStore);
 
             assertInstanceOf(StringVal.class, result.getValue0(), "Expected an String");
-            assertEquals(new StringVal("Hej"), result.getValue0(), "Expected 'hej'");
+            assertEquals(strValue, result.getValue0().asString(), "Expected 'hej'");
         }
 
         @Test
@@ -459,8 +392,6 @@ public class ExprInterpreterTest{
             var result = ExprInterpreter.evalExpr(envV, envF, envE, location, listDeclaration, store, imgStore);
 
             Val listVal = result.getValue0();
-            Store updatedStore = result.getValue1();
-
 
             assertInstanceOf(ListVal.class, listVal, "Expected a ListVal");
 
@@ -475,56 +406,49 @@ public class ExprInterpreterTest{
 
         @Test
         public void ExprListDecl2D() {
-//            // First inner list: [1, 2]
-//            List<ExprNode> innerList1 = List.of(
-//                    new ExprIntNode("1", 0, 0),
-//                    new ExprIntNode("2", 0, 1)
-//            );
-//            ExprListDeclaration innerExpr1 = new ExprListDeclaration(innerList1, 0, 0);
-//
-//            // Second inner list: [3, 4]
-//            List<ExprNode> innerList2 = List.of(
-//                    new ExprIntNode("3", 0, 2),
-//                    new ExprIntNode("4", 0, 3)
-//            );
-//            ExprListDeclaration innerExpr2 = new ExprListDeclaration(innerList2, 0, 0);
-//
-//            // Outer list: [[1, 2], [3, 4]]
-//            List<ExprNode> outerList = List.of(innerExpr1, innerExpr2);
-//            ExprListDeclaration nestedList = new ExprListDeclaration(outerList, 0, 0);
-//
-//            var result = ExprInterpreter.evalExpr(envV, envF, envE, location, nestedList, store, imgStore);
-//
-//            // Top-level result
-//            ListVal outerListVal = (ListVal) result.getValue0();
-//            List<Val> outerElements = outerListVal.getElements();
-//            assertEquals(2, outerElements.size(), "Expected outer list to have 2 elements");
-//
-//            for (Val val : outerElements) {
-//                assertTrue(val instanceof ListVal, "Expected each element to be a ListVal");
-//            }
-//
-//            // Inner lists
-//            ListVal firstInner = (ListVal) outerElements.get(0);
-//            ListVal secondInner = (ListVal) outerElements.get(1);
-//
-//            assertEquals(2, firstInner.getElements().size(), "Expected first inner to have size 2");
-//            assertEquals(2, secondInner.getElements().size(), "Expected second innter to have size 2");
-//
-//            assertEquals(1, ((IntVal) firstInner.getElements().get(0)).getValue(), "Expected 1");
-//            assertEquals(2, ((IntVal) firstInner.getElements().get(1)).getValue(), "Expected 2");
-//
-//            assertEquals(3, ((IntVal) secondInner.getElements().get(0)).getValue(), "Expected 3");
-//            assertEquals(4, ((IntVal) secondInner.getElements().get(1)).getValue(), "Expected 4");
-//
-//            // Store check
-//            Val stored = (Val) result.getValue1().lookup(location);
-//            assertEquals(outerListVal, stored, "Expected the store to contain the outer nested list");
+            // First inner list: [1, 2]
+            List<ExprNode> innerList1 = List.of(
+                    new ExprIntNode("1", 0, 0),
+                    new ExprIntNode("2", 0, 1)
+            );
+            ExprListDeclaration innerExpr1 = new ExprListDeclaration(innerList1, 0, 0);
+
+            // Second inner list: [3, 4]
+            List<ExprNode> innerList2 = List.of(
+                    new ExprIntNode("3", 0, 2),
+                    new ExprIntNode("4", 0, 3)
+            );
+            ExprListDeclaration innerExpr2 = new ExprListDeclaration(innerList2, 0, 0);
+
+            // Outer list: [[1, 2], [3, 4]]
+            List<ExprNode> outerList = List.of(innerExpr1, innerExpr2);
+            ExprListDeclaration nestedList = new ExprListDeclaration(outerList, 0, 0);
+
+            var result = ExprInterpreter.evalExpr(envV, envF, envE, location, nestedList, store, imgStore);
+
+            // Top-level result
+            Val outerListVal = result.getValue0();
+            List<Val> outerElements = outerListVal.asList();
+            assertEquals(2, outerElements.size(), "Expected outer list to have 2 elements");
+
+            for (Val val : outerElements) {
+                assertInstanceOf(ListVal.class, val, "Expected each element to be a ListVal");
+            }
+
+            // Inner lists
+            ListVal firstInner = (ListVal) outerElements.get(0);
+            ListVal secondInner = (ListVal) outerElements.get(1);
+
+            assertEquals(2, firstInner.asList().size(), "Expected first inner to have size 2");
+            assertEquals(2, secondInner.asList().size(), "Expected second innter to have size 2");
+
+            assertEquals(1, ((IntVal) firstInner.asList().get(0)).getValue(), "Expected 1");
+            assertEquals(2, ((IntVal) firstInner.asList().get(1)).getValue(), "Expected 2");
+
+            assertEquals(3, ((IntVal) secondInner.asList().get(0)).getValue(), "Expected 3");
+            assertEquals(4, ((IntVal) secondInner.asList().get(1)).getValue(), "Expected 4");
         }
-
-
     }
-
 
     @Nested
     class ExprListAccessNodeTest{
@@ -551,7 +475,7 @@ public class ExprInterpreterTest{
             ExprListAccessNode listAccessNode = new ExprListAccessNode(varName, List.of(indexExpr), 0, 0);
 
             var resultListAccess = ExprInterpreter.evalExpr(envV, envF, envE, location, listAccessNode, store, imgStore);
-            assertTrue(resultListAccess.getValue0() instanceof IntVal, "Expected result to be IntVal");
+            assertInstanceOf(IntVal.class, resultListAccess.getValue0(), "Expected result to be IntVal");
             assertEquals(3, ((IntVal) resultListAccess.getValue0()).getValue(), "Expected value to be 3");
 
         }
@@ -578,17 +502,9 @@ public class ExprInterpreterTest{
             ExprNode invalidIndexExpr = new ExprIntNode("5", 0, 0);
             ExprListAccessNode invalidAccess = new ExprListAccessNode(varName, List.of(invalidIndexExpr), 0, 0);
 
-            Exception exception = assertThrows(RuntimeException.class, () -> {
-                ExprInterpreter.evalExpr(envV, envF, envE, location, invalidAccess, store, imgStore);
-            });
-
+            Exception exception = assertThrows(RuntimeException.class, () -> ExprInterpreter.evalExpr(envV, envF, envE, location, invalidAccess, store, imgStore));
             assertTrue(exception.getMessage().contains("out of bounds"), "Expected an out-of-bounds exception message");
-
-
-
         }
-
-
 
         @Test
         public void ExprListAccessNode2D(){
@@ -631,42 +547,24 @@ public class ExprInterpreterTest{
             var result = ExprInterpreter.evalExpr(envV, envF, envE, location, accessNode, updatedStore, imgStore);
 
 
-            assertTrue(result.getValue0() instanceof IntVal, "Expected IntVal from matrix[1][0]");
-            assertEquals(3, ((IntVal) result.getValue0()).getValue(), "Expected value 3 from matrix[1][0]");
+            assertInstanceOf(IntVal.class, result.getValue0(), "Expected IntVal from matrix[1][0]");
+            assertEquals(3, result.getValue0().asInt(), "Expected value 3 from matrix[1][0]");
         }
-
-
-        }
-
+    }
 
     @Test
     public void exprTextNodeTest(){
-//        ExprNode textExpr = new ExprStringNode("'Hello'", 0, 0);
-//        ExprNode expr = new ExprTextNode(textExpr, 0, 0);
-//
-//        var result = exprInterpreter.evalExpr(envV, envF, envE, location, expr, store, imgStore);
-//        ShapeVal shapeVal = (ShapeVal) result.getValue0();
-//        Store updatedStore = result.getValue1();
-//        ImgStore updatedImgStore = result.getValue2();
-//
-//        assertTrue(shapeVal instanceof ShapeVal, "Expected StringVal from ExprTextNode evaluation");
+        // Arrange
+        String textContent = "Hello";
+        String input = String.format("text \"%s\"", textContent);
+        ExprNode expr = ASTGenerator.parseDeclExpr(input);
 
+        // Act
+        Val result = ExprInterpreter.evalExpr(envV, envF, envE, location, expr, store, imgStore).getValue0();
+
+        // Assert
+        assertInstanceOf(ShapeVal.class, result);
+        assertInstanceOf(ShapeText.class, result.asShape().getFirst());
+        assertEquals(textContent, ((ShapeText)result.asShape().getFirst()).getTextContent());
     }
-
-
-
-
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
