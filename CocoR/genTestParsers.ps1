@@ -7,6 +7,8 @@ $sectionsInfo = @{
     "DECL"     = @{ Deps = @("STARTALL", "DECLCODE", "EXPRCODE", "MIDDLEALL", "DECL", "DECLEXPR", "EXPR", "TYPE", "ENDALL"); MainRule = "Decl"; ProgramNode = "StmtNode" }
     "EVENT"    = @{ Deps = @("STARTALL", "EVENTCODE", "EXPRCODE", "MIDDLEALL", "EVENT", "EXPR", "ENDALL"); MainRule = "Events"; ProgramNode = "EventNode" }
     "STMT"     = @{ Deps = @("STARTALL", "STMTCODE", "EXPRCODE", "MIDDLEALL", "STMT", "EXPR", "TYPE", "ENDALL"); MainRule = "Stmt"; ProgramNode = "StmtNode" }
+    "STMTBLOCK"= @{ Deps = @("STARTALL", "STMTCODE", "EXPRCODE", "MIDDLEALL", "STMT", "EXPR", "TYPE", "ENDALL"); MainRule = "StmtBlock"; ProgramNode = "StmtNode" }
+    "DECLBLOCK"= @{ Deps = @("STARTALL", "DECLCODE", "EXPRCODE", "MIDDLEALL", "DECL", "DECLEXPR", "EXPR", "TYPE", "ENDALL"); MainRule = "DeclBlock"; ProgramNode = "StmtNode" }
 }
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path

@@ -16,11 +16,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 public class ASTGenerator {
-    public static void main(String[] args)  {
-        ExprNode exprNode = parseExpr("2+3 * 4");
-        System.out.println(exprNode);
-    }
-
     public static ProgNode parseProgram(String input) {
         InputStream stream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
         Parser parser = new Parser(new Scanner(stream));
@@ -31,6 +26,13 @@ public class ASTGenerator {
     public static StmtNode parseDecl(String input)  {
         InputStream stream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
         setup.DECL.Parser parser = new setup.DECL.Parser(new setup.DECL.Scanner(stream));
+        parser.Parse();
+        return parser.mainNode;
+    }
+
+    public static StmtNode parseDeclBlock(String input)  {
+        InputStream stream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
+        setup.DECLBLOCK.Parser parser = new setup.DECLBLOCK.Parser(new setup.DECLBLOCK.Scanner(stream));
         parser.Parse();
         return parser.mainNode;
     }
@@ -70,24 +72,17 @@ public class ASTGenerator {
         return parser.mainNode;
     }
 
+    public static StmtNode parseStmtBlock(String input)  {
+        InputStream stream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
+        setup.STMTBLOCK.Parser parser = new setup.STMTBLOCK.Parser(new setup.STMTBLOCK.Scanner(stream));
+        parser.Parse();
+        return parser.mainNode;
+    }
+
     public static TypeNode parseType(String input)  {
         InputStream stream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
         setup.TYPE.Parser parser = new setup.TYPE.Parser(new setup.TYPE.Scanner(stream));
         parser.Parse();
         return parser.mainNode;
-    }
-
-    public static ExprNode litExpr(String value, String type) {
-        return switch (type) {
-            case "int" -> new ExprIntNode(value, -1, -1);
-            case "double" -> new ExprDoubleNode(value, -1, -1);
-            case "string" -> new ExprStringNode(value, -1, -1);
-            case "bool" -> new ExprBoolNode(value, -1, -1);
-            default -> throw new IllegalStateException("Unexpected value: " + type);
-        };
-    }
-
-    public static ExprNode binOpExpr(ExprNode a, BinOp op, ExprNode b) {
-        return new ExprBinopNode(a, op, b, -1, -1);
     }
 }
