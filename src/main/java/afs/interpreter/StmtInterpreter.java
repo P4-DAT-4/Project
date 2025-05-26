@@ -7,7 +7,6 @@ import afs.interpreter.interfaces.*;
 import afs.nodes.expr.ExprIdentifierNode;
 import afs.nodes.expr.ExprNode;
 import afs.nodes.stmt.*;
-import afs.nodes.type.TypeListNode;
 import afs.nodes.type.TypeNode;
 import org.javatuples.Triplet;
 
