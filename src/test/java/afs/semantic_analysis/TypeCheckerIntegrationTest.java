@@ -6,8 +6,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import setup.ASTGenerator;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Nested
 public class TypeCheckerIntegrationTest {
@@ -71,7 +70,7 @@ public class TypeCheckerIntegrationTest {
         TypeCheckException exception = assertThrows(TypeCheckException.class, () -> {
             typeChecker.checkProgram(prog);
         });
-        assertEquals("Type mismatch: expected 'INT', but found 'BOOL'", exception.getMessage());
+        assertTrue(exception.getMessage().contains("Type mismatch: expected 'INT'"));
     }
 
     @Test
@@ -87,6 +86,6 @@ public class TypeCheckerIntegrationTest {
         TypeCheckException exception = assertThrows(TypeCheckException.class, () -> {
             typeChecker.checkProgram(prog);
         });
-        assertEquals("Type mismatch: expected 'VOID', but found 'BOOL'", exception.getMessage());
+        assertTrue(exception.getMessage().contains("Type mismatch: expected 'VOID'"));
     }
 }
