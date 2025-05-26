@@ -25,7 +25,6 @@ public class StmtInterpreter {
             case StmtAssignmentNode stmtAssignmentNode -> {
                 String varName = stmtAssignmentNode.getIdentifier();
                 var exprNode = stmtAssignmentNode.getExpression();
-                System.out.println("Assigning to " + varName + " in env: " + envV);
 
                 // Check for events
                 EventHandler.check(envV, envF, envE, location, varName, store, imgStore);
