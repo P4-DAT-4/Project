@@ -137,10 +137,10 @@ public class StmtInterpreter {
                 // Check if the expression is true or false
                 if (exprVal.asBool()) {
                     // Evaluate the then statement
-                    yield evalStmt(envV.newScope(), envF, envE, location, thenStmt, store, imgStore);
+                    yield evalStmt(envV, envF, envE, location, thenStmt, store, imgStore);
                 } else {
                     // Evaluate the else statement
-                    yield evalStmt(envV.newScope(), envF, envE, location, elseStmt, store, imgStore);
+                    yield evalStmt(envV, envF, envE, location, elseStmt, store, imgStore);
                 }
             }
             case StmtListAssignmentNode stmtListAssignmentNode -> {
