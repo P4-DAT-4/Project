@@ -74,8 +74,7 @@ public class StmtInterpreter {
                 Val value = ExprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore).getValue0();
 
                 // Declare in current environment
-                if (value instanceof ListVal) {
-                    // Pass-by-reference behavior
+                if (value instanceof ListVal ) {                  // Pass-by-reference behavior
                     if (exprNode instanceof ExprIdentifierNode identifierNode) {
                         String sourceVar = identifierNode.getIdentifier();
                         int existingLoc = envV.lookup(sourceVar);  // same memory

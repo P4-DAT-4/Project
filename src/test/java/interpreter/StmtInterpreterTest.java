@@ -47,6 +47,7 @@ public class StmtInterpreterTest {
     public void setUp() {
         exprInterpreter = new ExprInterpreter();
         defInterpreter = new DefInterpreter();
+        stmtInterpreter = new StmtInterpreter();
         envV = new MapVarEnvironment();
         envF = new MapFunEnvironment();
         envE = new MapEventEnvironment();
@@ -62,8 +63,8 @@ public class StmtInterpreterTest {
         public void StmtAssignmentNode() {
             // Declare x = 5
             int location = store.nextLocation();
-            envV.declare("x", location);
             store.declare(location, new IntVal(5));
+            envV.declare("x", location);
 
             // assign x = 10
             ExprNode expr = new ExprIntNode("10", 0, 0);

@@ -27,22 +27,20 @@ public class DefInterpreter {
                 String varName = defDeclarationNode.getIdentifier();
                 var expr = defDeclarationNode.getExpression();
                 var nextDef = defDeclarationNode.getDefinition();
+                System.out.println("Evaluating DefDeclarationNode for " + varName + ", expr: " + expr + ", nextDef: " + nextDef);
+
+                Val value = ExprInterpreter.evalExpr(envV, envF, envE, location, expr, store, imgStore).getValue0();
+                System.out.println("Expression value: " + value);
 
                 // Evaluate the expression
-                Val value = ExprInterpreter.evalExpr(envV, envF, envE, location, expr, store, imgStore).getValue0();
-
-                if (value instanceof ListVal) {
-                    // Pass by reference: bind varName to the existing location of the list
-                    envV.declare(varName, location);
-                } else {
-                    // Pass by value: store a copy at a new location
-                    envV.declare(varName, location);
-                    store.declare(location, value);
-                    location = store.nextLocation();
-                }
+                int newLocation = store.nextLocation();
+                store.declare(newLocation, value);
+                // Allocate a new location
+                envV.declare(varName, newLocation);
+                System.out.println("Bound " + varName + " to location " + newLocation);
 
                 // Evaluate the definition and return
-                yield evalDef(envV, envF, envE, location, nextDef, store, imgStore);
+                yield evalDef(envV, envF, envE, newLocation, nextDef, store, imgStore);
             }
             case DefFunctionNode defFunctionNode -> {
                 String varName = defFunctionNode.getIdentifier();
