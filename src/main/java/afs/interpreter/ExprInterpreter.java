@@ -119,15 +119,11 @@ public class ExprInterpreter {
             case ExprIdentifierNode exprIdentifierNode -> {
                 // Get variable name
                 String varName = exprIdentifierNode.getIdentifier();
-                System.out.println("Looking up '" + varName + "' in env: " + envV);
-                try {
-                    int varLocation = envV.lookup(varName);
-                    Val value = store.lookup(varLocation);
-                    System.out.println("Found '" + varName + "' at location " + varLocation + " with value " + value);
-                    yield new Triplet<>(value, store, imgStore);
-                } catch (RuntimeException e) {
-                    throw new RuntimeException("Variable '" + varName + "' not found in environment", e);
-                }
+
+                // Get value
+                Val result = store.lookup(envV.lookup(varName));
+
+                yield new Triplet<>(result, store, imgStore);
             }
             case ExprIntNode exprIntNode -> {
                 // Extract integer value from the node
