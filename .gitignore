@@ -3,6 +3,7 @@
 *.dot
 *.svg
 *.png
+*.afs
 
 # Ignore build
 build/**
