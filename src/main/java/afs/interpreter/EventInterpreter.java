@@ -28,7 +28,7 @@ public class EventInterpreter {
                 List<ExprNode> args = eventDeclarationNode.getArguments();
 
                 // create function call
-                var functionCallAsExpr = new ExprFunctionCallNode(funcName, args, -1, -1);
+                var functionCallAsExpr = new ExprFunctionCallNode(funcName, args, eventDeclarationNode.getLineNumber(), eventDeclarationNode.getColumnNumber());
 
                 // Declare the environment
                 envE.declare(varName, functionCallAsExpr);

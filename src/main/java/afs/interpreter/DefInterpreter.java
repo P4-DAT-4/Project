@@ -62,9 +62,8 @@ public class DefInterpreter {
                 // Update the event environment
                 var updatedEnvE = EventInterpreter.evalEvent(nextEvent, envE);
 
-
                 // Create function call
-                var functionCallAsStmt = new StmtFunctionCallNode(funName, args, -1, -1);
+                var functionCallAsStmt = new StmtFunctionCallNode(funName, args, defVisualizeNode.getLineNumber(), defVisualizeNode.getColumnNumber());
 
                 // Evaluate function body
                 StmtInterpreter.evalStmt(envV, envF, updatedEnvE, location, functionCallAsStmt, store, imgStore);
