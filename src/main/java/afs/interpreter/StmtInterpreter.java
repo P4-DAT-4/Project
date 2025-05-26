@@ -68,9 +68,8 @@ public class StmtInterpreter {
                 store.bind(location, value);
 
                 // Evaluate the statement and return
-                yield evalStmt(envV, envF, envE, store.nextLocation(), nextStmt, store, imgStore);
+                yield evalStmt(newEnvV, envF, envE, ++location, nextStmt, store, imgStore);
             }
-            /*
             case StmtFunctionCallNode stmtFunctionCallNode -> {
                 String funcName = stmtFunctionCallNode.getIdentifier();
                 List<ExprNode> args = stmtFunctionCallNode.getArguments();
