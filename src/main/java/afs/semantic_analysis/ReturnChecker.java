@@ -34,7 +34,7 @@ public class ReturnChecker {
         }
     }
 
-    private boolean checkStatement(StmtNode stmt) {
+    public boolean checkStatement(StmtNode stmt) {
         switch (stmt) {
             case StmtAssignmentNode ignored -> {
                 return false;
@@ -67,8 +67,8 @@ public class ReturnChecker {
                 boolean right = checkStatement(stmtIfNode.getRightStatement());
                 return left && right;
             }
-            case StmtWhileNode stmtWhileNode -> {
-                return checkStatement(stmtWhileNode.getStatement());
+            case StmtWhileNode ignored -> {
+                return false;
             }
         }
     }
