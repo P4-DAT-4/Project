@@ -33,10 +33,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class DefInterpreterTest {
-    private static ExprInterpreter exprInterpreter;
-    private static DefInterpreter defInterpreter;
-    private static EventInterpreter eventInterpreter;
-    private StmtInterpreter stmtInterpreter;
     private VarEnvironment envV;
     private FunEnvironment envF;
     private EventEnvironment envE;
@@ -46,10 +42,6 @@ public class DefInterpreterTest {
 
     @BeforeEach
     public void setUp(){
-        exprInterpreter = new ExprInterpreter();
-        defInterpreter = new DefInterpreter();
-        stmtInterpreter = new StmtInterpreter();
-        eventInterpreter = new EventInterpreter();
         envV = new MapVarEnvironment();
         envF = new MapFunEnvironment();
         envE = new MapEventEnvironment();
@@ -87,20 +79,19 @@ public class DefInterpreterTest {
         TypeNode voidType = new TypeVoidNode(0, 0);
         DefFunctionNode defFunction = new DefFunctionNode(voidType, vizFuncName, vizParams, vizBody, defDeclaration, 0, 0);
         // Evaluate and register the visualize function first
-        defInterpreter.evalDef(envV, envF, envE, location, defFunction, store, imgStore);
+        DefInterpreter.evalDef(envV, envF, envE, location, defFunction, store, imgStore);
 
 
         // Evaluate the definition chain
-        defInterpreter.evalDef(envV, envF, envE, location, defDeclaration, store, imgStore);
+        DefInterpreter.evalDef(envV, envF, envE, location, defDeclaration, store, imgStore);
 
 
 
         // Check that the variable 'x' is declared and stored correctly
         int storedLoc =  envV.lookup("x");
-        assertNotNull(storedLoc, "Variable 'x' should be declared in the environment");
 
         Val valX = store.lookup(storedLoc);
-        assertTrue(valX instanceof IntVal, "Stored value should be an integer");
+        assertInstanceOf(IntVal.class, valX, "Stored value should be an integer");
         assertEquals(42, ((IntVal) valX).getValue(), "Variable 'x' should hold the value 42");
 
         // Check that the store and imgStore are returned (not null)
@@ -138,11 +129,11 @@ public class DefInterpreterTest {
         TypeNode voidType = new TypeVoidNode(0, 0);
         DefFunctionNode defFunction = new DefFunctionNode(voidType, vizFuncName, vizParams, vizBody, defDeclaration, 0, 0);
         // Evaluate and register the visualize function first
-        defInterpreter.evalDef(envV, envF, envE, location, defFunction, store, imgStore);
+        DefInterpreter.evalDef(envV, envF, envE, location, defFunction, store, imgStore);
 
 
         // Evaluate the definition chain
-        defInterpreter.evalDef(envV, envF, envE, location, defDeclaration, store, imgStore);
+        DefInterpreter.evalDef(envV, envF, envE, location, defDeclaration, store, imgStore);
 
 
         // Now check that function is registered in envF
@@ -183,16 +174,15 @@ public class DefInterpreterTest {
         DefVisualizeNode defVisualize = new DefVisualizeNode(vizFuncName, eventArgs, eventDecl, 0, 0);
 
         // Evaluate event directly to simulate visualize evaluation
-        EventEnvironment updatedEnvE = eventInterpreter.evalEvent(eventDecl, envE);
+        EventEnvironment updatedEnvE = EventInterpreter.evalEvent(eventDecl, envE);
 
         // Now assert that the event environment has the event "event1"
-        ExprNode registeredCall = updatedEnvE.lookup("event1");
+        ExprFunctionCallNode registeredCall = updatedEnvE.lookup("event1");
         assertNotNull(registeredCall, "Event 'event1' should be registered in the event environment");
-        assertTrue(registeredCall instanceof ExprFunctionCallNode, "Registered event should be a function call");
+        assertInstanceOf(ExprFunctionCallNode.class, registeredCall, "Registered event should be a function call");
 
-        ExprFunctionCallNode funcCall = (ExprFunctionCallNode) registeredCall;
-        assertEquals(vizFuncName, funcCall.getIdentifier(), "Event should be linked to 'visualizeX' function");
-        assertEquals(eventArgs, funcCall.getArguments(), "Event arguments should match the visualize function parameters");
+        assertEquals(vizFuncName, registeredCall.getIdentifier(), "Event should be linked to 'visualizeX' function");
+        assertEquals(eventArgs, registeredCall.getArguments(), "Event arguments should match the visualize function parameters");
     }
 
     @Test
@@ -224,23 +214,15 @@ public class DefInterpreterTest {
         DefFunctionNode defFunction = new DefFunctionNode(voidType, vizFuncName, vizParams, assignment, defVisualize, 0, 0);
 
         // Step 6: Global variable declaration
-        int location = store.nextLocation();
         DefDeclarationNode defDeclaration = new DefDeclarationNode(intType, varName, expr42, defFunction, 0, 0);
 
         // Step 7: Evaluate the chain
-        System.out.println("Before evaluating defDeclaration, envV: " + envV + ", envF: " + envF);
-        defInterpreter.evalDef(envV, envF, envE, location, defDeclaration, store, imgStore);
-        System.out.println("After evaluating defDeclaration, envV: " + envV + ", envF: " + envF);
+        DefInterpreter.evalDef(envV, envF, envE, ++location, defDeclaration, store, imgStore);
 
         // Step 8: Check initial value
         int storedLoc = envV.lookup(varName);
-        assertNotNull(storedLoc, "Variable 'x' should be declared in environment");
         Val valX = store.lookup(storedLoc);
-        assertTrue(valX instanceof IntVal, "Stored value should be integer");
+        assertInstanceOf(IntVal.class, valX, "Stored value should be integer");
         assertEquals(43, ((IntVal) valX).getValue(), "Variable 'x' should be incremented to 43");
-
-
     }
-
-
 }
