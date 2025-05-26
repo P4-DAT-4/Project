@@ -1,5 +1,6 @@
 package afs.semantic_analysis;
 
+import afs.nodes.AbstractSyntaxNode;
 import afs.semantic_analysis.exceptions.TypeCheckException;
 import afs.semantic_analysis.types.AFSType;
 import afs.semantic_analysis.types.SimpleType;
@@ -21,9 +22,9 @@ public class TypeValidator {
     }
   }
   // Checks for equality between two types
-  public static void validateTypeEquality(AFSType actual, AFSType expected) {
+  public static void validateTypeEquality(AbstractSyntaxNode node, AFSType actual, AFSType expected) {
     if (!actual.equals(expected)) {
-      throw new TypeCheckException("Type mismatch: expected '" + expected + "', but found '" + actual + "'");
+      throw new TypeCheckException("Type mismatch: expected '" + expected + "', but found '" + actual + "' at line " + node.getLineNumber() + ", col " + node.getColumnNumber());
     }
   }
   // Checks for Bool

@@ -1,6 +1,5 @@
 package afs.interpreter.expressions;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public final class ListVal implements Val {
@@ -18,7 +17,4 @@ public final class ListVal implements Val {
     public String toString() {
         return elements.toString();
     }
-
-
-
 }

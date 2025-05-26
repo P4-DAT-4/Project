@@ -9,8 +9,9 @@ import org.jfree.graphics2d.svg.SVGGraphics2D;
 import org.jfree.graphics2d.svg.SVGUtils;
 
 import java.awt.*;
-import java.awt.geom.Path2D;
 import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;

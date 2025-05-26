@@ -7,7 +7,6 @@ import afs.interpreter.interfaces.*;
 import afs.nodes.def.*;
 import afs.nodes.expr.ExprNode;
 import afs.nodes.stmt.StmtFunctionCallNode;
-import afs.nodes.type.TypeNode;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
@@ -32,12 +31,11 @@ public class DefInterpreter {
                 Val value = ExprInterpreter.evalExpr(envV, envF, envE, location, expr, store, imgStore).getValue0();
                 System.out.println("Expression value: " + value);
 
-                // Evaluate the expression
-                int newLocation = store.nextLocation();
-                store.declare(newLocation, value);
-                // Allocate a new location
-                envV.declare(varName, newLocation);
-                System.out.println("Bound " + varName + " to location " + newLocation);
+                // Update the environment
+                envV.declare(varName, location);
+
+                // Update the store
+                store.bind(location, value);
 
                 // Evaluate the definition and return
                 yield evalDef(envV, envF, envE, newLocation, nextDef, store, imgStore);

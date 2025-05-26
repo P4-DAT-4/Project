@@ -109,7 +109,7 @@ public class ExprInterpreter {
                         // Declare a new parameter, assign it the location l
                         funcEnvV.declare(paramNames.get(n), paramLocation);
                         // Store the value of expression e_n at the location
-                        store.declare(paramLocation, exprVal);
+                        store.bind(location, exprVal);
 
                         // Evaluate the new function call with one less argument and with new location
                         yield evalExpr(envV, envF, envE, store.nextLocation(), functionCallNode, store, imgStore);
@@ -186,14 +186,11 @@ public class ExprInterpreter {
                 // Evaluate all expressions (handling nested lists)
                 for (ExprNode e : exprs) {
                     var res = evalExpr(envV, envF, envE, location, e, store, imgStore);
-                    Val val = (Val) res.getValue0();
+                    Val val = res.getValue0();
                     elements.add(val);
                 }
 
                 ListVal result = new ListVal(elements);
-
-                // store result
-                store.declare(location, result);
 
                 yield new Triplet<>(result, store, imgStore);
             }
@@ -401,16 +398,16 @@ public class ExprInterpreter {
             }
             case EQ -> {
                 switch (v1) {
-                    case IntVal intVal -> {
+                    case IntVal ignored -> {
                         yield new BoolVal(v1.asInt() == v2.asInt());
                     }
-                    case DoubleVal doubleVal -> {
+                    case DoubleVal ignored -> {
                         yield new BoolVal(v1.asDouble() == v2.asDouble());
                     }
-                    case BoolVal boolVal -> {
+                    case BoolVal ignored -> {
                         yield new BoolVal(v1.asBool() == v2.asBool());
                     }
-                    case StringVal stringVal -> {
+                    case StringVal ignored -> {
                         yield new BoolVal(v1.asString().equals(v2.asString()));
                     }
                     default -> throw new RuntimeException("No");

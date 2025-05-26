@@ -60,7 +60,7 @@ public class Main {
             returnChecker.checkReturn(program);
 
             ImgStore imgStore = ProgramInterpreter.evalProg(program);
-            System.out.println("Imgstore size: " + imgStore.size());
+            System.out.println("Images to be generated: " + imgStore.size());
 
             SVGGenerator.generateToFile(imgStore, width, height, outputFile);
 

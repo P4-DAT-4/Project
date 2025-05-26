@@ -23,6 +23,4 @@ public final class DoubleVal implements Val {
         DoubleVal doubleVal = (DoubleVal) o;
         return value == doubleVal.value; // compare values
     }
-
-
 }

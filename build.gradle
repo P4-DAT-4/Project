@@ -32,9 +32,9 @@ tasks.register('GenerateParserScanner', Exec) {
     def os = org.gradle.internal.os.OperatingSystem.current()
 
     if (os.isWindows()) {
-        commandLine 'cmd', '/c', 'cocoR.bat'
+        commandLine 'cmd', '/c', 'cocoR.bat && powershell -ExecutionPolicy Bypass -File genTestParsers.ps1'
     } else if (os.isMacOsX() || os.isUnix()) {
-        commandLine 'bash', './cocoR.sh'
+        commandLine 'bash', '-c', './cocoR.sh && ./genTestParsers.sh'
     } else {
         throw new GradleException("Unsupported OS")
     }
@@ -68,10 +68,10 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
     implementation 'org.javatuples:javatuples:1.2'
     implementation("org.jfree:jfreesvg:3.4.3")
-    implementation 'org.javatuples:javatuples:1.2'
 }
 
 test {
@@ -83,5 +83,6 @@ test {
     testLogging {
         events "passed", "skipped", "failed"
         exceptionFormat "full"
+        showStandardStreams = true
     }
 }
