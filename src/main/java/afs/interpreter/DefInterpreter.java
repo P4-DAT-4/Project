@@ -26,19 +26,18 @@ public class DefInterpreter {
                 String varName = defDeclarationNode.getIdentifier();
                 var expr = defDeclarationNode.getExpression();
                 var nextDef = defDeclarationNode.getDefinition();
-                System.out.println("Evaluating DefDeclarationNode for " + varName + ", expr: " + expr + ", nextDef: " + nextDef);
 
                 Val value = ExprInterpreter.evalExpr(envV, envF, envE, location, expr, store, imgStore).getValue0();
-                System.out.println("Expression value: " + value);
 
                 // Update the environment
-                envV.declare(varName, location);
+                VarEnvironment newEnvV = envV.newScope();
+                newEnvV.declare(varName, location);
 
                 // Update the store
                 store.bind(location, value);
 
                 // Evaluate the definition and return
-                yield evalDef(envV, envF, envE, newLocation, nextDef, store, imgStore);
+                yield evalDef(newEnvV, envF, envE, ++location, nextDef, store, imgStore);
             }
             case DefFunctionNode defFunctionNode -> {
                 String varName = defFunctionNode.getIdentifier();
