@@ -105,24 +105,29 @@ public class ExprInterpreter {
                         // Evaluate the new function call with one less argument
                         yield evalExpr(envV, envF, envE, location, functionCallNode, store, imgStore);
                     } else { // If e_n is not a list
+                        int paramLocation = store.nextLocation();
                         // Declare a new parameter, assign it the location l
-                        funcEnvV.declare(paramNames.get(n), location);
+                        funcEnvV.declare(paramNames.get(n), paramLocation);
                         // Store the value of expression e_n at the location
                         store.bind(location, exprVal);
 
                         // Evaluate the new function call with one less argument and with new location
-                        yield evalExpr(envV, envF, envE, ++location, functionCallNode, store, imgStore);
+                        yield evalExpr(envV, envF, envE, store.nextLocation(), functionCallNode, store, imgStore);
                     }
                 }
             }
             case ExprIdentifierNode exprIdentifierNode -> {
                 // Get variable name
                 String varName = exprIdentifierNode.getIdentifier();
-                // Get memory location
-                int varLocation = envV.lookup(varName);
-                // Look up the actual
-                Val value = store.lookup(varLocation);
-                yield new Triplet<>(value, store, imgStore);
+                System.out.println("Looking up '" + varName + "' in env: " + envV);
+                try {
+                    int varLocation = envV.lookup(varName);
+                    Val value = store.lookup(varLocation);
+                    System.out.println("Found '" + varName + "' at location " + varLocation + " with value " + value);
+                    yield new Triplet<>(value, store, imgStore);
+                } catch (RuntimeException e) {
+                    throw new RuntimeException("Variable '" + varName + "' not found in environment", e);
+                }
             }
             case ExprIntNode exprIntNode -> {
                 // Extract integer value from the node

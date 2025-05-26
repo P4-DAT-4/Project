@@ -1,7 +1,5 @@
 package afs;
 
-// import afs.astprinter.RecursiveGraphvizPrinter;
-
 import afs.SVGGenerator.SVGGenerator;
 import afs.astprinter.Printer;
 import afs.astprinter.RecursiveGraphvizPrinter;

@@ -25,4 +25,6 @@ public final class BoolVal implements Val {
         BoolVal boolVal = (BoolVal) o;
         return value == boolVal.value; // compare values
     }
+
+
 }

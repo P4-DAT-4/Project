@@ -77,7 +77,7 @@ public class SVGGenerator {
             this.x = x;
             this.y = y;
             this.content = content;
-            this.fontSize = 12;
+            this.fontSize = fontSize;
         }
 
         public Text(double x, double y, String content) {

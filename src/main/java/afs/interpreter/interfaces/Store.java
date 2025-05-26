@@ -5,4 +5,5 @@ import afs.interpreter.expressions.Val;
 public interface Store {
     void bind(int location, Val value);
     Val lookup(int location);
+    int nextLocation();
 }

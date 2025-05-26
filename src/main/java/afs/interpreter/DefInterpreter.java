@@ -1,6 +1,8 @@
 package afs.interpreter;
 
+import afs.interpreter.expressions.ListVal;
 import afs.interpreter.expressions.Val;
+import afs.interpreter.implementations.MapVarEnvironment;
 import afs.interpreter.interfaces.*;
 import afs.nodes.def.*;
 import afs.nodes.expr.ExprNode;
@@ -24,9 +26,10 @@ public class DefInterpreter {
                 String varName = defDeclarationNode.getIdentifier();
                 var expr = defDeclarationNode.getExpression();
                 var nextDef = defDeclarationNode.getDefinition();
+                System.out.println("Evaluating DefDeclarationNode for " + varName + ", expr: " + expr + ", nextDef: " + nextDef);
 
-                // Evaluate the expression
                 Val value = ExprInterpreter.evalExpr(envV, envF, envE, location, expr, store, imgStore).getValue0();
+                System.out.println("Expression value: " + value);
 
                 // Update the environment
                 envV.declare(varName, location);
@@ -35,7 +38,7 @@ public class DefInterpreter {
                 store.bind(location, value);
 
                 // Evaluate the definition and return
-                yield evalDef(envV, envF, envE, ++location, nextDef, store, imgStore);
+                yield evalDef(envV, envF, envE, newLocation, nextDef, store, imgStore);
             }
             case DefFunctionNode defFunctionNode -> {
                 String varName = defFunctionNode.getIdentifier();

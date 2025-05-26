@@ -8,6 +8,7 @@ import java.util.Map;
 
 public class MapStore implements Store {
     private final Map<Integer, Val> _environment;
+    private int location = 0;
 
     public MapStore() {
         _environment = new HashMap<>();
@@ -26,4 +27,11 @@ public class MapStore implements Store {
         }
         return _environment.get(location);
     }
+
+    @Override
+    public int nextLocation() {
+        return location++;
+    }
+
+
 }
