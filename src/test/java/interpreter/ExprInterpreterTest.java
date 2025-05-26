@@ -261,6 +261,7 @@ public class ExprInterpreterTest{
             assertEquals(lineElements1 + lineElements2, resultElements);
         }
 
+        @Test
         public void ExprConcatShapeCurveNode(){
             // Arrange
             String curve1 = "curve (0.0, 0.0) to (1.0, 1.0) to (2.0, 2.0)";
