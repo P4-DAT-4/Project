@@ -75,7 +75,7 @@ public class StmtInterpreter {
                 String funcName = stmtFunctionCallNode.getIdentifier();
                 List<ExprNode> args = stmtFunctionCallNode.getArguments();
                 var funcData = envF.lookup(funcName);
-                
+
                 // Get function environment
                 VarEnvironment funcEnvV = funcData.getValue2();
 

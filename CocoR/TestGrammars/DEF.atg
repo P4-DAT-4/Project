@@ -22,29 +22,6 @@ COMPILER Program
         return errors.count > 0;
     }
 
-    private DefNode toDefNode(List<DefNode> defs) {
-        if (defs.isEmpty()) {
-            throw new FatalError("Empty defs list");
-        }
-        DefNode left = defs.getFirst();
-
-        if (defs.size() == 1) {
-            return left;
-        } else {
-            int line = left.getLineNumber();
-            int col = left.getColumnNumber();
-            List<DefNode> rest = defs.subList(1, defs.size());
-            DefNode right = toDefNode(rest);
-            return switch(left) {
-                case DefDeclarationNode defDeclarationNode -> new DefDeclarationNode(defDeclarationNode.getType(), defDeclarationNode.getIdentifier(), defDeclarationNode.getExpression(), right, line, col);
-                case DefFunctionNode defFunctionNode -> new DefFunctionNode(defFunctionNode.getType(), defFunctionNode.getIdentifier(), defFunctionNode.getParameters(), defFunctionNode.getStatement(), right, line, col);
-                case DefVisualizeNode defVisualizeNode -> {
-                    throw new FatalError("Visualize node MUST be placed last");
-                }
-            };
-        }
-    }
-
     private EventNode toCompEvent(List<EventNode> events) {
         if (events.isEmpty()) {
             throw new FatalError("Empty events list");
@@ -116,7 +93,6 @@ COMPILER Program
             int col = stmt.getColumnNumber();
             ExprIdentifierNode ident = new ExprIdentifierNode(((StmtDeclarationNode) stmt).getIdentifier(), line, col);
             StmtReturnNode ret = new StmtReturnNode(ident, line, col);
-            System.out.println("Inserting return statement for " + ident.getIdentifier());
             return new StmtDeclarationNode(((StmtDeclarationNode) stmt).getType(), ((StmtDeclarationNode) stmt).getIdentifier(), ((StmtDeclarationNode) stmt).getExpression(), ret, line, col);
         } else {
             return stmt;
@@ -194,17 +170,12 @@ PRODUCTIONS
 Program = Def<out mainNode> .
 
 /*-----------------------------------Definitions-----------------------------------*/
-Def<out DefNode def> = (. def = null; List<DefNode> defs = new ArrayList<>(); .)
+Def<out DefNode def> = (. def = null; .)
     SYNC
     ( FnDef<out def>
     | ImgDef<out def>
-    | VarDef<out def> ) (. defs.add(def); .)
-    {
-    ( FnDef<out def>
-    | ImgDef<out def>
-    | VarDef<out def> ) (. defs.add(def); .)
-    }
-    Visualize<out def> (. defs.add(def); def = toDefNode(defs); .)
+    | VarDef<out def>
+    | Visualize<out def> )
 .
 
 FnDef<out DefNode func> = (. List<Param> params = new ArrayList<>(); .)
@@ -215,7 +186,8 @@ FnDef<out DefNode func> = (. List<Param> params = new ArrayList<>(); .)
     {"," Param<out param> (. params.add(param); .)
     }]
     ")"
-    StmtBlock<out StmtNode stmt> (. func = new DefFunctionNode(type, ident, params, stmt, null, line, col); .)
+    StmtBlock<out StmtNode stmt>
+    Def<out DefNode def> (. func = new DefFunctionNode(type, ident, params, stmt, def, line, col); .)
 .
 
 ImgDef<out DefNode img> = (. List<Param> params = new ArrayList<>(); .)
@@ -226,7 +198,8 @@ ImgDef<out DefNode img> = (. List<Param> params = new ArrayList<>(); .)
     {"," Param<out param> (. params.add(param); .)
     }]
     ")"
-    DeclBlock<out StmtNode decl> (. img = new DefFunctionNode(new TypeShapeNode(line, col), ident, params, decl, null, line, col); .)
+    DeclBlock<out StmtNode decl>
+    Def<out DefNode def> (. img = new DefFunctionNode(new TypeShapeNode(line, col), ident, params, decl, def, line, col); .)
 .
 
 Param<out Param param> =
@@ -240,7 +213,8 @@ VarDef<out DefNode var> =
     IDENT (. int line = t.line; int col = t.col; String ident = t.val; .)
     "="
     Expr<out ExprNode expr>
-    ";" (. var = new DefDeclarationNode(type, ident, expr, null, line, col); .)
+    ";"
+    Def<out DefNode def> (. var = new DefDeclarationNode(type, ident, expr, def, line, col); .)
 .
 
 /*-----------------------------------Visualize-----------------------------------*/

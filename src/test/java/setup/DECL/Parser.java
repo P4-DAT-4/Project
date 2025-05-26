@@ -70,7 +70,6 @@ public class Parser {
             int col = stmt.getColumnNumber();
             ExprIdentifierNode ident = new ExprIdentifierNode(((StmtDeclarationNode) stmt).getIdentifier(), line, col);
             StmtReturnNode ret = new StmtReturnNode(ident, line, col);
-            System.out.println("Inserting return statement for " + ident.getIdentifier());
             return new StmtDeclarationNode(((StmtDeclarationNode) stmt).getType(), ((StmtDeclarationNode) stmt).getIdentifier(), ((StmtDeclarationNode) stmt).getExpression(), ret, line, col);
         } else {
             return stmt;

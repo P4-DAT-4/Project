@@ -1,6 +1,6 @@
 # Updated structure: each key maps to a custom object with .Deps and .MainRule
 $sectionsInfo = @{
-    "DEF"      = @{ Deps = @("STARTALL", "DEFCODE", "EVENTCODE", "STMTCODE", "DECLCODE", "EXPRCODE", "MIDDLEALL", "DEF", "EVENT", "STMT", "DECL", "DECLEXPR", "EXPR", "TYPE", "ENDALL"); MainRule = "Def"; ProgramNode = "DefNode" }
+    "DEF"      = @{ Deps = @("STARTALL", "EVENTCODE", "STMTCODE", "DECLCODE", "EXPRCODE", "MIDDLEALL", "DEF", "EVENT", "STMT", "DECL", "DECLEXPR", "EXPR", "TYPE", "ENDALL"); MainRule = "Def"; ProgramNode = "DefNode" }
     "EXPR"     = @{ Deps = @("STARTALL", "EXPRCODE", "MIDDLEALL", "EXPR", "ENDALL"); MainRule = "Expr"; ProgramNode = "ExprNode" }
     "TYPE"     = @{ Deps = @("STARTALL", "MIDDLEALL", "TYPE", "ENDALL"); MainRule = "Type"; ProgramNode = "TypeNode" }
     "DECLEXPR" = @{ Deps = @("STARTALL", "EXPRCODE", "MIDDLEALL", "DECLEXPR", "EXPR", "ENDALL"); MainRule = "DeclExpr"; ProgramNode = "ExprNode" }
