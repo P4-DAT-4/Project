@@ -4,6 +4,7 @@ import afs.interpreter.expressions.IntVal;
 import afs.interpreter.expressions.ListVal;
 import afs.interpreter.expressions.Val;
 import afs.interpreter.interfaces.*;
+import afs.nodes.expr.ExprFunctionCallNode;
 import afs.nodes.expr.ExprIdentifierNode;
 import afs.nodes.expr.ExprNode;
 import afs.nodes.stmt.*;
@@ -157,6 +158,7 @@ public class StmtInterpreter {
                 if (indexExprs.size() == 1) {
                     // Check for events
                     EventHandler.check(envV, envF, envE, location, varName, store, imgStore);
+
                     // Evaluate left hand side expression
                     Val exprVal = ExprInterpreter.evalExpr(envV, envF, envE, location, valueExpr, store, imgStore).getValue0();
 
@@ -185,6 +187,7 @@ public class StmtInterpreter {
                     // Create a new ListVal from x, set index e_1 to point to value of x
                     ListVal listVal = new ListVal(varVal.asList());
                     listVal.asList().set(e1.asInt(), store.lookup(envV.lookup(varName)));
+
                     // Set x to listVal
                     store.bind(envV.lookup(varName), listVal);
                     yield new Triplet<>(null, store, imgStore);
@@ -192,7 +195,6 @@ public class StmtInterpreter {
             }
             case StmtReturnNode stmtReturnNode -> {
                 var exprNode = stmtReturnNode.getExpression();
-                System.out.println("Evaluating return expression in env: " + envV);
                 // Evaluate the expression
                 var value = ExprInterpreter.evalExpr(envV, envF, envE, location, exprNode, store, imgStore).getValue0();
 
@@ -209,11 +211,11 @@ public class StmtInterpreter {
 
                 // Check if the expression is true or false
                 if (exprVal.asBool()) {
-                    // Evaluate the body statement using a new scope
-                    evalStmt(envV.newScope(), envF, envE, location, bodyStmt, store, imgStore);
+                    // Create a composition statement equalling "S;while e do S"
+                    StmtNode comp = new StmtCompositionNode(bodyStmt, stmtWhileNode, stmtWhileNode.getLineNumber(), stmtWhileNode.getColumnNumber());
 
-                    // Re-evaluate the while statement with the updated store
-                    yield evalStmt(envV, envF, envE, location, stmtWhileNode, store, imgStore);
+                    // Evaluate the composition statement
+                    yield evalStmt(envV, envF, envE, location, comp, store, imgStore);
                 } else {
                     yield new Triplet<>(null, store, imgStore);
                 }
