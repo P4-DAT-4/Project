@@ -12,6 +12,7 @@ import java.awt.*;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -76,7 +77,7 @@ public class SVGGenerator {
             this.x = x;
             this.y = y;
             this.content = content;
-            this.fontSize = fontSize;
+            this.fontSize = 12;
         }
 
         public Text(double x, double y, String content) {

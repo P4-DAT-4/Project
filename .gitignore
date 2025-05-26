@@ -11,11 +11,8 @@ build/**
 .gradle/**
 
 # Ignore user-specific IntelliJ settings
-.idea/codeStyles/**
-.idea/libraries/**
-.idea/modules/**
-.idea/workspace.xml
-.idea/vcs.xml
+.idea
+.settings
 
 # Ignore generated .jar files
 *.jar

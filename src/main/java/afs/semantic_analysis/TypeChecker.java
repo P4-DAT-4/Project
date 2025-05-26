@@ -1,21 +1,17 @@
 package afs.semantic_analysis;
 
-import afs.nodes.def.*;
-import afs.nodes.event.EventCompositionNode;
-import afs.nodes.event.EventDeclarationNode;
-import afs.nodes.event.EventNode;
+import afs.semantic_analysis.exceptions.*;
+import afs.semantic_analysis.types.*;
 import afs.nodes.expr.*;
 import afs.nodes.prog.ProgNode;
 import afs.nodes.stmt.*;
+import afs.nodes.event.*;
 import afs.nodes.type.*;
-import afs.semantic_analysis.exceptions.*;
-import afs.semantic_analysis.types.AFSType;
-import afs.semantic_analysis.types.FunctionType;
-import afs.semantic_analysis.types.ListType;
-import afs.semantic_analysis.types.SimpleType;
+import afs.nodes.def.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 public class TypeChecker {
     public void checkProgram(ProgNode program) {
@@ -29,7 +25,7 @@ public class TypeChecker {
                 ExprNode expr = declarationNode.getExpression();
 
                 AFSType exprType = ExprType(env, expr);
-                TypeValidator.validateTypeEquality(expr, exprType, type);
+                TypeValidator.validateTypeEquality(exprType, type);
 
                 // Check if the identifier is already declared
                 String identifier = declarationNode.getIdentifier();
@@ -122,17 +118,17 @@ public class TypeChecker {
                 EventType(env, compositionNode.getRightEvent());
             }
             case EventDeclarationNode declarationNode -> {
-//                // Validate the type
-//                String conIdent = declarationNode.getLeftIdentifier(); // condition
-//                String funIdent = declarationNode.getRightIdentifier(); // fun identifier
-//                env.lookup(conIdent);
-//
-//                // Check if the function is valid
-//                AFSType type = env.lookup(funIdent);
-//                if (!(type instanceof FunctionType funType)) {
-//                    throw new TypeCheckException(String.format("Cannot visualize '%s' that is not a function.", funIdent));
-//                }
-//                checkFunction(env, funIdent, funType, declarationNode.getArguments());
+                // Validate the type
+                String conIdent = declarationNode.getIdent(); // condition
+                String funIdent = declarationNode.getFunIdent(); // fun identifier
+                env.lookup(conIdent);
+
+                // Check if the function is valid
+                AFSType type = env.lookup(funIdent);
+                if (!(type instanceof FunctionType funType)) {
+                    throw new TypeCheckException(String.format("Cannot visualize '%s' that is not a function.", funIdent));
+                }
+                checkFunction(env, funIdent, funType, declarationNode.getArguments());
             }
             default -> throw new IllegalEventException("Unexpected value: " + event);
         }
@@ -167,7 +163,7 @@ public class TypeChecker {
 
                 ExprNode Expr = assignmentNode.getExpression();
                 AFSType ExprType = ExprType(env, Expr);
-                TypeValidator.validateTypeEquality(stmt, ExprType, varType);
+                TypeValidator.validateTypeEquality(ExprType, varType);
 
                 assignmentNode.setType(Expr.getAFSType());
                 return Expr.getAFSType();
@@ -178,7 +174,7 @@ public class TypeChecker {
                 ExprNode expr = declarationNode.getExpression();
                 AFSType exprType = ExprType(env, expr);
 
-                TypeValidator.validateTypeEquality(stmt, exprType, TypeType(type));
+                TypeValidator.validateTypeEquality(exprType, TypeType(type));
 
                 String identifier = declarationNode.getIdentifier();
 
@@ -220,7 +216,7 @@ public class TypeChecker {
                 AFSType funRetType = env.lookup("return");
 
                 // Validate the return type
-                TypeValidator.validateTypeEquality(stmt, exprType, funRetType);
+                TypeValidator.validateTypeEquality(exprType, funRetType);
 
                 // Check the return is not null
                 if (funRetType.equals(SimpleType.VOID)) {
@@ -242,7 +238,7 @@ public class TypeChecker {
 
                 AFSType rightType = ExprType(env, rightExpression);
 
-                TypeValidator.validateTypeEquality(stmt, leftType, rightType);
+                TypeValidator.validateTypeEquality(leftType, rightType);
 
                 ListAssignmentNode.setType(leftType);
                 return leftType;
@@ -263,7 +259,7 @@ public class TypeChecker {
                         TypeValidator.validateBinop(leftType);
                         
                         AFSType rightType = ExprType(env, binopNode.getRightExpression());
-                        TypeValidator.validateTypeEquality(expr, leftType, rightType);
+                        TypeValidator.validateTypeEquality(leftType, rightType);
 
                         binopNode.setType(leftType);
                         return leftType;
@@ -277,7 +273,7 @@ public class TypeChecker {
                         }
 
                         AFSType rightType = ExprType(env, binopNode.getRightExpression());
-                        TypeValidator.validateTypeEquality(expr, rightType, leftType);
+                        TypeValidator.validateTypeEquality(rightType, leftType);
 
                         binopNode.setType(leftType);
                         return leftType;
@@ -287,7 +283,7 @@ public class TypeChecker {
                         TypeValidator.validateBinop(leftType);
 
                         AFSType rightType = ExprType(env, binopNode.getRightExpression());
-                        TypeValidator.validateTypeEquality(expr, leftType, rightType);
+                        TypeValidator.validateTypeEquality(leftType, rightType);
 
                         binopNode.setType(SimpleType.BOOL);
                         return SimpleType.BOOL;
@@ -301,7 +297,7 @@ public class TypeChecker {
                         }
 
                         AFSType rightType = ExprType(env, binopNode.getRightExpression());
-                        TypeValidator.validateTypeEquality(expr, leftType, rightType);
+                        TypeValidator.validateTypeEquality(leftType, rightType);
 
                         binopNode.setType(SimpleType.BOOL);
                         return SimpleType.BOOL;
@@ -413,7 +409,7 @@ public class TypeChecker {
 
                 for (ExprNode expression : expressions) {
                     AFSType exprType = ExprType(env, expression);
-                    TypeValidator.validateTypeEquality(expr, exprType, firstExprType);
+                    TypeValidator.validateTypeEquality(exprType, firstExprType);
                 }
 
                 AFSType listType = new ListType(firstExprType);
@@ -421,14 +417,14 @@ public class TypeChecker {
                 return listType;
             }
             case ExprPlaceNode PlaceNode -> {
-//                AFSType leftType = ExprType(env, PlaceNode.get());
-//                TypeValidator.validateShapeType(leftType);
-//
-//                AFSType middleType = ExprType(env, PlaceNode.getMiddleExpression());
-//                TypeValidator.validateDoubleType(middleType);
-//
-//                AFSType rightType = ExprType(env, PlaceNode.getRightExpression());
-//                TypeValidator.validateDoubleType(rightType);
+                AFSType leftType = ExprType(env, PlaceNode.getFExpression());
+                TypeValidator.validateShapeType(leftType);
+
+                AFSType middleType = ExprType(env, PlaceNode.getSExpression());
+                TypeValidator.validateDoubleType(middleType);
+
+                AFSType rightType = ExprType(env, PlaceNode.getFExpression());
+                TypeValidator.validateDoubleType(rightType);
 
                 PlaceNode.setType(SimpleType.SHAPE);
                 return SimpleType.SHAPE;
@@ -451,17 +447,27 @@ public class TypeChecker {
                 return SimpleType.SHAPE;
             }
             case ExprRotateNode RotateNode -> {
-                AFSType firstType = ExprType(env, RotateNode.getFirstExpression());
-                TypeValidator.validateShapeType(firstType);
+                AFSType leftType = ExprType(env, RotateNode.getFirstExpression());
+                TypeValidator.validateShapeType(leftType);
 
                 AFSType secondType = ExprType(env, RotateNode.getSecondExpression());
-                TypeValidator.validateDoubleType(secondType);
+                if (secondType instanceof ListType) {
+                    secondType = ((ListType) secondType).getType();
+                    TypeValidator.validateDoubleType(secondType);
+                } else if (!(secondType.equals(SimpleType.SHAPE))) {
+                    throw new TypeCheckException("Invalid type '" + secondType + "': " + "Expected list of doubles or shape");
+                }
 
                 AFSType thirdType = ExprType(env, RotateNode.getThirdExpression());
-                TypeValidator.validateDoubleType(thirdType);
+                if (thirdType instanceof ListType) {
+                    thirdType = ((ListType) thirdType).getType();
+                    TypeValidator.validateDoubleType(thirdType);
+                } else if (!(thirdType.equals(SimpleType.SHAPE))) {
+                    throw new TypeCheckException("Invalid type '" + thirdType + "': " + "Expected list of doubles or shape");
+                }
 
-                AFSType lastType = ExprType(env, RotateNode.getLastExpression());
-                TypeValidator.validateDoubleType(lastType);
+                AFSType rightType = ExprType(env, RotateNode.getLastExpression());
+                TypeValidator.validateDoubleType(rightType);
 
                 RotateNode.setType(SimpleType.SHAPE);
                 return SimpleType.SHAPE;
@@ -572,7 +578,7 @@ public class TypeChecker {
         for (int i = 0; i < arguments.size(); i++) {
             AFSType argType = ExprType(env, arguments.get(i));
             AFSType paramType = paramTypes.get(i);
-            TypeValidator.validateTypeEquality(arguments.get(i), argType, paramType);
+            TypeValidator.validateTypeEquality(argType, paramType);
         }
     }
 
