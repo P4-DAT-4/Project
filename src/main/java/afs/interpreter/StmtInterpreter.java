@@ -37,10 +37,8 @@ public class StmtInterpreter {
                     if (value instanceof ListVal && exprNode instanceof ExprIdentifierNode) {
                         int sourceLoc = envV.lookup(((ExprIdentifierNode) exprNode).getIdentifier());
                         envV.declare(varName, sourceLoc);
-                        System.out.println("Assigned " + varName + " to source location " + sourceLoc + " (ListVal)");
                     } else {
                         store.declare(targetLoc, value);
-                        System.out.println("Assigned " + value + " to " + varName + " at location " + targetLoc);
                     }
                     yield new Triplet<>(null, store, imgStore);
                 } catch (RuntimeException e) {
