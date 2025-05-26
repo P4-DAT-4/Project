@@ -25,7 +25,7 @@ public class TypeChecker {
                 ExprNode expr = declarationNode.getExpression();
 
                 AFSType exprType = ExprType(env, expr);
-                TypeValidator.validateTypeEquality(exprType, type);
+                TypeValidator.validateTypeEquality(def, exprType, type);
 
                 // Check if the identifier is already declared
                 String identifier = declarationNode.getIdentifier();
@@ -163,7 +163,7 @@ public class TypeChecker {
 
                 ExprNode Expr = assignmentNode.getExpression();
                 AFSType ExprType = ExprType(env, Expr);
-                TypeValidator.validateTypeEquality(ExprType, varType);
+                TypeValidator.validateTypeEquality(stmt, ExprType, varType);
 
                 assignmentNode.setType(Expr.getAFSType());
                 return Expr.getAFSType();
@@ -174,7 +174,7 @@ public class TypeChecker {
                 ExprNode expr = declarationNode.getExpression();
                 AFSType exprType = ExprType(env, expr);
 
-                TypeValidator.validateTypeEquality(exprType, TypeType(type));
+                TypeValidator.validateTypeEquality(stmt, exprType, TypeType(type));
 
                 String identifier = declarationNode.getIdentifier();
 
@@ -216,7 +216,7 @@ public class TypeChecker {
                 AFSType funRetType = env.lookup("return");
 
                 // Validate the return type
-                TypeValidator.validateTypeEquality(exprType, funRetType);
+                TypeValidator.validateTypeEquality(stmt, exprType, funRetType);
 
                 // Check the return is not null
                 if (funRetType.equals(SimpleType.VOID)) {
@@ -238,7 +238,7 @@ public class TypeChecker {
 
                 AFSType rightType = ExprType(env, rightExpression);
 
-                TypeValidator.validateTypeEquality(leftType, rightType);
+                TypeValidator.validateTypeEquality(stmt, leftType, rightType);
 
                 ListAssignmentNode.setType(leftType);
                 return leftType;
@@ -259,7 +259,7 @@ public class TypeChecker {
                         TypeValidator.validateBinop(leftType);
                         
                         AFSType rightType = ExprType(env, binopNode.getRightExpression());
-                        TypeValidator.validateTypeEquality(leftType, rightType);
+                        TypeValidator.validateTypeEquality(expr, leftType, rightType);
 
                         binopNode.setType(leftType);
                         return leftType;
@@ -273,7 +273,7 @@ public class TypeChecker {
                         }
 
                         AFSType rightType = ExprType(env, binopNode.getRightExpression());
-                        TypeValidator.validateTypeEquality(rightType, leftType);
+                        TypeValidator.validateTypeEquality(expr, rightType, leftType);
 
                         binopNode.setType(leftType);
                         return leftType;
@@ -283,7 +283,7 @@ public class TypeChecker {
                         TypeValidator.validateBinop(leftType);
 
                         AFSType rightType = ExprType(env, binopNode.getRightExpression());
-                        TypeValidator.validateTypeEquality(leftType, rightType);
+                        TypeValidator.validateTypeEquality(expr, leftType, rightType);
 
                         binopNode.setType(SimpleType.BOOL);
                         return SimpleType.BOOL;
@@ -297,7 +297,7 @@ public class TypeChecker {
                         }
 
                         AFSType rightType = ExprType(env, binopNode.getRightExpression());
-                        TypeValidator.validateTypeEquality(leftType, rightType);
+                        TypeValidator.validateTypeEquality(expr, leftType, rightType);
 
                         binopNode.setType(SimpleType.BOOL);
                         return SimpleType.BOOL;
@@ -409,24 +409,24 @@ public class TypeChecker {
 
                 for (ExprNode expression : expressions) {
                     AFSType exprType = ExprType(env, expression);
-                    TypeValidator.validateTypeEquality(exprType, firstExprType);
+                    TypeValidator.validateTypeEquality(expr, exprType, firstExprType);
                 }
 
                 AFSType listType = new ListType(firstExprType);
                 ListDeclarationNode.setType(listType);
                 return listType;
             }
-            case ExprPlaceNode PlaceNode -> {
-                AFSType leftType = ExprType(env, PlaceNode.getFExpression());
+            case ExprPlaceNode exprPlaceNode -> {
+                AFSType leftType = ExprType(env, exprPlaceNode.getFirstExpression());
                 TypeValidator.validateShapeType(leftType);
 
-                AFSType middleType = ExprType(env, PlaceNode.getSExpression());
+                AFSType middleType = ExprType(env, exprPlaceNode.getSecondExpression());
                 TypeValidator.validateDoubleType(middleType);
 
-                AFSType rightType = ExprType(env, PlaceNode.getFExpression());
+                AFSType rightType = ExprType(env, exprPlaceNode.getThirdExpression());
                 TypeValidator.validateDoubleType(rightType);
 
-                PlaceNode.setType(SimpleType.SHAPE);
+                exprPlaceNode.setType(SimpleType.SHAPE);
                 return SimpleType.SHAPE;
             }
             case ExprTextNode TextNode -> {
@@ -578,7 +578,7 @@ public class TypeChecker {
         for (int i = 0; i < arguments.size(); i++) {
             AFSType argType = ExprType(env, arguments.get(i));
             AFSType paramType = paramTypes.get(i);
-            TypeValidator.validateTypeEquality(argType, paramType);
+            TypeValidator.validateTypeEquality(arguments.get(i), argType, paramType);
         }
     }
 
