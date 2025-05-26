@@ -39,8 +39,7 @@ public class Parser {
     public boolean hasErrors() {
         return errors.count > 0;
     }
-/* END STARTALL */
-/* BEGIN EVENTCODE */
+
     private EventNode toCompEvent(List<EventNode> eventsReversed) {
         if (eventsReversed.isEmpty()) {
             throw new RuntimeException("Empty events list");
@@ -57,8 +56,7 @@ public class Parser {
             return new EventCompositionNode(left, right, line, col);
         }
     }
-/* END EVENTCODE */
-/* BEGIN STMTCODE */
+
     private StmtNode toCompStmt(List<StmtNode> stmts) {
         if (stmts.isEmpty()) {
             return new StmtSkipNode();
@@ -82,8 +80,7 @@ public class Parser {
             }
         }
     }
-/* END STMTCODE */
-/* BEGIN DECLCODE */
+
     private StmtNode declToCompStmt(List<StmtNode> stmts) {
         if (stmts.isEmpty()) {
             return new StmtSkipNode();
@@ -108,20 +105,19 @@ public class Parser {
             }
         }
     }
+
     private StmtNode addReturnIfDeclaration(StmtNode stmt) {
         if (stmt instanceof StmtDeclarationNode) {
             int line = stmt.getLineNumber();
             int col = stmt.getColumnNumber();
             ExprIdentifierNode ident = new ExprIdentifierNode(((StmtDeclarationNode) stmt).getIdentifier(), line, col);
             StmtReturnNode ret = new StmtReturnNode(ident, line, col);
-            System.out.println("Inserting return statement for " + ident.getIdentifier());
             return new StmtDeclarationNode(((StmtDeclarationNode) stmt).getType(), ((StmtDeclarationNode) stmt).getIdentifier(), ((StmtDeclarationNode) stmt).getExpression(), ret, line, col);
         } else {
             return stmt;
         }
     }
-/* END DECLCODE */
-/* BEGIN EXPRCODE */
+
     private ExprNode makeUnOpExpr(List<Character> unaries, ExprNode base, int line, int col) {
         ExprNode result = base;
         int index = 0;
@@ -167,9 +163,14 @@ public class Parser {
             default -> throw new RuntimeException("Unknown binary operator: " + op);
         };
     }
-/* END EXPRCODE */
 
-/* BEGIN MIDDLEALL */
+    private List<ExprNode> coordsToList(List<ExprListDeclaration> coords) {
+        List<ExprNode> exprs = new ArrayList<>();
+        for (ExprListDeclaration coord : coords) {
+            exprs.addAll(coord.getExpressions());
+        }
+        return exprs;
+    }
 /*------------------------------------------------------------------------*/
 /* The following section contains the token specification of AFS.*/
 
@@ -605,26 +606,17 @@ public class Parser {
 			decl = DeclDecl();
 		} else if (la.kind == 19) {
 			decl = DeclIf();
-		} else if (StartOf(7)) {
-			ExprNode expr = DeclExpr();
-			Expect(11);
-			decl = new StmtReturnNode(expr, t.line, t.col); 
 		} else SynErr(65);
 		return decl;
 	}
 
 	StmtNode  DeclDecl() {
 		StmtNode  decl;
-		ExprNode declExpr = null; 
 		TypeNode type = DeclType();
 		Expect(4);
 		int line = t.line; int col = t.col; String ident = t.val; 
 		Expect(10);
-		if (StartOf(7)) {
-			declExpr = DeclExpr();
-		} else if (StartOf(3)) {
-			declExpr = Expr();
-		} else SynErr(66);
+		ExprNode declExpr = DeclExpr();
 		decl = new StmtDeclarationNode(type, ident, declExpr, null, line, col); 
 		Expect(11);
 		return decl;
@@ -632,7 +624,7 @@ public class Parser {
 
 	StmtNode  DeclIf() {
 		StmtNode  decl;
-		while (!(la.kind == 0 || la.kind == 19)) {SynErr(67); Get();}
+		while (!(la.kind == 0 || la.kind == 19)) {SynErr(66); Get();}
 		Expect(19);
 		int line = t.line; int col = t.col; 
 		Expect(6);
@@ -647,6 +639,18 @@ public class Parser {
 			decl = new StmtIfNode(expr, thenDecl, elseDecl, line, col); 
 		}
 		return decl;
+	}
+
+	TypeNode  DeclType() {
+		TypeNode  type;
+		type = null; 
+		if (la.kind == 50) {
+			Get();
+			type = new TypeShapeNode(t.line, t.col); 
+		} else if (StartOf(2)) {
+			type = Type();
+		} else SynErr(67);
+		return type;
 	}
 
 	ExprNode  DeclExpr() {
@@ -677,21 +681,13 @@ public class Parser {
 			declExpr = Rotate();
 			break;
 		}
+		case 1: case 2: case 3: case 4: case 6: case 17: case 44: case 47: case 48: case 49: {
+			declExpr = Expr();
+			break;
+		}
 		default: SynErr(68); break;
 		}
 		return declExpr;
-	}
-
-	TypeNode  DeclType() {
-		TypeNode  type;
-		type = null; 
-		if (la.kind == 50) {
-			Get();
-			type = new TypeShapeNode(t.line, t.col); 
-		} else if (StartOf(2)) {
-			type = Type();
-		} else SynErr(69);
-		return type;
 	}
 
 	ExprNode  Text() {
@@ -742,6 +738,7 @@ public class Parser {
 		List<ExprNode> exprList = new ArrayList<>(); 
 		Expect(27);
 		int line = t.line; int col = t.col; 
+		Expect(6);
 		Expect(6);
 		ExprNode expr = Expr();
 		exprList.add(expr); 
@@ -866,7 +863,7 @@ public class Parser {
 	ExprNode  RelExpr() {
 		ExprNode  expr;
 		expr = ConcatExpr();
-		while (StartOf(8)) {
+		while (StartOf(7)) {
 			if (la.kind == 38) {
 				Get();
 			} else if (la.kind == 39) {
@@ -996,7 +993,7 @@ public class Parser {
 			Expect(8);
 			break;
 		}
-		default: SynErr(70); break;
+		default: SynErr(69); break;
 		}
 		return expr;
 	}
@@ -1073,9 +1070,8 @@ public class Parser {
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _x,_x},
 		{_x,_T,_T,_T, _T,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x},
 		{_x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_T, _x,_x,_T,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _x,_x},
-		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_T, _x,_x,_x,_x, _T,_T,_x,_T, _T,_x,_T,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _T,_T,_T,_T, _x,_x},
+		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _T,_T,_T,_T, _x,_x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _T,_T,_T,_T, _x,_x},
-		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_x,_T, _T,_x,_T,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x}
 
 	};
@@ -1167,11 +1163,10 @@ class Errors {
 			case 63: s = "this symbol not expected in StmtIf"; break;
 			case 64: s = "this symbol not expected in StmtWhile"; break;
 			case 65: s = "invalid Decl"; break;
-			case 66: s = "invalid DeclDecl"; break;
-			case 67: s = "this symbol not expected in DeclIf"; break;
+			case 66: s = "this symbol not expected in DeclIf"; break;
+			case 67: s = "invalid DeclType"; break;
 			case 68: s = "invalid DeclExpr"; break;
-			case 69: s = "invalid DeclType"; break;
-			case 70: s = "invalid Term"; break;
+			case 69: s = "invalid Term"; break;
 			default: s = "error " + n; break;
 		}
 		printMsg(line, col, s);
