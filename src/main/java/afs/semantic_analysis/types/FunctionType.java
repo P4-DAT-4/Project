@@ -8,7 +8,6 @@ public class FunctionType extends AFSType {
     private final AFSType returnType;
 
     public FunctionType(AFSType returnType) {
-        super(returnType);
         this.returnType = returnType;
     }
 

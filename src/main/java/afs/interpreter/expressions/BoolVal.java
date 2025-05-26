@@ -1,6 +1,6 @@
 package afs.interpreter.expressions;
 
-public class BoolVal implements Val {
+public final class BoolVal implements Val {
     private final boolean value;
 
     public BoolVal(boolean value){

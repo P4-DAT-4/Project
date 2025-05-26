@@ -1,6 +1,6 @@
 package afs.interpreter.expressions;
 
-public class DoubleVal implements Val {
+public final class DoubleVal implements Val {
     private final double value;
 
     public DoubleVal(double value){
@@ -23,5 +23,4 @@ public class DoubleVal implements Val {
         DoubleVal doubleVal = (DoubleVal) o;
         return value == doubleVal.value; // compare values
     }
-
 }

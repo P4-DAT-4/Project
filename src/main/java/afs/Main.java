@@ -1,35 +1,48 @@
 package afs;
 
 // import afs.astprinter.RecursiveGraphvizPrinter;
+
+import afs.SVGGenerator.SVGGenerator;
+import afs.astprinter.Printer;
+import afs.astprinter.RecursiveGraphvizPrinter;
+import afs.interpreter.ProgramInterpreter;
+import afs.interpreter.interfaces.ImgStore;
+import afs.nodes.prog.ProgNode;
 import afs.semantic_analysis.ReturnChecker;
 import afs.semantic_analysis.TypeChecker;
-import afs.nodes.prog.ProgNode;
 import afs.syntactic_analysis.Parser;
 import afs.syntactic_analysis.Scanner;
+import org.javatuples.Pair;
+
+import java.util.List;
 
 public class Main {
-    private final static String usage = "Usage: AFS <filename> [--print <outputfile>]";
+    private final static ArgumentHandler argumentHandler = new ArgumentHandler();
 
     public static void main(String[] args) {
-        if (args.length == 0) {
-            System.out.println(usage);
+        setupArguments();
+
+        if (!argumentHandler.parse(args)) {
+            argumentHandler.printUsage();
             return;
         }
 
-        String inputFile = args[0];
-        String printFile = null;
+        // Get input and outputFiles
+        String inputFile = argumentHandler.getArg("inputFile", String.class);
+        String outputFile = argumentHandler.getArg("outputFiles", String.class);
 
-        if (args.length == 3) {
-            if ("--print".equals(args[1])) {
-                printFile = args[2];
-            } else {
-                System.out.println(usage);
-                return;
-            }
-        } else if (args.length > 1) {
-            System.out.println(usage);
-            return;
+        // Set width
+        Integer width = argumentHandler.getFlagValue("--w", "width", Integer.class);
+        if (width == null) {
+            width = 1000; // default width
         }
+
+        Integer height = argumentHandler.getFlagValue("--h", "height", Integer.class);
+        if (height == null) {
+            height = 1000; // default height
+        }
+
+        String printFile = argumentHandler.getFlagValue("--print", "printFile", String.class);
 
         try {
             Parser parser = new Parser(new Scanner(inputFile));
@@ -37,24 +50,40 @@ public class Main {
 
             if (parser.hasErrors()) {
                 System.out.println("Error parsing file: " + inputFile);
-            } else {
-                ProgNode program = parser.mainNode;
-                TypeChecker typeChecker = new TypeChecker();
-                typeChecker.checkProgram(program);
+                return;
+            }
 
-                ReturnChecker returnChecker = new ReturnChecker();
-                returnChecker.checkReturn(program);
+            ProgNode program = parser.mainNode;
 
-                if (printFile != null) {
-//                    new RecursiveGraphvizPrinter().print(program, printFile, true);
-                    System.out.println("AST printed to: " + printFile);
-                } else {
-                    // interpret
-                }
+            TypeChecker typeChecker = new TypeChecker();
+            typeChecker.checkProgram(program);
+
+            ReturnChecker returnChecker = new ReturnChecker();
+            returnChecker.checkReturn(program);
+
+            ImgStore imgStore = ProgramInterpreter.evalProg(program);
+            System.out.println("Images to be generated: " + imgStore.size());
+
+            SVGGenerator.generateToFile(imgStore, width, height, outputFile);
+
+            if (printFile != null) {
+                System.out.println("Printing to: " + printFile);
+                Printer printer = new RecursiveGraphvizPrinter();
+                printer.print(program, printFile, true);
             }
         } catch (Exception e) {
             System.out.println("Exception was thrown:");
             e.printStackTrace();
         }
     }
+
+    private static void setupArguments() {
+        argumentHandler.addRequiredArg("inputFile", ArgumentHandler.ArgType.STRING);
+        argumentHandler.addRequiredArg("outputFiles", ArgumentHandler.ArgType.STRING);
+
+        argumentHandler.addFlag("--w", List.of(new Pair<>("width", ArgumentHandler.ArgType.INT)));
+        argumentHandler.addFlag("--h", List.of(new Pair<>("height", ArgumentHandler.ArgType.INT)));
+        argumentHandler.addFlag("--print", List.of(new Pair<>("printFile", ArgumentHandler.ArgType.STRING)));
+    }
 }
+

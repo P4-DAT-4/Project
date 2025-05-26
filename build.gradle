@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'application'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 application {
@@ -14,25 +15,33 @@ java {
 }
 
 jar {
-    manifest {
-        attributes(
-                'Main-Class': 'afs.Main'  // Ensure the main class is set here
-        )
-    }
-    destinationDirectory = file("$rootDir")  // Output the JAR to the project root
+    enabled = false
+}
+
+build {
+    dependsOn shadowJar
+}
+
+shadowJar {
+    archiveFileName.set('AFS.jar')
+    destinationDirectory.set(layout.projectDirectory)
 }
 
 tasks.register('GenerateParserScanner', Exec) {
-    workingDir = file('CocoR')  // Set the working directory
+    workingDir = file('CocoR')
     def os = org.gradle.internal.os.OperatingSystem.current()
 
     if (os.isWindows()) {
-        commandLine 'cmd', '/c', 'cocoR.bat'  // Windows batch script
+        commandLine 'cmd', '/c', 'cocoR.bat && powershell -ExecutionPolicy Bypass -File genTestParsers.ps1'
     } else if (os.isMacOsX() || os.isUnix()) {
-        commandLine 'bash', './cocoR.sh'  // macOS/Linux bash script
+        commandLine 'bash', '-c', './cocoR.sh && ./genTestParsers.sh'
     } else {
         throw new GradleException("Unsupported OS")
     }
+
+    inputs.file("CocoR/AFS.atg")
+    outputs.file("src/main/java/afs/syntactic_analysis/Parser.java")
+    outputs.file("src/main/java/afs/syntactic_analysis/Scanner.java")
 }
 
 tasks.register("runAFS", Exec) {
@@ -46,24 +55,34 @@ tasks.register("runAFS", Exec) {
     }
 }
 
-compileJava.dependsOn(GenerateParserScanner)
+tasks.named('compileJava') {
+    dependsOn tasks.named('GenerateParserScanner')
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
     implementation 'org.javatuples:javatuples:1.2'
     implementation("org.jfree:jfreesvg:3.4.3")
 }
 
 test {
+    onlyIf {
+        gradle.startParameter.taskNames.contains("test")
+    }
     useJUnitPlatform()
     include '**/*Test.class'
     testLogging {
         events "passed", "skipped", "failed"
         exceptionFormat "full"
+        showStandardStreams = true
     }
 }
-

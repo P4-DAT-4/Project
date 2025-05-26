@@ -1,6 +1,6 @@
 package afs.interpreter.expressions;
 
-public class IntVal implements Val {
+public final class IntVal implements Val {
     private final int value;
 
     public IntVal(int value){
