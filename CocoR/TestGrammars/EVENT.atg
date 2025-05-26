@@ -120,9 +120,10 @@ Events<out EventNode event> = (. List<EventNode> events = new ArrayList<>(); Lis
     }]
     ")"
     ";" (. event = new EventDeclarationNode(ident, fname, arguments, line, col); events.add(event); .)
-    { (. line = t.line; col = t.col; arguments = new ArrayList<>(); .)
+    {
+    IDENT (. line = t.line; col = t.col; ident = t.val; arguments = new ArrayList<>(); .)
     "do"
-    IDENT (. line = t.line; col = t.col; ident = t.val; .)
+    IDENT (. line = t.line; col = t.col; fname = t.val; .)
     "("
     [Expr<out ExprNode arg> (. arguments.add(arg); .)
     { "," Expr<out arg> (. arguments.add(arg); .)

@@ -303,7 +303,6 @@ public class Parser {
 		ExprNode mExpr = Expr();
 		Expect(8);
 		ExprNode rExpr = Expr();
-		Expect(8);
 		Expect(9);
 		declExpr = new ExprScaleNode(lExpr, mExpr, rExpr, line, col); 
 		return declExpr;

@@ -465,11 +465,12 @@ public class Parser {
 		Expect(8);
 		Expect(11);
 		event = new EventDeclarationNode(ident, fname, arguments, line, col); events.add(event); 
-		while (la.kind == 14) {
-			line = t.line; col = t.col; arguments = new ArrayList<>(); 
+		while (la.kind == 4) {
 			Get();
+			line = t.line; col = t.col; ident = t.val; arguments = new ArrayList<>(); 
+			Expect(14);
 			Expect(4);
-			line = t.line; col = t.col; ident = t.val; 
+			line = t.line; col = t.col; fname = t.val; 
 			Expect(6);
 			if (StartOf(4)) {
 				ExprNode arg = Expr();
@@ -830,7 +831,6 @@ public class Parser {
 		ExprNode mExpr = Expr();
 		Expect(7);
 		ExprNode rExpr = Expr();
-		Expect(7);
 		Expect(8);
 		declExpr = new ExprScaleNode(lExpr, mExpr, rExpr, line, col); 
 		return declExpr;
