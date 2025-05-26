@@ -177,9 +177,6 @@ public class TypeCheckerTest extends TypeChecker {
             functionType.addParamType(param1.getAFSType());
             functionType.addParamType(param2.getAFSType());
 
-            System.out.printf("Param type: %s%n", param1.getAFSType());
-            System.out.printf("Param type: %s%n", param2.getAFSType());
-
             env.declare(identifier, functionType);
             List<ExprNode> args = List.of(new ExprIntNode("1", 1, 1), new ExprDoubleNode("2.0", 1, 1));
 

@@ -288,7 +288,6 @@ public class Demo {
 
         try {
             SVGGenerator.generateToFile(imgStore, 150, 150, "testOutput");
-            System.out.println("SVG files generated successfully!");
         } catch (Exception e) {
             e.printStackTrace();
         }
