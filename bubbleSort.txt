@@ -1,0 +1,86 @@
+double canvasHeight = 400.0;
+double canvasWidth = 400.0;
+double startX = canvasWidth - 350.0;
+double startY = canvasHeight - 50.0;
+[double] array = [4.0, 7.0, 3.0, 1.0, 9.0, 2.0, 8.0, 5.0, 6.0, 3.0, 0.0];
+
+fn string doubleToString(double d) {
+    if (d == 0.0) then {
+        return "0";
+    }
+    if (d == 1.0) then {
+            return "1";
+    }
+    if (d == 2.0) then {
+            return "2";
+    }
+    if (d == 3.0) then {
+            return "3";
+    }
+    if (d == 4.0) then {
+            return "4";
+    }
+    if (d == 5.0) then {
+            return "5";
+    }
+    if (d == 6.0) then {
+            return "6";
+    }
+    if (d == 7.0) then {
+            return "7";
+    }
+    if (d == 8.0) then {
+            return "8";
+    }
+    if (d == 9.0) then {
+        return "9";
+    }
+    return "";
+}
+
+img drawBar(double posX, double posY, double value) {
+    string textContent = doubleToString(value);
+    double boxWidth = 25.0;
+    double boxHeight = 25.0;
+    shape box = line (posX, posY) to (posX + boxWidth, posY) to (posX + boxWidth, posY - boxHeight * value) to
+         (posX, posY - boxHeight * value) to (posX, posY);
+    shape textShape = text textContent;
+    shape textPlaced = place textShape at (posX + 0.5 * boxWidth, posY + 5.0);
+    shape result = box ++ textPlaced;
+}
+
+img barGraph([double] values, int size, int index, double x) {
+    if (index < size - 1) then {
+        shape x = drawBar(x, startY, values[index]) ++ barGraph(values, size, index + 1, x + 25.0);
+    } else {
+        shape x = drawBar(x, startY, values[index]);
+    }
+}
+
+fn void swap([double] values, int j, int i) {
+    double temp = array[j];
+    array[j] = array[j+1];
+    array[j+1] = temp;
+}
+
+bool done = false;
+
+fn void bubbleSort([double] values, int size) {
+    int i = 0;
+    while (i < size) do {
+        int j = 0;
+        while (j < size - i - 1) do {
+            if (array[j] > array[j+1]) then {
+                swap(values, j, i);
+            }
+            j = j + 1;
+        }
+        i = i + 1;
+    }
+    done = true;
+}
+
+visualize bubbleSort(array, 11):
+    bubbleSort do barGraph(array, 11, 0, startX);
+    swap do barGraph(array, 11, 0, startX);
+    done do barGraph(array, 11, 0, startX);
