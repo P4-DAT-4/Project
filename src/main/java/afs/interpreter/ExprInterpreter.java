@@ -66,21 +66,22 @@ public class ExprInterpreter {
                 List<ExprNode> args = exprFunctionCallNode.getArguments();
                 var funcData = envF.lookup(funcName);
 
+                // Get function environment
+                VarEnvironment funcEnvV = funcData.getValue2();
+
                 // Base case
                 if (args.isEmpty()) {
                     // Check for events
                     EventHandler.check(envV, envF, envE, location, funcName, store, imgStore);
                     // Call function by evaluating the statement in the function
                     StmtNode funcBody = funcData.getValue0();
-                    yield StmtInterpreter.evalStmt(funcData.getValue2(), envF, envE, location, funcBody, store, imgStore);
+                    yield StmtInterpreter.evalStmt(funcEnvV, envF, envE, location, funcBody, store, imgStore);
                 } else {
                     int line = exprFunctionCallNode.getLineNumber();
                     int col = exprFunctionCallNode.getColumnNumber();
 
                     // Get parameters
                     List<String> paramNames = funcData.getValue1();
-
-                    VarEnvironment funcEnvV = funcData.getValue2();
 
                     // Get expression e_n and evaluate it
                     ExprNode exprE_n = args.getLast();
@@ -105,14 +106,14 @@ public class ExprInterpreter {
                         // Evaluate the new function call with one less argument
                         yield evalExpr(envV, envF, envE, location, functionCallNode, store, imgStore);
                     } else { // If e_n is not a list
-                        int paramLocation = store.nextLocation();
                         // Declare a new parameter, assign it the location l
-                        funcEnvV.declare(paramNames.get(n), paramLocation);
+                        funcEnvV.declare(paramNames.get(n), location);
+
                         // Store the value of expression e_n at the location
                         store.bind(location, exprVal);
 
                         // Evaluate the new function call with one less argument and with new location
-                        yield evalExpr(envV, envF, envE, store.nextLocation(), functionCallNode, store, imgStore);
+                        yield evalExpr(envV, envF, envE, ++location, functionCallNode, store, imgStore);
                     }
                 }
             }
