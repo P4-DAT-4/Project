@@ -5,10 +5,8 @@ import afs.interpreter.expressions.ListVal;
 import afs.interpreter.expressions.Val;
 import afs.interpreter.interfaces.*;
 import afs.nodes.expr.ExprIdentifierNode;
-import afs.nodes.expr.ExprIdentifierNode;
 import afs.nodes.expr.ExprNode;
 import afs.nodes.stmt.*;
-import afs.nodes.type.TypeListNode;
 import afs.nodes.type.TypeNode;
 import org.javatuples.Triplet;
 
@@ -27,7 +25,6 @@ public class StmtInterpreter {
             case StmtAssignmentNode stmtAssignmentNode -> {
                 String varName = stmtAssignmentNode.getIdentifier();
                 var exprNode = stmtAssignmentNode.getExpression();
-                System.out.println("Assigning to " + varName + " in env: " + envV);
 
                 // Check for events
                 EventHandler.check(envV, envF, envE, location, varName, store, imgStore);
@@ -39,10 +36,8 @@ public class StmtInterpreter {
                     if (value instanceof ListVal && exprNode instanceof ExprIdentifierNode) {
                         int sourceLoc = envV.lookup(((ExprIdentifierNode) exprNode).getIdentifier());
                         envV.declare(varName, sourceLoc);
-                        System.out.println("Assigned " + varName + " to source location " + sourceLoc + " (ListVal)");
                     } else {
                         store.declare(targetLoc, value);
-                        System.out.println("Assigned " + value + " to " + varName + " at location " + targetLoc);
                     }
                     yield new Triplet<>(null, store, imgStore);
                 } catch (RuntimeException e) {
