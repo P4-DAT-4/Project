@@ -9,9 +9,12 @@ A parser built for Algorithm Frame Script (AFS) using CoCo/R. Language specifica
     - For each syntactic category, there is an abstract class that inherit from `AbstractSyntaxNode`, all nodes in the syntactic category inherit from this class (e.g., all nodes representing statements inherit from `StatementNode`).
   - Nodes contain only references to their sub nodes (e.g., an ExprBinopNode representing $e_{1} \star e_{2}$ will include a reference left and right expression).
   - There are some helper classes that are not directly in the abstract syntax (e.g. `Param`).
-- `src/main/java/Main.java`: This class is the main entry point to the AFS parser.
-- `src/main/java/astprinter/PrinterInterface.java`: Defines an interface implemented by classes that want to print the abstract syntax tree.
-- `src/main/java/astprinter/RecursiveGraphvizPrinter.java`: Prints the abstract syntax tree using DOT notation (requires Graphviz or DOT language plugin).
+- `src/main/java/afs/Main.java`: This class is the main entry point to the AFS parser.
+- `src/main/java/afs/astprinter/PrinterInterface.java`: Defines an interface implemented by classes that want to print the abstract syntax tree.
+- `src/main/java/afs/astprinter/RecursiveGraphvizPrinter.java`: Prints the abstract syntax tree using DOT notation (requires Graphviz or DOT language plugin).
+- `src/main/java/afs/semantic_analysis`: This folder includes type checker and return system implementation
+- `src/main/java/afs/interpreter`: Includes all classes part of the interpreter implementation.
+- `src/main/java/afs/SVGGenerator`: Includes the classes used for generating SVG images.
 
 ## Requirements
 - Java JDK 21
@@ -27,9 +30,10 @@ A parser built for Algorithm Frame Script (AFS) using CoCo/R. Language specifica
 
 ### Running AFS with an input file
 - Once `AFS.jar` file has been generated, it can either be run directly or through the shell scrip `afs.sh` (Linux and Mac) or the bash script `afs.bat` (Windows).
-- Usage is `AFS <filename> [--print <outputfile>]`.
+- Usage is `AFS <filename> <outputfile> [--print <outputfile>] [--w <width>] [--h <height>]`.
   - If the `--print` flag is specified, an outputfile must be provided.
   - There is a Gradle task that runs the shell/bash script `./gradlew runAFS`.
 - The shell and bash scripts are set to run it with a default filename `intput.txt` and output file `output.dot`
+- Running the program results in a series of SVG images defined by the AFS program.
 - If `--print` was used, a picture can be compiled with `dot -Tpng output.dot -o output.png` or with a DOT language plugin the picture can be generated automatically when opening the `output.dot` file.
   - Running the terminal command requires Graphviz to be installed
