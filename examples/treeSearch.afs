@@ -1,0 +1,112 @@
+[int] list = [6, 3, 8, 1, 4, 7, 9, 1, 2, 5];
+
+fn string intToString(int d) {
+    if (d == 0) then {
+        return "0";
+    }
+    if (d == 1) then {
+            return "1";
+    }
+    if (d == 2) then {
+            return "2";
+    }
+    if (d == 3) then {
+            return "3";
+    }
+    if (d == 4) then {
+            return "4";
+    }
+    if (d == 5) then {
+            return "5";
+    }
+    if (d == 6) then {
+            return "6";
+    }
+    if (d == 7) then {
+            return "7";
+    }
+    if (d == 8) then {
+            return "8";
+    }
+    if (d == 9) then {
+        return "9";
+    }
+    return "";
+}
+
+img drawCircleWithText(int value, double centerX, double centerY, double radius) {
+    string textContext = intToString(value);
+    shape textShape = text textContext;
+    shape placedText = place textShape at (centerX, centerY);
+
+    shape circle = curve (centerX, centerY - radius) to (centerX + radius, centerY - radius) to (centerX + radius, centerY)
+          // Bottom right
+          to (centerX + radius, centerY + radius) to (centerX, centerY + radius)
+          // Bottom left
+          to (centerX - radius, centerY + radius) to (centerX - radius, centerY)
+          // Top left
+          to (centerX - radius, centerY - radius) to (centerX, centerY - radius);
+    shape res = circle ++ placedText;
+
+}
+
+double offsetX = 50.0;
+double offsetY = 65.0;
+double startR = 15.0;
+double r = startR;
+
+int currentIndex = -1;
+
+fn double scaleR(int index) {
+    if (currentIndex == index) then {
+        r = r * 1.5;
+    }
+    return r;
+}
+
+fn double resetR() {
+    r = startR;
+    return r;
+}
+
+img drawTree([int] values, int index, int size, double x, double y) {
+    int lIndex = index * 2 + 1;
+    int rIndex = index * 2 + 2;
+    double sr = scaleR(index);
+    shape parent = drawCircleWithText(values[index], x, y, sr);
+    double rr = resetR();
+    if (rIndex < size) then {
+        shape leftNode = drawTree(values, lIndex, size, x  - offsetX, y + offsetY);
+        shape rightNode = drawTree(values, rIndex, size, x + offsetX, y + offsetY);
+        shape res = parent ++ leftNode ++ rightNode;
+    } if (lIndex < size) then {
+        shape parent = drawCircleWithText(values[index], x, y, r);
+        shape leftNode = drawTree(values, lIndex, size, x  - offsetX, y + offsetY);
+        shape res = parent ++ leftNode;
+    }
+    shape res = parent;
+}
+
+bool found = false;
+
+fn int search(int val, [int] treeArray, int index, int size) {
+    currentIndex = index;
+    r = startR;
+    if (index < size) then {
+        if (val < treeArray[index]) then {
+            return search(val, treeArray, index * 2 + 1, size);
+        }
+        if (val > treeArray[index]) then {
+            return search(val, treeArray, index * 2 + 2, size);
+        }
+        found = true;
+        return index;
+    } else {
+        found = false;
+        return -1;
+    }
+}
+
+visualize search(2, list, 0, 10):
+    search do drawTree(list, 0, 10, 200.0, 50.0);
+    found do drawTree(list, 0, 10, 200.0, 50.0);
