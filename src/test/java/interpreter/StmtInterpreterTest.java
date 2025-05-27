@@ -64,35 +64,74 @@ public class StmtInterpreterTest {
     }
 
 
-    @Test
-    public void StmtCompositionNodeTest(){
-        // Setup: declare int variable x = 0
-        String varName = "x";
-        envV.declare(varName, location);
-        store.bind(location, new IntVal(0));
+    @Nested
+    class StmtCompositionNodeTest {
+        @Test
+        public void StmtCompositionNode() {
+            // Setup: declare int variable x = 0
+            String varName = "x";
+            envV.declare(varName, ++location);
+            store.bind(location, new IntVal(0));
 
-        // First statement: x = 5;
-        ExprNode valueX = new ExprIntNode("5", 0, 0);
-        StmtNode assignX = new StmtAssignmentNode(varName, valueX, 0, 0);
+            // First statement: x = 5;
+            ExprNode valueX = new ExprIntNode("5", 0, 0);
+            StmtNode assignX = new StmtAssignmentNode(varName, valueX, 0, 0);
 
-        // Second statement: return x;
-        ExprNode idX = new ExprIdentifierNode(varName, 0, 0);
-        StmtNode returnStmt = new StmtReturnNode(idX, 0, 0);
+            // Second statement: return x;
+            ExprNode idX = new ExprIdentifierNode(varName, 0, 0);
+            StmtNode returnStmt = new StmtReturnNode(idX, 0, 0);
 
-        // Compose: assignX; return x;
-        StmtNode composition = new StmtCompositionNode(assignX, returnStmt, 0, 0);
+            // Compose: assignX; return x;
+            StmtNode composition = new StmtCompositionNode(assignX, returnStmt, 0, 0);
 
-        // Evaluate composition
-        var result = StmtInterpreter.evalStmt(envV, envF, envE, location, composition, store, imgStore);
+            // Evaluate composition
+            var result = StmtInterpreter.evalStmt(envV, envF, envE, location, composition, store, imgStore);
 
-        // Result should be return value 5
-        Val retVal = result.getValue0();
-        assertInstanceOf(IntVal.class, retVal, "Return value should be IntVal");
-        assertEquals(new IntVal(5), retVal, "Return value should be 5");
+            // Result should be return value 5
+            Val retVal = (Val) result.getValue0();
+            assertTrue(retVal instanceof IntVal, "Return value should be IntVal");
+            assertEquals(new IntVal(5), retVal, "Return value should be 5");
 
-        // Store should reflect x = 5
-        Val storedX = result.getValue1().lookup(location);
-        assertEquals(new IntVal(5), storedX, "Stored value of x should be 5");
+            // Store should reflect x = 5
+            Val storedX = (Val) result.getValue1().lookup(location);
+            assertEquals(new IntVal(5), storedX, "Stored value of x should be 5");
+
+
+        }
+
+        @Test
+        public void StmtCompositionScopeNodeTest() {
+            // if (true) { int x = 5; }  // declare x inside if block
+            StmtNode ifStmt = new StmtIfNode(
+                    new ExprIntNode("1", 0, 0),  // condition = true
+                    new StmtDeclarationNode(
+                            new TypeIntNode(0, 0),   // int type
+                            "x",
+                            new ExprIntNode("5", 0, 0),
+                            new StmtSkipNode(),      // no next statement inside if block
+                            0, 0
+                    ),
+                    new StmtSkipNode(),            // else skip
+                    0, 0
+            );
+
+            // Compose: if statement + assignment x = 10 outside if block
+            StmtNode stmt = new StmtCompositionNode(
+                    ifStmt,
+                    new StmtAssignmentNode("x", new ExprIntNode("10", 0, 0), 0, 0),
+                    0, 0
+            );
+
+
+            // The assignment to x should fail (x out of scope)
+            assertThrows(RuntimeException.class, () -> {
+                StmtInterpreter.evalStmt(envV, envF, envE, location, stmt, store, imgStore);
+            }, "Expected RuntimeException when assigning to variable outside its scope");
+
+
+        }
+
+
     }
 
     @Test
