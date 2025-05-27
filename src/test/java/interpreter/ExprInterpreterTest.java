@@ -240,15 +240,35 @@ public class ExprInterpreterTest{
         @Test
         public void ExprConcatShapeLineNode(){
             // Arrange
-            String line1 = "line (0.0, 0.0) to (1.0, 1.0) to (2.0, 2.0)";
-            String line2 = "line (2.0, 2.0) to (3.0, 3.0)";
-            ExprNode lineExpr1 = ASTGenerator.parseDeclExpr(line1);
-            ExprNode lineExpr2 = ASTGenerator.parseDeclExpr(line2);
-            ExprNode concat = new ExprBinopNode(lineExpr1, BinOp.CONCAT, lineExpr2, 0, 0);
+            ExprNode line1 = new ExprLineNode(
+                    List.of(
+                            new ExprDoubleNode("0", 0, 0),
+                            new ExprDoubleNode("0", 0, 0),
+                            new ExprDoubleNode("2", 0, 0),
+                            new ExprDoubleNode("3", 0, 0),
+                            new ExprDoubleNode("0", 0, 0),
+                            new ExprDoubleNode("0", 0, 0),
+                            new ExprDoubleNode("2", 0, 0),
+                            new ExprDoubleNode("3", 0, 0)
+                    ),
+                    0, 0
+            );
+            ExprNode line2 = new ExprLineNode(
+                    List.of(
+                            new ExprDoubleNode("0", 0, 0),
+                            new ExprDoubleNode("0", 0, 0),
+                            new ExprDoubleNode("2", 0, 0),
+                            new ExprDoubleNode("3", 0, 0),
+                            new ExprDoubleNode("0", 0, 0),
+                            new ExprDoubleNode("0", 0, 0)
+                    ),
+                    0, 0
+            );
+            ExprNode concat = new ExprBinopNode(line1, BinOp.CONCAT, line2, 0, 0);
 
             // Act
-            Val lineVal1 = ExprInterpreter.evalExpr(envV, envF, envE, location, lineExpr1, store, imgStore).getValue0();
-            Val lineVal2 = ExprInterpreter.evalExpr(envV, envF, envE, location, lineExpr2, store, imgStore).getValue0();
+            Val lineVal1 = ExprInterpreter.evalExpr(envV, envF, envE, location, line2, store, imgStore).getValue0();
+            Val lineVal2 = ExprInterpreter.evalExpr(envV, envF, envE, location, line1, store, imgStore).getValue0();
             Val resultVal = ExprInterpreter.evalExpr(envV, envF, envE, location, concat, store, imgStore).getValue0();
             int lineElements1 = lineVal1.asShape().size();
             int lineElements2 = lineVal2.asShape().size();
@@ -579,8 +599,8 @@ public class ExprInterpreterTest{
     class ExprLineNodeTests {
 
         @Test
-        void line() {
-            // line from (0,0) to (2,3)
+        void singleLine() {
+            // Arrange
             ExprNode line = new ExprLineNode(
                     List.of(
                             new ExprDoubleNode("0", 0, 0),
@@ -591,11 +611,14 @@ public class ExprInterpreterTest{
                     0, 0
             );
 
+            // Act
             var result = ExprInterpreter.evalExpr(envV, envF, envE, location, line, store, imgStore);
             List<Shape> shapes = result.getValue0().asShape();
 
+            // Assert
             assertEquals(1, shapes.size(), "ExprLineNode should produce exactly one ShapeLine");
-            ShapeLine sl = (ShapeLine) shapes.get(0);
+            Shape sl = shapes.getFirst();
+            assertInstanceOf(ShapeLine.class, sl, "The shape should be a line");
 
             List<Point> pts = sl.getPoints();
             assertEquals(2, pts.size(), "ShapeLine.getPoints() must return exactly two points");
@@ -608,13 +631,42 @@ public class ExprInterpreterTest{
             assertEquals(3.0, p1.getY(), delta);
         }
 
+        @Test
+        void multipleLines() {
+            // Arrange
+            ExprNode line = new ExprLineNode(
+                    List.of(
+                            new ExprDoubleNode("0", 0, 0),
+                            new ExprDoubleNode("0", 0, 0),
+                            new ExprDoubleNode("2", 0, 0),
+                            new ExprDoubleNode("3", 0, 0),
+                            new ExprDoubleNode("0", 0, 0),
+                            new ExprDoubleNode("0", 0, 0),
+                            new ExprDoubleNode("2", 0, 0),
+                            new ExprDoubleNode("3", 0, 0)
+                    ),
+                    0, 0
+            );
+
+            // Act
+            var result = ExprInterpreter.evalExpr(envV, envF, envE, location, line, store, imgStore);
+            List<Shape> shapes = result.getValue0().asShape();
+
+            // Assert
+            assertEquals(3, shapes.size(), "ExprLineNode should produce exactly three ShapeLines");
+            for (Shape shape : shapes) {
+                assertInstanceOf(ShapeLine.class, shape, "Each shape should be a ShapeLine");
+                assertEquals(2, shape.getPoints().size(), "Each shape should have two points");
+            }
+        }
+
         //curve
         @Nested
         class ExprCurveNodeTests {
 
             @Test
             void simpleCurve() {
-                // cubic Bézier from (0,0) via control (1,2) to (3,4)
+                // Arrange
                 ExprNode curve = new ExprCurveNode(
                         List.of(
                                 new ExprDoubleNode("0", 0, 0),
@@ -627,10 +679,13 @@ public class ExprInterpreterTest{
                         0, 0
                 );
 
+                // Act
                 var result = ExprInterpreter.evalExpr(envV, envF, envE, location, curve, store, imgStore);
-                ShapeCurve sc = (ShapeCurve) result.getValue0().asShape().get(0);
+                Shape sc = result.getValue0().asShape().getFirst();
                 List<Point> pts = sc.getPoints();
 
+                // Assert
+                assertInstanceOf(ShapeCurve.class, sc, "Shape should be a ShapeCurve");
                 assertEquals(3, pts.size(), "ShapeCurve.getPoints() must return three points");
                 assertEquals(0.0, pts.get(0).getX(), delta);
                 assertEquals(0.0, pts.get(0).getY(), delta);
@@ -638,6 +693,36 @@ public class ExprInterpreterTest{
                 assertEquals(2.0, pts.get(1).getY(), delta);
                 assertEquals(3.0, pts.get(2).getX(), delta);
                 assertEquals(4.0, pts.get(2).getY(), delta);
+            }
+
+            @Test
+            void multipleCurves() {
+                // Arrange
+                ExprNode curve = new ExprCurveNode(
+                        List.of(
+                                new ExprDoubleNode("0", 0, 0),
+                                new ExprDoubleNode("0", 0, 0),
+                                new ExprDoubleNode("1", 0, 0),
+                                new ExprDoubleNode("2", 0, 0),
+                                new ExprDoubleNode("3", 0, 0),
+                                new ExprDoubleNode("4", 0, 0),
+                                new ExprDoubleNode("1", 0, 0),
+                                new ExprDoubleNode("2", 0, 0),
+                                new ExprDoubleNode("3", 0, 0),
+                                new ExprDoubleNode("4", 0, 0)
+                        ),
+                        0, 0
+                );
+
+                // Act
+                Val sc = ExprInterpreter.evalExpr(envV, envF, envE, location, curve, store, imgStore).getValue0();
+
+                // Assert
+                assertEquals(2, sc.asShape().size(), "ExprCurveNode should produce exactly two ShapeCurves");
+                for (Shape shape : sc.asShape()) {
+                    assertInstanceOf(ShapeCurve.class, shape, "Each shape should be a ShapeCurve");
+                    assertEquals(3, shape.getPoints().size(), "Each ShapeCurve should have three points");
+                }
             }
         }
 
@@ -647,7 +732,7 @@ public class ExprInterpreterTest{
 
             @Test
             void placeLineAtNewCenter() {
-                // original line (0,0)->(2,2) with center (1,1)
+                // Arrange
                 ExprNode line = new ExprLineNode(
                         List.of(
                                 new ExprDoubleNode("0", 0, 0),
@@ -657,7 +742,6 @@ public class ExprInterpreterTest{
                         ),
                         0, 0
                 );
-                // place its center at (5,5)
                 ExprNode placed = new ExprPlaceNode(
                         line,
                         new ExprDoubleNode("5", 0, 0),
@@ -665,11 +749,11 @@ public class ExprInterpreterTest{
                         0, 0
                 );
 
-                var result = ExprInterpreter.evalExpr(envV, envF, envE, location, placed, store, imgStore);
-                ShapeLine sl = (ShapeLine) result.getValue0().asShape().get(0);
-                List<Point> pts = sl.getPoints();
+                // Act
+                Val sl = ExprInterpreter.evalExpr(envV, envF, envE, location, placed, store, imgStore).getValue0();
+                List<Point> pts = sl.asShape().getFirst().getPoints();
 
-                // original center was (1,1) → shift by (+4,+4)
+                // Assert
                 assertEquals(4.0, pts.get(0).getX(), delta);
                 assertEquals(4.0, pts.get(0).getY(), delta);
                 assertEquals(6.0, pts.get(1).getX(), delta);
@@ -683,7 +767,7 @@ public class ExprInterpreterTest{
 
             @Test
             void rotateLine90DegAboutOrigin() {
-                // line (2,0)->(3,0)
+                // Assert
                 ExprNode line = new ExprLineNode(
                         List.of(
                                 new ExprDoubleNode("2", 0, 0),
@@ -693,8 +777,7 @@ public class ExprInterpreterTest{
                         ),
                         0, 0
                 );
-                // rotate about (0,0) by 90°
-                ExprNode rotated = new ExprRotateNode(
+                ExprNode rotate = new ExprRotateNode(
                         line,
                         new ExprDoubleNode("0", 0, 0),
                         new ExprDoubleNode("0", 0, 0),
@@ -702,11 +785,13 @@ public class ExprInterpreterTest{
                         0, 0
                 );
 
-                var result = ExprInterpreter.evalExpr(envV, envF, envE, location, rotated, store, imgStore);
-                ShapeLine sl = (ShapeLine) result.getValue0().asShape().get(0);
+                // Act
+                Val result = ExprInterpreter.evalExpr(envV, envF, envE, location, rotate, store, imgStore).getValue0();
+                Shape sl = result.asShape().getFirst();
                 List<Point> pts = sl.getPoints();
 
-                // rotation: (2,0)->(0,2), (3,0)->(0,3)
+                // Assert
+                assertInstanceOf(ShapeLine.class, sl, "Shape should still be a line after rotation");
                 assertEquals(0.0, pts.get(0).getX(), delta);
                 assertEquals(2.0, pts.get(0).getY(), delta);
                 assertEquals(0.0, pts.get(1).getX(), delta);
@@ -720,7 +805,7 @@ public class ExprInterpreterTest{
 
             @Test
             void scaleLineBy2x2AboutCenter() {
-                // line (0,0)->(2,0), center at (1,0)
+                // Arrange
                 ExprNode line = new ExprLineNode(
                         List.of(
                                 new ExprDoubleNode("0", 0, 0),
@@ -730,7 +815,6 @@ public class ExprInterpreterTest{
                         ),
                         0, 0
                 );
-                // scale by (2,2) around its own center
                 ExprNode scaled = new ExprScaleNode(
                         line,
                         new ExprDoubleNode("2", 0, 0),
@@ -738,10 +822,13 @@ public class ExprInterpreterTest{
                         0, 0
                 );
 
-                var result = ExprInterpreter.evalExpr(envV, envF, envE, location, scaled, store, imgStore);
-                ShapeLine sl = (ShapeLine) result.getValue0().asShape().get(0);
+                // Act
+                Val result = ExprInterpreter.evalExpr(envV, envF, envE, location, scaled, store, imgStore).getValue0();
+                Shape sl = result.asShape().getFirst();
                 List<Point> pts = sl.getPoints();
 
+                // Assert
+                assertInstanceOf(ShapeLine.class, sl, "Shape should still be a line after scaling");
                 assertEquals(-1.0, pts.get(0).getX(), delta);
                 assertEquals(0.0, pts.get(0).getY(), delta);
                 assertEquals(3.0, pts.get(1).getX(), delta);
