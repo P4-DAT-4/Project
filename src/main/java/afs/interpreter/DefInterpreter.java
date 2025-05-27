@@ -28,11 +28,13 @@ public class DefInterpreter {
                 Val value = ExprInterpreter.evalExpr(envV, envF, envE, location, expr, store, imgStore).getValue0();
 
                 // Update the environment
+
                 VarEnvironment newEnvV = envV.newScope();
                 newEnvV.declare(varName, location);
 
                 // Update the store
                 store.bind(location, value);
+
 
                 // Evaluate the definition and return
                 yield evalDef(newEnvV, envF, envE, ++location, nextDef, store, imgStore);
