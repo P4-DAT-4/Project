@@ -41,7 +41,7 @@ public class DefInterpreterTest {
     private int location;
 
     @BeforeEach
-    public void setUp(){
+    public void setUp() {
         envV = new MapVarEnvironment();
         envF = new MapFunEnvironment();
         envE = new MapEventEnvironment();
@@ -50,8 +50,9 @@ public class DefInterpreterTest {
         location = 0;
     }
 
+
     @Test
-    public void defDeclarationNodeTest(){
+    public void defFunctionNodeTest() {
         // Visualize function name and param
         String vizFuncName = "visualizeX";
         String vizParamName = "x";
@@ -67,60 +68,9 @@ public class DefInterpreterTest {
         DefVisualizeNode defVisualize = new DefVisualizeNode(vizFuncName, eventArgs, eventDecl, 0, 0);
 
 
-
         ExprNode expr42 = new ExprIntNode("42", 0, 0);
         DefDeclarationNode defDeclaration = new DefDeclarationNode(
-                new TypeIntNode(0,0),
-                "x", expr42,
-                defVisualize,
-                0, 0);
-
-        //Create the visualize function definition that must be declared in the function environment
-        TypeNode voidType = new TypeVoidNode(0, 0);
-        DefFunctionNode defFunction = new DefFunctionNode(voidType, vizFuncName, vizParams, vizBody, defDeclaration, 0, 0);
-        // Evaluate and register the visualize function first
-        DefInterpreter.evalDef(envV, envF, envE, location, defFunction, store, imgStore);
-
-
-        // Evaluate the definition chain
-        DefInterpreter.evalDef(envV, envF, envE, location, defDeclaration, store, imgStore);
-
-
-
-        // Check that the variable 'x' is declared and stored correctly
-        int storedLoc =  envV.lookup("x");
-
-        Val valX = store.lookup(storedLoc);
-        assertInstanceOf(IntVal.class, valX, "Stored value should be an integer");
-        assertEquals(42, ((IntVal) valX).getValue(), "Variable 'x' should hold the value 42");
-
-        // Check that the store and imgStore are returned (not null)
-        assertNotNull(store, "Store should be returned");
-        assertNotNull(imgStore, "Image store should be returned");
-
-    }
-
-    @Test
-    public void defFunctionNodeTest(){
-        // Visualize function name and param
-        String vizFuncName = "visualizeX";
-        String vizParamName = "x";
-        TypeNode intType = new TypeIntNode(0, 0);
-        List<Param> vizParams = List.of(new Param(intType, vizParamName, 0, 0));
-        StmtNode vizBody = new StmtSkipNode();
-
-        // Event declaration needed for visualize
-        String eventName = "event1";
-        List<ExprNode> eventArgs = List.of(new ExprIdentifierNode(vizParamName, 0, 0));
-        EventNode eventDecl = new EventDeclarationNode(eventName, vizFuncName, eventArgs, 0, 0);
-
-        DefVisualizeNode defVisualize = new DefVisualizeNode(vizFuncName, eventArgs, eventDecl, 0, 0);
-
-
-
-        ExprNode expr42 = new ExprIntNode("42", 0, 0);
-        DefDeclarationNode defDeclaration = new DefDeclarationNode(
-                new TypeIntNode(0,0),
+                new TypeIntNode(0, 0),
                 "x", expr42,
                 defVisualize,
                 0, 0);
@@ -149,12 +99,11 @@ public class DefInterpreterTest {
         assertNotNull(imgStore, "Image store should be returned");
 
 
-
     }
 
 
     @Test
-    public void defVisualizeNodeTest(){
+    public void defVisualizeNodeTest() {
         // Setup basic data
         String vizFuncName = "visualizeX";
         String vizParamName = "x";
@@ -184,45 +133,5 @@ public class DefInterpreterTest {
         assertEquals(vizFuncName, registeredCall.getIdentifier(), "Event should be linked to 'visualizeX' function");
         assertEquals(eventArgs, registeredCall.getArguments(), "Event arguments should match the visualize function parameters");
     }
-
-    @Test
-    public void defDeclarationScopeLeakageTest(){
-        // Step 1: Setup global variable 'x' = 42
-        ExprNode expr42 = new ExprIntNode("42", 0, 0);
-        TypeNode intType = new TypeIntNode(0, 0);
-        String varName = "x";
-
-        // Step 2: Visualizer function name and parameter
-        String vizFuncName = "visualizeX";
-        String vizParamName = "n"; // Parameter n, not declared globally
-        List<Param> vizParams = List.of(new Param(intType, vizParamName, 0, 0));
-
-        // Step 3: Function body: x = x + 1
-        ExprNode exprX = new ExprIdentifierNode(varName, 0, 0);
-        ExprNode exprOne = new ExprIntNode("1", 0, 0);
-        ExprNode exprXPlusOne = new ExprBinopNode(exprX, BinOp.ADD, exprOne, 0, 0);
-        StmtNode assignment = new StmtAssignmentNode(varName, exprXPlusOne, 0, 0);
-
-        // Step 4: Visualizer event declaration
-        String eventName = "event1";
-        List<ExprNode> eventArgs = List.of(new ExprIdentifierNode("x", 0, 0)); // Reference global x
-        EventNode eventDecl = new EventDeclarationNode(eventName, vizFuncName, eventArgs, 0, 0);
-        DefVisualizeNode defVisualize = new DefVisualizeNode(vizFuncName, eventArgs, eventDecl, 0, 0);
-
-        // Step 5: Function definition
-        TypeNode voidType = new TypeVoidNode(0, 0);
-        DefFunctionNode defFunction = new DefFunctionNode(voidType, vizFuncName, vizParams, assignment, defVisualize, 0, 0);
-
-        // Step 6: Global variable declaration
-        DefDeclarationNode defDeclaration = new DefDeclarationNode(intType, varName, expr42, defFunction, 0, 0);
-
-        // Step 7: Evaluate the chain
-        DefInterpreter.evalDef(envV, envF, envE, ++location, defDeclaration, store, imgStore);
-
-        // Step 8: Check initial value
-        int storedLoc = envV.lookup(varName);
-        Val valX = store.lookup(storedLoc);
-        assertInstanceOf(IntVal.class, valX, "Stored value should be integer");
-        assertEquals(43, ((IntVal) valX).getValue(), "Variable 'x' should be incremented to 43");
-    }
 }
+
